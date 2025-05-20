@@ -1,0 +1,819 @@
+16/05/25 17:17:50.817 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 41908 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:17:50.820 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:17:52.732 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:17:52.736 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:17:52.736 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:17:52.806 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:17:52.905 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:17:53.787 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:17:54.077 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@25d9291a
+16/05/25 17:17:54.080 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:17:55.900 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:17:56.911 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:17:56.938 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.762 seconds (process running for 8.929)
+16/05/25 17:18:56.361 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:18:56.370 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:19:02.019 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 27036 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:19:02.022 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:19:03.642 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:19:03.644 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:19:03.644 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:19:03.708 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:19:03.773 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:19:04.493 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:19:04.732 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@e36bc01
+16/05/25 17:19:04.734 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:19:06.451 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:19:07.374 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:19:07.409 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 5.875 seconds (process running for 6.924)
+16/05/25 17:22:35.871 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:22:35.879 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:22:41.169 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 38608 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:22:41.172 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:22:42.986 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:22:42.989 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:22:42.990 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:22:43.060 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:22:43.133 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:22:43.899 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:22:44.150 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6921cfa
+16/05/25 17:22:44.154 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:22:45.868 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:22:46.943 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:22:46.988 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.33 seconds (process running for 7.435)
+16/05/25 17:23:02.920 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 17:23:02.970 [http-nio-8080-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'POST' is not supported]
+16/05/25 17:23:45.302 [http-nio-8080-exec-5] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'POST' is not supported]
+16/05/25 17:29:38.500 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:29:38.515 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:29:45.900 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 41296 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:29:45.903 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:29:47.751 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:29:47.754 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:29:47.755 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:29:47.822 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:29:47.898 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:29:48.644 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:29:48.896 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@63b4b9c6
+16/05/25 17:29:48.899 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:29:50.618 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:29:51.634 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:29:51.667 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.274 seconds (process running for 7.251)
+16/05/25 17:31:15.702 [http-nio-8080-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 17:33:46.423 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:33:46.428 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:33:52.331 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 27512 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:33:52.334 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:33:54.123 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:33:54.126 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:33:54.127 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:33:54.189 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:33:54.267 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:33:54.968 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:33:55.236 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@40a28bda
+16/05/25 17:33:55.239 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:33:56.940 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:33:57.840 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:33:57.870 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.006 seconds (process running for 7.021)
+16/05/25 17:34:06.396 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 17:34:59.481 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:34:59.494 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:35:05.573 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 39556 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:35:05.575 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:35:07.305 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:35:07.308 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:35:07.308 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:35:07.390 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:35:07.470 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:35:08.132 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:35:08.372 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@299a43d9
+16/05/25 17:35:08.375 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:35:10.072 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:35:11.080 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:35:11.113 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.053 seconds (process running for 7.089)
+16/05/25 17:35:18.153 [http-nio-8080-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 17:35:18.326 [http-nio-8080-exec-2] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `long` from Object value (token `JsonToken.START_OBJECT`)]
+16/05/25 17:35:21.062 [http-nio-8080-exec-3] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `long` from Object value (token `JsonToken.START_OBJECT`)]
+16/05/25 17:36:37.366 [http-nio-8080-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `long` from Object value (token `JsonToken.START_OBJECT`)]
+16/05/25 17:40:36.267 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:40:36.281 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:40:43.335 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 35544 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:40:43.338 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:40:45.069 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:40:45.071 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:40:45.072 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:40:45.152 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:40:45.217 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:40:45.937 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:40:46.155 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@b8b2184
+16/05/25 17:40:46.158 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:40:47.802 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:40:48.700 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:40:48.733 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 5.908 seconds (process running for 6.937)
+16/05/25 17:40:53.417 [http-nio-8080-exec-3] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 17:50:25.314 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 17:50:25.337 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 17:50:32.235 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 40404 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 17:50:32.237 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 17:50:33.942 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 17:50:33.945 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 17:50:33.946 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 17:50:34.013 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 17:50:34.080 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 17:50:34.803 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 17:50:35.031 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6200b644
+16/05/25 17:50:35.033 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 17:50:36.530 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 17:50:37.521 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 17:50:37.553 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 5.798 seconds (process running for 6.877)
+16/05/25 17:53:33.781 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 17:53:33.824 [http-nio-8080-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'PUT' is not supported]
+16/05/25 17:53:47.204 [http-nio-8080-exec-4] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' is not supported]
+16/05/25 18:14:33.342 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 18:14:33.347 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 18:14:40.582 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 31460 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 18:14:40.586 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 18:14:42.370 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 18:14:42.373 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 18:14:42.374 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 18:14:42.442 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 18:14:42.510 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 18:14:43.212 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 18:14:43.429 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@30c8c6ab
+16/05/25 18:14:43.432 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 18:14:45.227 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 18:14:46.126 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 18:14:46.160 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.107 seconds (process running for 7.203)
+16/05/25 18:34:29.944 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 18:34:29.949 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 18:34:36.873 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 40076 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 18:34:36.875 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 18:34:38.618 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 18:34:38.620 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 18:34:38.621 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 18:34:38.714 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 18:34:38.789 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 18:34:39.515 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 18:34:39.771 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@39514976
+16/05/25 18:34:39.775 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 18:34:41.759 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 18:34:42.668 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 18:34:42.699 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.321 seconds (process running for 7.336)
+16/05/25 18:34:52.085 [http-nio-8080-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 18:36:24.008 [http-nio-8080-exec-6] ERROR o.a.c.c.C.[.[.[.[dispatcherServlet].log 170 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.http.converter.HttpMessageConversionException: Type definition error: [simple type, class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor]] with root cause
+com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: java.util.ArrayList[0]->com.artemisia_corp.artemisia.entity.Product["company"]->com.artemisia_corp.artemisia.entity.Company$HibernateProxy["hibernateLazyInitializer"])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1340)
+	at com.fasterxml.jackson.databind.DatabindContext.reportBadDefinition(DatabindContext.java:414)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.failForEmpty(UnknownSerializer.java:53)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.serialize(UnknownSerializer.java:30)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:145)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:107)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:25)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:422)
+	at com.fasterxml.jackson.databind.ObjectWriter$Prefetch.serialize(ObjectWriter.java:1583)
+	at com.fasterxml.jackson.databind.ObjectWriter.writeValue(ObjectWriter.java:1061)
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.writeInternal(AbstractJackson2HttpMessageConverter.java:486)
+	at org.springframework.http.converter.AbstractGenericHttpMessageConverter.write(AbstractGenericHttpMessageConverter.java:126)
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor.writeWithMessageConverters(AbstractMessageConverterMethodProcessor.java:345)
+	at org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor.handleReturnValue(HttpEntityMethodProcessor.java:263)
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:78)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:136)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+16/05/25 18:36:49.666 [http-nio-8080-exec-7] ERROR o.a.c.c.C.[.[.[.[dispatcherServlet].log 170 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.http.converter.HttpMessageConversionException: Type definition error: [simple type, class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor]] with root cause
+com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: java.util.ArrayList[0]->com.artemisia_corp.artemisia.entity.Product["company"]->com.artemisia_corp.artemisia.entity.Company$HibernateProxy["hibernateLazyInitializer"])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1340)
+	at com.fasterxml.jackson.databind.DatabindContext.reportBadDefinition(DatabindContext.java:414)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.failForEmpty(UnknownSerializer.java:53)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.serialize(UnknownSerializer.java:30)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:145)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:107)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:25)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:422)
+	at com.fasterxml.jackson.databind.ObjectWriter$Prefetch.serialize(ObjectWriter.java:1583)
+	at com.fasterxml.jackson.databind.ObjectWriter.writeValue(ObjectWriter.java:1061)
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.writeInternal(AbstractJackson2HttpMessageConverter.java:486)
+	at org.springframework.http.converter.AbstractGenericHttpMessageConverter.write(AbstractGenericHttpMessageConverter.java:126)
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor.writeWithMessageConverters(AbstractMessageConverterMethodProcessor.java:345)
+	at org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor.handleReturnValue(HttpEntityMethodProcessor.java:263)
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:78)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:136)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+16/05/25 18:36:56.083 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 18:36:56.089 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 18:36:59.009 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 22360 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 18:36:59.012 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 18:37:00.876 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 18:37:00.879 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 18:37:00.880 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 18:37:00.953 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 18:37:01.038 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 18:37:01.779 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 18:37:02.043 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@32d22650
+16/05/25 18:37:02.047 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 18:37:03.823 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 18:37:04.866 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 18:37:04.897 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.345 seconds (process running for 7.364)
+16/05/25 18:37:09.825 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 18:37:10.350 [http-nio-8080-exec-1] ERROR o.a.c.c.C.[.[.[.[dispatcherServlet].log 170 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.http.converter.HttpMessageConversionException: Type definition error: [simple type, class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor]] with root cause
+com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: java.util.ArrayList[0]->com.artemisia_corp.artemisia.entity.Product["company"]->com.artemisia_corp.artemisia.entity.Company$HibernateProxy["hibernateLazyInitializer"])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1340)
+	at com.fasterxml.jackson.databind.DatabindContext.reportBadDefinition(DatabindContext.java:414)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.failForEmpty(UnknownSerializer.java:53)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.serialize(UnknownSerializer.java:30)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:145)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:107)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:25)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:422)
+	at com.fasterxml.jackson.databind.ObjectWriter$Prefetch.serialize(ObjectWriter.java:1583)
+	at com.fasterxml.jackson.databind.ObjectWriter.writeValue(ObjectWriter.java:1061)
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.writeInternal(AbstractJackson2HttpMessageConverter.java:486)
+	at org.springframework.http.converter.AbstractGenericHttpMessageConverter.write(AbstractGenericHttpMessageConverter.java:126)
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor.writeWithMessageConverters(AbstractMessageConverterMethodProcessor.java:345)
+	at org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor.handleReturnValue(HttpEntityMethodProcessor.java:263)
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:78)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:136)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+16/05/25 18:38:01.629 [http-nio-8080-exec-3] ERROR o.a.c.c.C.[.[.[.[dispatcherServlet].log 170 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.http.converter.HttpMessageConversionException: Type definition error: [simple type, class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor]] with root cause
+com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: java.util.ArrayList[0]->com.artemisia_corp.artemisia.entity.Product["company"]->com.artemisia_corp.artemisia.entity.Company$HibernateProxy["hibernateLazyInitializer"])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1340)
+	at com.fasterxml.jackson.databind.DatabindContext.reportBadDefinition(DatabindContext.java:414)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.failForEmpty(UnknownSerializer.java:53)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.serialize(UnknownSerializer.java:30)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:145)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:107)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:25)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:422)
+	at com.fasterxml.jackson.databind.ObjectWriter$Prefetch.serialize(ObjectWriter.java:1583)
+	at com.fasterxml.jackson.databind.ObjectWriter.writeValue(ObjectWriter.java:1061)
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.writeInternal(AbstractJackson2HttpMessageConverter.java:486)
+	at org.springframework.http.converter.AbstractGenericHttpMessageConverter.write(AbstractGenericHttpMessageConverter.java:126)
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor.writeWithMessageConverters(AbstractMessageConverterMethodProcessor.java:345)
+	at org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor.handleReturnValue(HttpEntityMethodProcessor.java:263)
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:78)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:136)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+16/05/25 18:39:12.631 [http-nio-8080-exec-7] ERROR o.a.c.c.C.[.[.[.[dispatcherServlet].log 170 - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.http.converter.HttpMessageConversionException: Type definition error: [simple type, class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor]] with root cause
+com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer found for class org.hibernate.proxy.pojo.bytebuddy.ByteBuddyInterceptor and no properties discovered to create BeanSerializer (to avoid exception, disable SerializationFeature.FAIL_ON_EMPTY_BEANS) (through reference chain: java.util.ArrayList[0]->com.artemisia_corp.artemisia.entity.Product["company"]->com.artemisia_corp.artemisia.entity.Company$HibernateProxy["hibernateLazyInitializer"])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:77)
+	at com.fasterxml.jackson.databind.SerializerProvider.reportBadDefinition(SerializerProvider.java:1340)
+	at com.fasterxml.jackson.databind.DatabindContext.reportBadDefinition(DatabindContext.java:414)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.failForEmpty(UnknownSerializer.java:53)
+	at com.fasterxml.jackson.databind.ser.impl.UnknownSerializer.serialize(UnknownSerializer.java:30)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.BeanPropertyWriter.serializeAsField(BeanPropertyWriter.java:732)
+	at com.fasterxml.jackson.databind.ser.std.BeanSerializerBase.serializeFields(BeanSerializerBase.java:770)
+	at com.fasterxml.jackson.databind.ser.BeanSerializer.serialize(BeanSerializer.java:184)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serializeContents(CollectionSerializer.java:145)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:107)
+	at com.fasterxml.jackson.databind.ser.std.CollectionSerializer.serialize(CollectionSerializer.java:25)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider._serialize(DefaultSerializerProvider.java:502)
+	at com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.serializeValue(DefaultSerializerProvider.java:422)
+	at com.fasterxml.jackson.databind.ObjectWriter$Prefetch.serialize(ObjectWriter.java:1583)
+	at com.fasterxml.jackson.databind.ObjectWriter.writeValue(ObjectWriter.java:1061)
+	at org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.writeInternal(AbstractJackson2HttpMessageConverter.java:486)
+	at org.springframework.http.converter.AbstractGenericHttpMessageConverter.write(AbstractGenericHttpMessageConverter.java:126)
+	at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor.writeWithMessageConverters(AbstractMessageConverterMethodProcessor.java:345)
+	at org.springframework.web.servlet.mvc.method.annotation.HttpEntityMethodProcessor.handleReturnValue(HttpEntityMethodProcessor.java:263)
+	at org.springframework.web.method.support.HandlerMethodReturnValueHandlerComposite.handleReturnValue(HandlerMethodReturnValueHandlerComposite.java:78)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:136)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:986)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:891)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365)
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131)
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at com.artemisia_corp.artemisia.config.CorsFilter.doFilter(CorsFilter.java:35)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+16/05/25 18:42:32.202 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 18:42:32.214 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 18:42:37.922 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 32796 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 18:42:37.924 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 18:42:39.665 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 18:42:39.667 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 18:42:39.668 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 18:42:39.746 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 18:42:39.816 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 18:42:40.491 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 18:42:40.720 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@12166229
+16/05/25 18:42:40.723 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 18:42:42.643 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 18:42:43.590 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 18:42:43.625 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.172 seconds (process running for 7.198)
+16/05/25 18:42:54.732 [http-nio-8080-exec-8] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 18:45:15.186 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 18:45:15.196 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.
+16/05/25 18:45:25.886 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 30596 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+16/05/25 18:45:25.889 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+16/05/25 18:45:27.571 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+16/05/25 18:45:27.575 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+16/05/25 18:45:27.575 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+16/05/25 18:45:27.634 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+16/05/25 18:45:27.705 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+16/05/25 18:45:28.364 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+16/05/25 18:45:28.601 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2b2b7e3c
+16/05/25 18:45:28.604 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+16/05/25 18:45:30.531 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+16/05/25 18:45:31.438 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+16/05/25 18:45:31.469 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 6.05 seconds (process running for 7.063)
+16/05/25 18:45:42.980 [http-nio-8080-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+16/05/25 18:48:52.750 [http-nio-8080-exec-1] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'DELETE' is not supported]
+16/05/25 21:57:35.893 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool.run 797 - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3h7m43s611ms807µs900ns).
+16/05/25 22:03:22.536 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+16/05/25 22:03:22.557 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.

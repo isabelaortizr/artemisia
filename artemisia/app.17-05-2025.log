@@ -1,0 +1,18 @@
+17/05/25 12:54:31.592 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarting 53 - Starting ArtemisiaApplication using Java 23.0.2 with PID 31860 (C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia\target\classes started by lucas in C:\Users\lucas\OneDrive\Desktop\springboot\artemisia\artemisia)
+17/05/25 12:54:31.624 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStartupProfileInfo 652 - No active profile set, falling back to 1 default profile: "default"
+17/05/25 12:54:33.838 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Initializing ProtocolHandler ["http-nio-8080"]
+17/05/25 12:54:33.840 [main] INFO  o.a.catalina.core.StandardService.log 168 - Starting service [Tomcat]
+17/05/25 12:54:33.841 [main] INFO  o.a.catalina.core.StandardEngine.log 168 - Starting Servlet engine: [Apache Tomcat/10.1.40]
+17/05/25 12:54:33.919 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring embedded WebApplicationContext
+17/05/25 12:54:34.016 [main] INFO  c.a.artemisia.config.CorsFilter.init 22 - [init], CORS Filter init
+17/05/25 12:54:34.894 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 109 - HikariPool-1 - Starting...
+17/05/25 12:54:35.204 [main] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast 554 - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2558f65c
+17/05/25 12:54:35.207 [main] INFO  com.zaxxer.hikari.HikariDataSource.getConnection 122 - HikariPool-1 - Start completed.
+17/05/25 12:54:37.530 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor 258 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+17/05/25 12:54:38.527 [main] INFO  o.a.coyote.http11.Http11NioProtocol.log 168 - Starting ProtocolHandler ["http-nio-8080"]
+17/05/25 12:54:38.560 [main] INFO  c.a.artemisia.ArtemisiaApplication.logStarted 59 - Started ArtemisiaApplication in 7.735 seconds (process running for 13.557)
+17/05/25 12:54:51.510 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log 168 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+17/05/25 12:56:25.719 [http-nio-8080-exec-5] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `com.artemisia_corp.artemisia.entity.dto.product.ProductUpdateDto` from Array value (token `JsonToken.START_ARRAY`)]
+17/05/25 12:57:28.841 [http-nio-8080-exec-8] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver.logException 254 - Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `com.artemisia_corp.artemisia.entity.dto.product.ProductUpdateDto` from Array value (token `JsonToken.START_ARRAY`)]
+17/05/25 13:11:56.631 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 349 - HikariPool-1 - Shutdown initiated...
+17/05/25 13:11:56.636 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource.close 351 - HikariPool-1 - Shutdown completed.

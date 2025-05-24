@@ -1,48 +1,68 @@
 package com.artemisia_corp.artemisia.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
+import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
+import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
-
-import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
 @Setter
-@Comment("Tabla para almacenar los productos de una empresa")
 @Entity
-@Table(name = "product",  indexes = {@Index(name = "idx_company_id", columnList = "company_id")})
+@Table(name = "product")
 public class Product {
-    @Comment("Identificador del registros")
+
+    @Comment("Identificador del producto")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PRODUCT_ID_GENERATOR")
-    @SequenceGenerator(name = "PRODUCT_ID_GENERATOR", sequenceName = "SEQ_PRODUCT_ID", allocationSize = 1, initialValue = 1)
-    @Column(name = "id")
-    private Long id;
+    @SequenceGenerator(name = "PRODUCT_ID_GENERATOR", sequenceName = "seq_product_id", allocationSize = 1)
+    private Long productId;
 
-    @Comment("Campo para almacenar el nombre del producto")
-    @Column(name = "name", length = 60, nullable = false)
+    @Comment("Usuario que puso el producto a la venta")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller", nullable = false)
+    private Users seller;
+
+    @Comment("Nombre del producto a la venta")
+    @Column(length = 150, nullable = false)
     private String name;
 
-    @Comment("Campo para almacenar la descripción del producto")
-    @Column(name = "description", length = 255)
+    @Comment("Tecnica utilizada para la pintura")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaintingTechnique technique;
+
+    @Comment("Materiales usados para el producto")
+    @Column(length = 70, nullable = false)
+    private String materials;
+
+    @Comment("Descripcion base del producto")
+    @Column(length = 250)
     private String description;
 
-    @Comment("Campo para almacenar el precio del producto")
-    @Column(name = "price", precision = 20, scale = 10)
-    private BigDecimal price;
+    @Comment("Precio de la producto")
+    @Column(nullable = false)
+    private Double price;
 
-    @Comment("Campo para almacenar la información del stock")
-    @Column(name = "stock")
-    private int stock;
+    @Comment("Cantidad disponible del producto")
+    @Column(nullable = false)
+    private Integer stock;
 
-    @JsonIgnore
-    @Comment("Identificador de la empresa a la que pertence")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", referencedColumnName = "id", nullable = false)
-    private Company company;
+    @Comment("Estado actula del producto")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatus status;
 
+    @Comment("Direccion de la imagen")
+    @Column(length = 250, nullable = false)
+    private String image;
+
+    @Comment("Categoria del producto")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaintingCategory category;
 }

@@ -8,5 +8,5 @@ import lombok.*;
 @Getter
 @Setter
 public class ProductDeleteDto {
-    private Long id;
+    private Long ProductId;
 }

@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -34,30 +36,22 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                 .authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry ->
                                 authorizationManagerRequestMatcherRegistry
-                                        .requestMatchers("/api/v1/companies").permitAll()
-                                        .requestMatchers("/api/v1/companies/save").permitAll()
-                                        .requestMatchers("/api/v1/companies/delete").permitAll()
-                                        .requestMatchers("/api/v1/companies/update").permitAll()
-                                        .requestMatchers("/api/v1/products").permitAll()
-                                        .requestMatchers("/api/v1/products/get_name").permitAll()
-                                        .requestMatchers("/api/v1/products/save").permitAll()
-                                        .requestMatchers("/api/v1/products/delete").permitAll()
-                                        .requestMatchers("/api/v1/products/update").permitAll()
-                                        .requestMatchers("/api/v1/workers").permitAll()
-                                        .requestMatchers("/api/v1/workers/save").permitAll()
-                                        .requestMatchers("/api/v1/workers/delete").permitAll()
-                                        .requestMatchers("/api/v1/workers/update").permitAll()
-                                        .requestMatchers("/api/v1/clients").permitAll()
-                                        .requestMatchers("/api/v1/clients/save").permitAll()
-                                        .requestMatchers("/api/v1/clients/delete").permitAll()
-                                        .requestMatchers("/api/v1/clients/update").permitAll()
-                                        .requestMatchers("/api/v1/alumni").permitAll()
-                                        .requestMatchers("/api/v1/alumni/save").permitAll()
+                                        .requestMatchers("/api/notas_venta").permitAll()
+                                        .requestMatchers("/api/notas_venta/with_customer").permitAll()
+                                        .requestMatchers("/api/details").permitAll()
+                                        .requestMatchers("/api/details/simple").permitAll()
+                                        .requestMatchers("/api/details/by_nota_venta").permitAll()
+                                        .requestMatchers("/api/products").permitAll()
+                                        .requestMatchers("/api/products/with_sellers").permitAll()
+                                        .requestMatchers("/api/users").permitAll()
+                                        .requestMatchers("/api/users/{id}").permitAll()
+                                        .requestMatchers("/api/addresses").permitAll()
+                                        .requestMatchers("/api/addresses/").permitAll()
                                         .anyRequest().authenticated()
 
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                    //.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors((cors) -> cors.configurationSource(apiConfigurationSource()));
         return http.build();
     }
@@ -65,6 +59,11 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     private CorsConfigurationSource apiConfigurationSource() {

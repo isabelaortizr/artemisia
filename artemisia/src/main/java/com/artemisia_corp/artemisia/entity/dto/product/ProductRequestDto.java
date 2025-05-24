@@ -10,9 +10,14 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class ProductRequestDto {
-    String name;
-    String description;
-    BigDecimal price;
-    int stock;
-    long companyId;
+    private Long sellerId;
+    private String name;
+    private String technique;
+    private String materials;
+    private String description;
+    private Double price;
+    private Integer stock;
+    private String status;
+    private String image;
+    private String category;
 }

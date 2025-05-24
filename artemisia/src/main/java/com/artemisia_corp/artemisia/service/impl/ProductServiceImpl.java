@@ -1,67 +1,93 @@
 package com.artemisia_corp.artemisia.service.impl;
 
-import com.artemisia_corp.artemisia.entity.Company;
 import com.artemisia_corp.artemisia.entity.Product;
-import com.artemisia_corp.artemisia.entity.dto.product.ProductDeleteDto;
-import com.artemisia_corp.artemisia.entity.dto.product.ProductRequestDto;
-import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
-import com.artemisia_corp.artemisia.entity.dto.product.ProductUpdateDto;
-import com.artemisia_corp.artemisia.repository.CompanyRepository;
+import com.artemisia_corp.artemisia.entity.Users;
+import com.artemisia_corp.artemisia.entity.dto.product.*;
+import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
+import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
+import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import com.artemisia_corp.artemisia.repository.ProductRepository;
+import com.artemisia_corp.artemisia.repository.UsersRepository;
 import com.artemisia_corp.artemisia.service.ProductService;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
-@AllArgsConstructor
 @Service
 public class ProductServiceImpl implements ProductService {
+
+    @Autowired
     private ProductRepository productRepository;
-    private CompanyRepository companyRepository;
+
+    @Autowired
+    private UsersRepository usersRepository;
 
     @Override
     public List<ProductResponseDto> listAll() {
-        return productRepository.findAllProductsReduced();
+        return productRepository.findProducts();
     }
 
     @Override
-    public ProductResponseDto getByName(String productName) {
-        return productRepository.findProductByName(productName);
+    public List<ProductWithSellerDto> getProductsWithSellers() {
+        return productRepository.findProductsWithSeller();
     }
 
     @Override
-    public void save(ProductRequestDto product) {
-        Company company = companyRepository.findById(product.getCompanyId())
-                .orElseThrow(() -> new RuntimeException("Company not found with ID: " + product.getCompanyId()));
-        this.productRepository.save(Product.builder()
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .stock(product.getStock())
-                .company(company)
-                .build());
+    public void save(ProductRequestDto productDto) {
+        Users seller = usersRepository.findById(productDto.getSellerId())
+                .orElseThrow(() -> {
+
+                    return new RuntimeException("Vendedor no encontrado con ID: " + productDto.getSellerId())
+                });
+
+        Product product = Product.builder()
+                .name(productDto.getName())
+                .technique(PaintingTechnique.valueOf(productDto.getTechnique()))
+                .materials(productDto.getMaterials())
+                .description(productDto.getDescription())
+                .price(productDto.getPrice())
+                .stock(productDto.getStock() != null ? productDto.getStock() : 0)
+                .status(ProductStatus.valueOf(productDto.getStatus() != null ? productDto.getStatus() : "AVAILABLE"))
+                .image(productDto.getImage())
+                .category(PaintingCategory.valueOf(productDto.getCategory()))
+                .build();
+        product.setSeller(seller);
+        productRepository.save(product);
     }
 
     @Override
-    public void delete(ProductDeleteDto product) {
-        productRepository.deleteById(product.getId());
+    public void delete(ProductDeleteDto productDto) {
+        if (!productRepository.existsById(productDto.getProductId())) {
+            throw new RuntimeException("Producto no encontrado con ID: " + productDto.getProductId());
+        }
+        productRepository.deleteById(productDto.getProductId());
     }
 
     @Override
-    public void update(ProductUpdateDto product) {
-        Product existingProduct = productRepository.findById(product.getProductId())
-                .orElseThrow(() -> new RuntimeException("Company with ID " + product.getProductId() + " not found"));
+    public void update(ProductUpdateDto productDto) {
+        Product product = productRepository.findById(productDto.getProductId())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + productDto.getProductId()));
 
-        Company company = companyRepository.findById(product.getCompanyId())
-                .orElseThrow(() -> new RuntimeException("Company not found with ID: " + product.getCompanyId()));
+        if (productDto.getName() != null) product.setName(productDto.getName());
+        if (productDto.getPrice() != null) product.setPrice(productDto.getPrice());
+        if (productDto.getDescription() != null) product.setDescription(productDto.getDescription());
+        if (productDto.getStock() != null) product.setStock(productDto.getStock());
+        if (productDto.getImage() != null) product.setImage(productDto.getImage());
+        if (productDto.getMaterials() != null) product.setMaterials(productDto.getMaterials());
 
-        existingProduct.setName(product.getName());
-        existingProduct.setDescription(product.getDescription());
-        existingProduct.setPrice(product.getPrice());
-        existingProduct.setStock(product.getStock());
-        existingProduct.setCompany(company);
+        if (productDto.getTechnique() != null) product.setTechnique(PaintingTechnique.valueOf(productDto.getTechnique()));
+        if (productDto.getStatus() != null) product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
+        if (productDto.getCategory() != null) product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
 
-        productRepository.save(existingProduct);
+
+        if (productDto.getSellerId() != null) {
+            Users seller = usersRepository.findById(productDto.getSellerId())
+                    .orElseThrow(() -> new RuntimeException("Vendedor no encontrado con ID: " + productDto.getSellerId()));
+            product.setSeller(seller);
+        }
+
+        productRepository.save(product);
     }
 }

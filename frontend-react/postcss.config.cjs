@@ -1,6 +1,6 @@
 module.exports = {
   plugins: [
-    require('@tailwindcss/postcss'), // Cambiado a esta línea
+    require('@tailwindcss/postcss'), // Este es el nuevo plugin
     require('autoprefixer'),
   ],
 };

@@ -12,8 +12,7 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Entity
 @Table(name = "users")
-public class Users {
-
+public class User {
     @Comment("Identificador del usuario")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "USER_ID_GENERATOR")

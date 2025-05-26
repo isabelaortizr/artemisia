@@ -1,93 +1,187 @@
 package com.artemisia_corp.artemisia.service.impl;
 
-import com.artemisia_corp.artemisia.entity.Product;
-import com.artemisia_corp.artemisia.entity.Users;
+import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.product.*;
-import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
-import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
-import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
-import com.artemisia_corp.artemisia.repository.ProductRepository;
-import com.artemisia_corp.artemisia.repository.UsersRepository;
+import com.artemisia_corp.artemisia.entity.enums.*;
+import com.artemisia_corp.artemisia.repository.*;
+import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private UsersRepository usersRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final LogsService logsService;
 
     @Override
-    public List<ProductResponseDto> listAll() {
-        return productRepository.findProducts();
+    public List<ProductResponseDto> getAllProducts() {
+        logsService.info("Fetching all products");
+        return productRepository.findAllProducts();
     }
 
     @Override
-    public List<ProductWithSellerDto> getProductsWithSellers() {
-        return productRepository.findProductsWithSeller();
-    }
-
-    @Override
-    public void save(ProductRequestDto productDto) {
-        Users seller = usersRepository.findById(productDto.getSellerId())
+    public ProductResponseDto getProductById(Long id) {
+        logsService.info("Fetching product with ID: " + id);
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
+                    logsService.error("Product not found with ID: " + id);
+                    throw new RuntimeException("Product not found");
+                });
+        return convertToDto(product);
+    }
 
-                    return new RuntimeException("Vendedor no encontrado con ID: " + productDto.getSellerId())
+    @Override
+    public ProductResponseDto createProduct(ProductRequestDto productDto) {
+        User seller = userRepository.findById(productDto.getSellerId())
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + productDto.getSellerId());
+                    throw new RuntimeException("User not found");
                 });
 
+        if (!seller.getRole().equals(UserRole.SELLER)) {
+            logsService.error("User is not a seller: " + productDto.getSellerId());
+            throw new RuntimeException("Only sellers can create products");
+        }
+
         Product product = Product.builder()
+                .seller(seller)
                 .name(productDto.getName())
                 .technique(PaintingTechnique.valueOf(productDto.getTechnique()))
                 .materials(productDto.getMaterials())
                 .description(productDto.getDescription())
                 .price(productDto.getPrice())
-                .stock(productDto.getStock() != null ? productDto.getStock() : 0)
-                .status(ProductStatus.valueOf(productDto.getStatus() != null ? productDto.getStatus() : "AVAILABLE"))
+                .stock(productDto.getStock())
+                .status(ProductStatus.valueOf(productDto.getStatus()))
                 .image(productDto.getImage())
                 .category(PaintingCategory.valueOf(productDto.getCategory()))
                 .build();
+
+        Product savedProduct = productRepository.save(product);
+        logsService.info("Product created with ID: " + savedProduct.getProductId());
+        return convertToDto(savedProduct);
+    }
+
+    @Override
+    public ProductResponseDto updateProduct(Long id, ProductRequestDto productDto) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("Product not found with ID: " + id);
+                    throw new RuntimeException("Product not found");
+                });
+
+        User seller = userRepository.findById(productDto.getSellerId())
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + productDto.getSellerId());
+                    throw new RuntimeException("User not found");
+                });
+
+        if (!seller.getRole().equals(UserRole.SELLER)) {
+            logsService.error("User is not a seller: " + productDto.getSellerId());
+            throw new RuntimeException("Only sellers can update products");
+        }
+
         product.setSeller(seller);
-        productRepository.save(product);
+        product.setName(productDto.getName());
+        product.setTechnique(PaintingTechnique.valueOf(productDto.getTechnique()));
+        product.setMaterials(productDto.getMaterials());
+        product.setDescription(productDto.getDescription());
+        product.setPrice(productDto.getPrice());
+        product.setStock(productDto.getStock());
+        product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
+        product.setImage(productDto.getImage());
+        product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
+
+        Product updatedProduct = productRepository.save(product);
+        logsService.info("Product updated with ID: " + updatedProduct.getProductId());
+        return convertToDto(updatedProduct);
     }
 
     @Override
-    public void delete(ProductDeleteDto productDto) {
-        if (!productRepository.existsById(productDto.getProductId())) {
-            throw new RuntimeException("Producto no encontrado con ID: " + productDto.getProductId());
+    public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            logsService.error("Product not found with ID: " + id);
+            throw new RuntimeException("Product not found");
         }
-        productRepository.deleteById(productDto.getProductId());
+        productRepository.deleteById(id);
+        logsService.info("Product deleted with ID: " + id);
     }
 
     @Override
-    public void update(ProductUpdateDto productDto) {
-        Product product = productRepository.findById(productDto.getProductId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + productDto.getProductId()));
+    @Transactional
+    public void reduceStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    logsService.error("Product not found with ID: " + productId);
+                    throw new RuntimeException("Product not found");
+                });
 
-        if (productDto.getName() != null) product.setName(productDto.getName());
-        if (productDto.getPrice() != null) product.setPrice(productDto.getPrice());
-        if (productDto.getDescription() != null) product.setDescription(productDto.getDescription());
-        if (productDto.getStock() != null) product.setStock(productDto.getStock());
-        if (productDto.getImage() != null) product.setImage(productDto.getImage());
-        if (productDto.getMaterials() != null) product.setMaterials(productDto.getMaterials());
-
-        if (productDto.getTechnique() != null) product.setTechnique(PaintingTechnique.valueOf(productDto.getTechnique()));
-        if (productDto.getStatus() != null) product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
-        if (productDto.getCategory() != null) product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
-
-
-        if (productDto.getSellerId() != null) {
-            Users seller = usersRepository.findById(productDto.getSellerId())
-                    .orElseThrow(() -> new RuntimeException("Vendedor no encontrado con ID: " + productDto.getSellerId()));
-            product.setSeller(seller);
+        if (product.getStock() < quantity) {
+            logsService.error("Insufficient stock for product ID: " + productId);
+            throw new RuntimeException("Insufficient stock");
         }
 
-        productRepository.save(product);
+        productRepository.reduceStock(productId, quantity);
+        logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+
+        // Update product status if stock reaches zero
+        if (product.getStock() - quantity <= 0) {
+            product.setStatus(ProductStatus.UNAVAILABLE);
+            productRepository.save(product);
+            logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getAvailableProducts() {
+        logsService.info("Fetching all available products (stock > 0)");
+        try {
+            return productRepository.findAllAvailableProducts();
+        } catch (Exception e) {
+            logsService.error("Error fetching available products: " + e.getMessage());
+            throw new RuntimeException("Error fetching available products", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductsBySeller(Long sellerId) {
+        logsService.info("Fetching products for seller ID: " + sellerId);
+
+        // Verificar que el vendedor existe
+        if (!userRepository.existsById(sellerId)) {
+            logsService.error("Seller not found with ID: " + sellerId);
+            throw new RuntimeException("Seller not found with ID: " + sellerId);
+        }
+
+        try {
+            return productRepository.findBySeller_Id(sellerId);
+        } catch (Exception e) {
+            logsService.error("Error fetching products for seller: " + e.getMessage());
+            throw new RuntimeException("Error fetching products for seller", e);
+        }
+    }
+
+    private ProductResponseDto convertToDto(Product product) {
+        return ProductResponseDto.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .technique(product.getTechnique().name())
+                .materials(product.getMaterials())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .status(product.getStatus().name())
+                .image(product.getImage())
+                .category(product.getCategory().name())
+                .sellerId(product.getSeller().getId())
+                .build();
     }
 }

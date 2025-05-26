@@ -2,8 +2,6 @@ package com.artemisia_corp.artemisia.entity.dto.product;
 
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

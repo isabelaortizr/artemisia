@@ -1,6 +1,6 @@
 package com.artemisia_corp.artemisia.entity.dto.nota_venta;
 
-import com.artemisia_corp.artemisia.entity.dto.datail.DetailResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +22,5 @@ public class NotaVentaWithDetailsDto {
     private String estadoVenta;
     private Double totalGlobal;
     private LocalDateTime date;
-    private List<DetailResponseDto> details;
+    private List<OrderDetailResponseDto> details;
 }

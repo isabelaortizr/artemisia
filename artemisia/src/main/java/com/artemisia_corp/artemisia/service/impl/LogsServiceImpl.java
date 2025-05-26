@@ -18,8 +18,7 @@ public class LogsServiceImpl implements LogsService {
     private LogerRespository logerRespository;
 
     @Override
-
-    public List<LogsResponseDto> getLogs() {
+    public List<LogsResponseDto> getAllLogs() {
         return logerRespository.findAllLogs();
     }
 
@@ -33,12 +32,12 @@ public class LogsServiceImpl implements LogsService {
                 .build();
         logerRespository.save(logs);
     }
-    
+
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void warning(String message) {
         Logs logs = Logs.builder()
-                .level("WARING")
+                .level("WARNING")
                 .message(message)
                 .date(new Date())
                 .build();

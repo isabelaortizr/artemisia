@@ -1,4 +1,4 @@
-package com.artemisia_corp.artemisia.entity.dto.users;
+package com.artemisia_corp.artemisia.entity.dto.user;
 
 import lombok.*;
 
@@ -7,7 +7,8 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class UserRequestDto {
+public class UserUpdateDto {
+    private Long id;
     private String name;
     private String mail;
     private String password;

@@ -15,7 +15,6 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(name = "product")
 public class Product {
-
     @Comment("Identificador del producto")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PRODUCT_ID_GENERATOR")
@@ -25,7 +24,7 @@ public class Product {
     @Comment("Usuario que puso el producto a la venta")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller", nullable = false)
-    private Users seller;
+    private User seller;
 
     @Comment("Nombre del producto a la venta")
     @Column(length = 150, nullable = false)

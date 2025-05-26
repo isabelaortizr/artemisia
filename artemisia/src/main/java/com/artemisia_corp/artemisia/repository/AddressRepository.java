@@ -10,11 +10,11 @@ import java.util.List;
 
 @Repository
 public interface AddressRepository extends JpaRepository<Address, Long> {
-
-    @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto(" +
-            "a.addressId, a.direction, a.user.id) " +
+    @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto(a)" +
             "FROM Address a")
     List<AddressResponseDto> findAllAddresses();
 
-    List<Address> findByUser_Id(Long userId);
+    AddressResponseDto findAddressById(Long id);
+
+    List<AddressResponseDto> findByUser_Id(Long userId);
 }

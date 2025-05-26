@@ -1,4 +1,4 @@
-package com.artemisia_corp.artemisia.entity.dto.users;
+package com.artemisia_corp.artemisia.entity.dto.user;
 
 import lombok.*;
 

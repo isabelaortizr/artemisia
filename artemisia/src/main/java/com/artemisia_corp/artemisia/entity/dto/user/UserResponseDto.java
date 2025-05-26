@@ -1,6 +1,6 @@
-package com.artemisia_corp.artemisia.entity.dto.users;
+package com.artemisia_corp.artemisia.entity.dto.user;
 
-import com.artemisia_corp.artemisia.entity.Users;
+import com.artemisia_corp.artemisia.entity.User;
 import lombok.*;
 
 @AllArgsConstructor
@@ -14,7 +14,7 @@ public class UserResponseDto {
     private String mail;
     private String role;
 
-    public UserResponseDto(Users user) {
+    public UserResponseDto(User user) {
         this.id = user.getId();
         this.name = user.getName();
         this.mail = user.getMail();

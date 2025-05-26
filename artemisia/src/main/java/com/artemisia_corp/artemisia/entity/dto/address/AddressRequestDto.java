@@ -9,5 +9,5 @@ import lombok.*;
 @Setter
 public class AddressRequestDto {
     private String direction;
-    private long user_id;
+    private Long userId;
 }

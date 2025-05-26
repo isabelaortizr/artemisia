@@ -24,7 +24,7 @@ public class NotaVenta {
     @Comment("Usuario que esta realizando la compra")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users buyer;
+    private User buyer;
 
     @Comment("Direccion a la cual se debe enviar el producto")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,5 +43,4 @@ public class NotaVenta {
     @Comment("Fecha en la que se creo la compra")
     @Column(nullable = false)
     private LocalDateTime date;
-
 }

@@ -1,46 +1,61 @@
 package com.artemisia_corp.artemisia.controller;
 
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaRequestDto;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
+import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notas_venta")
+@RequestMapping("/api/notas-venta")
 @RequiredArgsConstructor
 public class NotaVentaController {
-    @Autowired
-    private NotaVentaService notaVentaService;
 
-    @GetMapping("/with_customer")
-    public ResponseEntity<List<NotaVentaResponseWCustomerDto>> getAllNotasVentaWithCustomer() {
-        return ResponseEntity.ok(notaVentaService.listWithBuyer());
-    }
+    private final NotaVentaService notaVentaService;
 
     @GetMapping
     public ResponseEntity<List<NotaVentaResponseDto>> getAllNotasVenta() {
-        return ResponseEntity.ok(notaVentaService.listAll());
+        return ResponseEntity.ok(notaVentaService.getAllNotasVenta());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<NotaVentaResponseDto> getNotaVentaById(@PathVariable Long id) {
+        return ResponseEntity.ok(notaVentaService.getNotaVentaById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Void> createNotaVenta(@RequestBody NotaVentaRequestDto notaVentaDto) {
-        notaVentaService.save(notaVentaDto);
+    public ResponseEntity<NotaVentaResponseDto> createNotaVenta(@RequestBody NotaVentaRequestDto notaVentaDto) {
+        NotaVentaResponseDto response = notaVentaService.createNotaVenta(notaVentaDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<NotaVentaResponseDto> updateNotaVenta(
+            @PathVariable Long id,
+            @RequestBody NotaVentaRequestDto notaVentaDto) {
+        return ResponseEntity.ok(notaVentaService.updateNotaVenta(id, notaVentaDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotaVenta(@PathVariable Long id) {
+        notaVentaService.deleteNotaVenta(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<Void> completeNotaVenta(@PathVariable Long id) {
+        notaVentaService.completeNotaVenta(id);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping
-    public ResponseEntity<Void> updateNotaVenta(@RequestBody NotaVentaUpdateDto notaVentaDto) {
-        notaVentaService.update(notaVentaDto);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("")
-    public ResponseEntity<Void> deleteNotaVenta(@RequestBody Long id) {
-        notaVentaService.delete(new NotaVentaDeleteDto(id));
-        return ResponseEntity.ok().build();
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<List<NotaVentaResponseDto>> getNotasVentaByEstado(
+            @PathVariable VentaEstado estado) {
+        return ResponseEntity.ok(notaVentaService.getNotasVentaByEstado(estado));
     }
 }

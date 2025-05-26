@@ -1,44 +1,49 @@
 package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.Address;
-import com.artemisia_corp.artemisia.entity.Users;
-import com.artemisia_corp.artemisia.entity.dto.address.*;
+import com.artemisia_corp.artemisia.entity.User;
+import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
+import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
 import com.artemisia_corp.artemisia.repository.AddressRepository;
-import com.artemisia_corp.artemisia.repository.UsersRepository;
+import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.service.LogsService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AddressServiceImpl implements AddressService {
-
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private UsersRepository usersRepository;
-    @Autowired
-    private LogsService logsService;
+    private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
+    private final LogsService logsService;
 
     @Override
-    @Transactional(readOnly = true)
-    public List<AddressResponseDto> listAll() {
+    public List<AddressResponseDto> getAllAddresses() {
+        logsService.info("Fetching all addresses");
         return addressRepository.findAllAddresses();
     }
 
     @Override
-    @Transactional
-    public void save(AddressRequestDto addressDto) {
-        Users user = usersRepository.findById(addressDto.getUser_id())
+    public AddressResponseDto getAddressById(Long id) {
+        logsService.info("Fetching address with ID: " + id);
+        Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
-                    logsService.info("User not found with Id:" + addressDto.getUser_id());
-                    log.warn("User not found with Id:" + addressDto.getUser_id());
-                    return new RuntimeException("User not found");
+                    logsService.error("Address not found with ID: " + id);
+                    throw new RuntimeException("Address not found");
+                });
+        return convertToDto(address);
+    }
+
+    @Override
+    public AddressResponseDto createAddress(AddressRequestDto addressDto) {
+        User user = userRepository.findById(addressDto.getUserId())
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + addressDto.getUserId());
+                    throw new RuntimeException("User not found");
                 });
 
         Address address = Address.builder()
@@ -46,35 +51,54 @@ public class AddressServiceImpl implements AddressService {
                 .user(user)
                 .build();
 
-        addressRepository.save(address);
+        Address savedAddress = addressRepository.save(address);
+        logsService.info("Address created with ID: " + savedAddress.getAddressId());
+        return convertToDto(savedAddress);
     }
 
     @Override
-    @Transactional
-    public void delete(AddressDeleteDto addressDto) {
-        if (!addressRepository.existsById(addressDto.getAddressId())) return;
+    public AddressResponseDto updateAddress(Long id, AddressRequestDto addressDto) {
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("Address not found with ID: " + id);
+                    throw new RuntimeException("Address not found");
+                });
 
-        addressRepository.deleteById(addressDto.getAddressId());
+        User user = userRepository.findById(addressDto.getUserId())
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + addressDto.getUserId());
+                    throw new RuntimeException("User not found");
+                });
+
+        address.setDirection(addressDto.getDirection());
+        address.setUser(user);
+
+        Address updatedAddress = addressRepository.save(address);
+        logsService.info("Address updated with ID: " + updatedAddress.getAddressId());
+        return convertToDto(updatedAddress);
     }
 
     @Override
-    @Transactional
-    public void update(AddressUpdateDto addressDto) {
-        Address address = addressRepository.findById(addressDto.getAddressId())
-                .orElse(null);
-
-        // Actualizar dirección
-        if (addressDto.getDirection() != null && !addressDto.getDirection().isBlank()) {
-            address.setDirection(addressDto.getDirection());
+    public void deleteAddress(Long id) {
+        if (!addressRepository.existsById(id)) {
+            logsService.error("Address not found with ID: " + id);
+            throw new RuntimeException("Address not found");
         }
+        addressRepository.deleteById(id);
+        logsService.info("Address deleted with ID: " + id);
+    }
 
-        // Actualizar usuario si es necesario
-        if (addressDto.getUser_id() != null) {
-            Users user = usersRepository.findById(addressDto.getUser_id())
-                    .orElse(null);
-            address.setUser(user);
-        }
+    @Override
+    public List<AddressResponseDto> getAddressesByUser(Long userId) {
+        logsService.info("Fetching addresses for user ID: " + userId);
+        return addressRepository.findByUser_Id(userId);
+    }
 
-        addressRepository.save(address);
+    private AddressResponseDto convertToDto(Address address) {
+        return AddressResponseDto.builder()
+                .addressId(address.getAddressId())
+                .direction(address.getDirection())
+                .userId(address.getUser().getId())
+                .build();
     }
 }

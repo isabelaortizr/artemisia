@@ -11,7 +11,7 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Entity
 @Table(name = "detail")
-public class Detail {
+public class OrderDetail {
     @Comment("Identificador del detalle")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DETAIL_ID_GENERATOR")
@@ -31,7 +31,7 @@ public class Detail {
     @Comment("Usuario al que le estan comprando")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
-    private Users seller;
+    private User seller;
 
     @Comment("Nombre actual del producto que se esta comprando")
     @Column(name = "product_name", length = 250, nullable = false)
@@ -44,5 +44,4 @@ public class Detail {
     @Comment("Total pagado por el producto")
     @Column(nullable = false)
     private Double total;
-
 }

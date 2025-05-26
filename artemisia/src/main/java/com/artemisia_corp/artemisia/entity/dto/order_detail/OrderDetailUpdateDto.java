@@ -1,4 +1,4 @@
-package com.artemisia_corp.artemisia.entity.dto.datail;
+package com.artemisia_corp.artemisia.entity.dto.order_detail;
 
 import lombok.*;
 
@@ -7,10 +7,12 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class SimpleDetailDto {
+public class OrderDetailUpdateDto {
     private Long id;
+    private Long groupId;
+    private Long productId;
+    private Long sellerId;
     private String productName;
     private Integer quantity;
     private Double total;
-    private Long notaVentaId;
 }

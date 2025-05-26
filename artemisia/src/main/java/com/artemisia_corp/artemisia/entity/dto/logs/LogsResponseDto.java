@@ -14,12 +14,12 @@ public class LogsResponseDto {
     private Long id;
     private String level;
     private String message;
-    private Date timestamp;
+    private Date date;
 
     public LogsResponseDto(Logs logs) {
         this.id = logs.getId();
         this.level = logs.getLevel();
         this.message = logs.getMessage();
-        this.timestamp = logs.getDate();
+        this.date = logs.getDate();
     }
 }

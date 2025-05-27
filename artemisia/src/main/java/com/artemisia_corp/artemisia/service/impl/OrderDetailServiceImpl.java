@@ -6,19 +6,24 @@ import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
-    private final OrderDetailRepository orderDetailRepository;
-    private final NotaVentaRepository notaVentaRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
-    private final LogsService logsService;
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+    @Autowired
+    private NotaVentaRepository notaVentaRepository;
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private LogsService logsService;
 
     @Override
     public List<OrderDetailResponseDto> getAllOrderDetails() {
@@ -38,18 +43,27 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
     @Override
-    public OrderDetailResponseDto createOrderDetail(OrderDetailRequestDto orderDetailDto) {
-        NotaVenta notaVenta = notaVentaRepository.findById(orderDetailDto.getGroupId())
-                .orElseThrow(() -> {
-                    logsService.error("Sale note not found with ID: " + orderDetailDto.getGroupId());
-                    throw new RuntimeException("Sale note not found");
-                });
+    public OrderDetailResponseDto createOrderDetail(OrderDetailRequestDto orderDetailDto,
+                                                    NotaVenta notaVentaParam,
+                                                    Product productParam) {
 
-        Product product = productRepository.findById(orderDetailDto.getProductId())
-                .orElseThrow(() -> {
-                    logsService.error("Product not found with ID: " + orderDetailDto.getProductId());
-                    throw new RuntimeException("Product not found");
-                });
+        NotaVenta notaVenta = notaVentaParam;
+        if (notaVenta == null && orderDetailDto.getGroupId() != null) {
+            notaVenta = notaVentaRepository.findById(orderDetailDto.getGroupId())
+                    .orElseThrow(() -> {
+                        logsService.error("Sale note not found with ID: " + orderDetailDto.getGroupId());
+                        throw new RuntimeException("Sale note not found");
+                    });
+        }
+
+        Product product = productParam;
+        if (product == null && orderDetailDto.getProductId() != null) {
+            product = productRepository.findById(orderDetailDto.getProductId())
+                    .orElseThrow(() -> {
+                        logsService.error("Product not found with ID: " + orderDetailDto.getProductId());
+                        throw new RuntimeException("Product not found");
+                    });
+        }
 
         User seller = userRepository.findById(orderDetailDto.getSellerId())
                 .orElseThrow(() -> {
@@ -66,9 +80,28 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .total(orderDetailDto.getTotal())
                 .build();
 
+        if (orderDetail.getQuantity() <= 0) {
+            logsService.error("Quantity must be greater than 0");
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
+
+        if (orderDetail.getTotal() == null || orderDetail.getTotal() <= 0) {
+            logsService.error("Total must be a positive value");
+            throw new IllegalArgumentException("Total must be a positive value");
+        }
+
         OrderDetail savedOrderDetail = orderDetailRepository.save(orderDetail);
-        logsService.info("Order detail created with ID: " + savedOrderDetail.getId());
-        return convertToDto(savedOrderDetail);
+        logsService.info("OrderDetail created successfully with ID: " + savedOrderDetail.getId());
+
+        return OrderDetailResponseDto.builder()
+                .id(savedOrderDetail.getId())
+                .groupId(notaVenta.getId())
+                .productId(product.getProductId())
+                .sellerId(seller.getId())
+                .productName(savedOrderDetail.getProductName())
+                .quantity(savedOrderDetail.getQuantity())
+                .total(savedOrderDetail.getTotal())
+                .build();
     }
 
     @Override

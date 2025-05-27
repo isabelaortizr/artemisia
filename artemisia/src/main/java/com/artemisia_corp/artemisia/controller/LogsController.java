@@ -3,17 +3,19 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.logs.LogsResponseDto;
 import com.artemisia_corp.artemisia.service.LogsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/api/logs")
-@RequiredArgsConstructor
 public class LogsController {
 
-    private final LogsService logsService;
+    @Autowired
+    private LogsService logsService;
 
     @GetMapping
     public ResponseEntity<List<LogsResponseDto>> getAllLogs() {

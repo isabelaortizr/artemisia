@@ -36,52 +36,29 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                 .authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry ->
                                 authorizationManagerRequestMatcherRegistry
-                                        // Rutas públicas (sin autenticación)
-                                        .requestMatchers("/api/auth/**").permitAll()
-                                        .requestMatchers("/swagger-ui/**").permitAll()
-                                        .requestMatchers("/v3/api-docs/**").permitAll()
-
                                         // Rutas de productos
-                                        .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/products").permitAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/products/**").permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").permitAll()
+                                        .requestMatchers("/api/products").permitAll()
+                                        .requestMatchers("/api/products/**").permitAll()
 
                                         // Rutas de usuarios
-                                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/users/**").permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/users/**").permitAll()
+                                        .requestMatchers("/api/users").permitAll()
+                                        .requestMatchers("/api/users/**").permitAll()
 
                                         // Rutas de direcciones
-                                        .requestMatchers(HttpMethod.GET, "/api/addresses").permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/addresses/**").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/addresses").permitAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/addresses/**").permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/addresses/**").permitAll()
+                                        .requestMatchers("/api/addresses").permitAll()
+                                        .requestMatchers("/api/addresses/**").permitAll()
 
                                         // Rutas de notas de venta
-                                        .requestMatchers(HttpMethod.GET, "/api/notas-venta").permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/notas-venta/**").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/notas-venta").permitAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/notas-venta/**").permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/notas-venta/**").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/notas-venta/**/complete").permitAll()
+                                        .requestMatchers("/api/notas-venta").permitAll()
+                                        .requestMatchers("/api/notas-venta/**").permitAll()
 
                                         // Rutas de detalles de orden
-                                        .requestMatchers(HttpMethod.GET, "/api/order-details").permitAll()
-                                        .requestMatchers(HttpMethod.GET, "/api/order-details/**").permitAll()
-                                        .requestMatchers(HttpMethod.POST, "/api/order-details").permitAll()
-                                        .requestMatchers(HttpMethod.PUT, "/api/order-details/**").permitAll()
-                                        .requestMatchers(HttpMethod.DELETE, "/api/order-details/**").permitAll()
+                                        .requestMatchers("/api/order-details").permitAll()
+                                        .requestMatchers("/api/order-details/**").permitAll()
 
                                         // Rutas de logs (solo administradores)
+                                        .requestMatchers("/api/logs").permitAll()
                                         .requestMatchers("/api/logs/**").permitAll()
-
-                                        // Cualquier otra solicitud requiere autenticación
-                                        .anyRequest().permitAll()
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -102,11 +79,6 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
     private CorsConfigurationSource apiConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

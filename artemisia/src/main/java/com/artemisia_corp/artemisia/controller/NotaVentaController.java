@@ -5,18 +5,20 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/api/notas-venta")
-@RequiredArgsConstructor
 public class NotaVentaController {
 
-    private final NotaVentaService notaVentaService;
+    @Autowired
+    private NotaVentaService notaVentaService;
 
     @GetMapping
     public ResponseEntity<List<NotaVentaResponseDto>> getAllNotasVenta() {
@@ -47,7 +49,7 @@ public class NotaVentaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/complete")
+    @PutMapping("/{id}/complete")
     public ResponseEntity<Void> completeNotaVenta(@PathVariable Long id) {
         notaVentaService.completeNotaVenta(id);
         return ResponseEntity.ok().build();

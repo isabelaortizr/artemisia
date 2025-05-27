@@ -4,6 +4,10 @@ import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
+import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
+import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
+import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.LogsService;
@@ -11,22 +15,30 @@ import com.artemisia_corp.artemisia.service.NotaVentaService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import com.artemisia_corp.artemisia.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class NotaVentaServiceImpl implements NotaVentaService {
-    private final NotaVentaRepository notaVentaRepository;
-    private final UserRepository userRepository;
-    private final AddressRepository addressRepository;
-    private final OrderDetailService orderDetailService;
-    private final ProductService productService;
-    private final LogsService logsService;
+    @Autowired
+    private NotaVentaRepository notaVentaRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private AddressRepository addressRepository;
+    @Autowired
+    private OrderDetailService orderDetailService;
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private LogsService logsService;
 
     @Override
     public List<NotaVentaResponseDto> getAllNotasVenta() {
@@ -64,20 +76,44 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .buyer(buyer)
                 .buyerAddress(address)
                 .estadoVenta(VentaEstado.valueOf(notaVentaDto.getEstadoVenta()))
-                .totalGlobal(notaVentaDto.getTotalGlobal())
                 .date(notaVentaDto.getDate() != null ? notaVentaDto.getDate() : LocalDateTime.now())
                 .build();
+
+        double total = 0.0;
+        HashMap<Long, Product> products = new HashMap<>();
+        for (OrderDetailRequestDto detailDto : notaVentaDto.getDetalles()) {
+            ProductResponseDto p = productService.getProductById(detailDto.getProductId());
+            products.put(detailDto.getProductId(), convertToProduct(p.getProductId(), p));
+
+            detailDto.setTotal(detailDto.getQuantity() * p.getPrice());
+            total += detailDto.getTotal();
+        }
+        notaVenta.setTotalGlobal(total);
 
         NotaVenta savedNotaVenta = notaVentaRepository.save(notaVenta);
         logsService.info("Sale note created with ID: " + savedNotaVenta.getId());
 
-        // Save order details
         for (OrderDetailRequestDto detailDto : notaVentaDto.getDetalles()) {
             detailDto.setGroupId(savedNotaVenta.getId());
-            orderDetailService.createOrderDetail(detailDto);
+            orderDetailService.createOrderDetail(detailDto, savedNotaVenta, products.get(detailDto.getProductId()));
         }
-
         return convertToDtoWithDetails(savedNotaVenta);
+    }
+
+    private Product convertToProduct(Long productId, ProductResponseDto preProduct) {
+        return Product.builder()
+                .productId(productId)
+                .name(preProduct.getName())
+                .technique(PaintingTechnique.valueOf(preProduct.getTechnique()))
+                .materials(preProduct.getMaterials())
+                .description(preProduct.getDescription())
+                .price(preProduct.getPrice())
+                .stock(preProduct.getStock())
+                .status(ProductStatus.valueOf(preProduct.getStatus()))
+                .image(preProduct.getImage())
+                .category(PaintingCategory.valueOf(preProduct.getCategory()))
+                .seller(userRepository.getReferenceById(preProduct.getSellerId()))
+                .build();
     }
 
     @Override
@@ -104,8 +140,18 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         notaVenta.setBuyer(buyer);
         notaVenta.setBuyerAddress(address);
         notaVenta.setEstadoVenta(VentaEstado.valueOf(notaVentaDto.getEstadoVenta()));
-        notaVenta.setTotalGlobal(notaVentaDto.getTotalGlobal());
         notaVenta.setDate(notaVentaDto.getDate());
+
+        double total = 0.0;
+        HashMap<Long, Product> products = new HashMap<>();
+        for (OrderDetailRequestDto detailDto : notaVentaDto.getDetalles()) {
+            ProductResponseDto p = productService.getProductById(detailDto.getProductId());
+            products.put(detailDto.getProductId(), convertToProduct(p.getProductId(), p));
+
+            detailDto.setTotal(detailDto.getQuantity() * p.getPrice());
+            total += detailDto.getTotal();
+        }
+        notaVenta.setTotalGlobal(total);
 
         NotaVenta updatedNotaVenta = notaVentaRepository.save(notaVenta);
         logsService.info("Sale note updated with ID: " + updatedNotaVenta.getId());
@@ -134,7 +180,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 detailDto.setGroupId(id);
                 orderDetailService.updateOrderDetail(existingDetail.getId(), detailDto);
             } else {
-                orderDetailService.createOrderDetail(detailDto);
+                orderDetailService.createOrderDetail(detailDto, updatedNotaVenta, products.get(detailDto.getProductId()));
             }
         }
 

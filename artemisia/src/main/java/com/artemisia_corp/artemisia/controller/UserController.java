@@ -3,7 +3,6 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.user.UserRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.user.UserResponseDto;
 import com.artemisia_corp.artemisia.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

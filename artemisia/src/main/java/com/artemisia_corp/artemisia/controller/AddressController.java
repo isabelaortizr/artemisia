@@ -3,7 +3,6 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
 import com.artemisia_corp.artemisia.service.AddressService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@RequestMapping("/api/addresses")
+    @RequestMapping("/api/addresses")
 public class AddressController {
 
     @Autowired

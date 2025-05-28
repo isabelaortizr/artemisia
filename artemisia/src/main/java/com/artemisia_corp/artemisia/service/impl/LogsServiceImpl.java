@@ -5,6 +5,7 @@ import com.artemisia_corp.artemisia.entity.dto.logs.LogsResponseDto;
 import com.artemisia_corp.artemisia.repository.LogerRespository;
 import com.artemisia_corp.artemisia.service.LogsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class LogsServiceImpl implements LogsService {
     }
 
     @Override
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void info(String message) {
         Logs logs = Logs.builder()
@@ -34,6 +36,7 @@ public class LogsServiceImpl implements LogsService {
     }
 
     @Override
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void warning(String message) {
         Logs logs = Logs.builder()
@@ -45,6 +48,7 @@ public class LogsServiceImpl implements LogsService {
     }
 
     @Override
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void error(String message) {
         Logs logs = Logs.builder()

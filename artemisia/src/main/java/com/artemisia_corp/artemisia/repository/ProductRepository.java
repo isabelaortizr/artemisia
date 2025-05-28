@@ -20,6 +20,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "FROM Product p WHERE p.stock > 0 AND p.status = 'AVAILABLE'")
     List<ProductResponseDto> findAllAvailableProducts();
 
+    @Query("SELECT p FROM Product p WHERE p.seller = :sellerId")
+    List<Product> findProduct(@Param("sellerId") Long sellerId);
+
     @Modifying
     @Query("UPDATE Product p SET p.stock = p.stock - :quantity WHERE p.productId = :productId")
     void reduceStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);

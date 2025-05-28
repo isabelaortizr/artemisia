@@ -14,13 +14,11 @@ import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import com.artemisia_corp.artemisia.service.ProductService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -140,7 +138,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         notaVenta.setBuyer(buyer);
         notaVenta.setBuyerAddress(address);
         notaVenta.setEstadoVenta(VentaEstado.valueOf(notaVentaDto.getEstadoVenta()));
-        notaVenta.setDate(notaVentaDto.getDate());
+        notaVenta.setDate(notaVentaDto.getDate() != null ? notaVentaDto.getDate() : LocalDateTime.now());
 
         double total = 0.0;
         HashMap<Long, Product> products = new HashMap<>();
@@ -156,10 +154,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         NotaVenta updatedNotaVenta = notaVentaRepository.save(notaVenta);
         logsService.info("Sale note updated with ID: " + updatedNotaVenta.getId());
 
-        // Update order details
         List<OrderDetailResponseDto> existingDetails = orderDetailService.getOrderDetailsByNotaVenta(id);
 
-        // Delete removed details
         for (OrderDetailResponseDto existingDetail : existingDetails) {
             boolean found = notaVentaDto.getDetalles().stream()
                     .anyMatch(d -> d.getProductId().equals(existingDetail.getProductId()));
@@ -168,7 +164,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             }
         }
 
-        // Add or update details
         for (OrderDetailRequestDto detailDto : notaVentaDto.getDetalles()) {
             detailDto.setGroupId(id);
             OrderDetailResponseDto existingDetail = existingDetails.stream()

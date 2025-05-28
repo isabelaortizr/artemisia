@@ -58,7 +58,6 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
                                         // Rutas de logs (solo administradores)
                                         .requestMatchers("/api/logs").permitAll()
-                                        .requestMatchers("/api/logs/**").permitAll()
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

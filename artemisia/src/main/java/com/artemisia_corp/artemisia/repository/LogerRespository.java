@@ -11,6 +11,5 @@ public interface LogerRespository extends JpaRepository<Logs, Long> {
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.logs.LogsResponseDto(" +
             "l.id, l.level, l.message, l.date) " +
             "FROM Logs l")
-
     List<LogsResponseDto> findAllLogs();
 }

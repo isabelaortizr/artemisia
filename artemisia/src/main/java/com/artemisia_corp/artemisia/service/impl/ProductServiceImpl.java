@@ -116,23 +116,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void reduceStock(Long productId, Integer quantity) {
+    public void manageStock(Long productId, Integer quantity, boolean reduceStock) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + productId);
                     throw new RuntimeException("Product not found");
                 });
 
-        if (product.getStock() < quantity) {
+        if (product.getStock() < quantity ||
+                product.getStock() - quantity < 0) {
             logsService.error("Insufficient stock for product ID: " + productId);
             throw new RuntimeException("Insufficient stock");
         }
 
-        productRepository.reduceStock(productId, quantity);
-        logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+        if (reduceStock) {
+            productRepository.reduceStock(productId, quantity);
+            logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+        } else if (!reduceStock) {
+            productRepository.augmentStock(productId, quantity);
+            logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+        }
 
-        // Update product status if stock reaches zero
-        if (product.getStock() - quantity <= 0) {
+        if (product.getStock() - quantity == 0) {
             product.setStatus(ProductStatus.UNAVAILABLE);
             productRepository.save(product);
             logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);

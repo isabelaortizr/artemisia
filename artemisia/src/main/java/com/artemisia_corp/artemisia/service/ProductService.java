@@ -11,7 +11,7 @@ public interface ProductService {
     ProductResponseDto createProduct(ProductRequestDto productDto);
     ProductResponseDto updateProduct(Long id, ProductRequestDto productDto);
     void deleteProduct(Long id);
-    void reduceStock(Long productId, Integer quantity);
+    void manageStock(Long productId, Integer quantity, boolean reduceStock);
     List<ProductResponseDto> getAvailableProducts();
     List<ProductResponseDto> getProductsBySeller(Long sellerId);
 }

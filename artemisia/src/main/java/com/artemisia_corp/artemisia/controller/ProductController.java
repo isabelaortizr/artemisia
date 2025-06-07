@@ -60,7 +60,7 @@ public class ProductController {
     public ResponseEntity<Void> reduceStock(
             @PathVariable Long productId,
             @RequestParam Integer quantity) {
-        productService.reduceStock(productId, quantity);
+        productService.manageStock(productId, quantity, true);
         return ResponseEntity.ok().build();
     }
 }

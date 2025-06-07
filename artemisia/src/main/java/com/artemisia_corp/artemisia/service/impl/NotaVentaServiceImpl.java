@@ -83,6 +83,10 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             ProductResponseDto p = productService.getProductById(detailDto.getProductId());
             products.put(detailDto.getProductId(), convertToProduct(p.getProductId(), p));
 
+            productService.manageStock(p.getProductId(), detailDto.getQuantity(), true);
+            logsService.info("Reduced stock for product ID: " + detailDto.getProductId() +
+                    " by quantity: " + detailDto.getQuantity());
+
             detailDto.setTotal(detailDto.getQuantity() * p.getPrice());
             total += detailDto.getTotal();
         }
@@ -213,12 +217,24 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             return;
         }
 
-        List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(id);
+        notaVenta.setEstadoVenta(VentaEstado.PAYED);
+        notaVentaRepository.save(notaVenta);
+        logsService.info("Sale note completed with ID: " + id);
+    }
 
-        // Reduce stock for each product
+    @Override
+    @Transactional
+    public void cancelarNotaVenta(Long id) {
+        NotaVenta notaVenta = notaVentaRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("Sale note not found with ID: " + id);
+                    throw new RuntimeException("Sale note not found");
+                });
+
+        List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(id);
         for (OrderDetailResponseDto detalle : detalles) {
-            productService.reduceStock(detalle.getProductId(), detalle.getQuantity());
-            logsService.info("Reduced stock for product ID: " + detalle.getProductId() +
+            productService.manageStock(detalle.getProductId(), detalle.getQuantity(), false);
+            logsService.info("Augmented stock for product ID: " + detalle.getProductId() +
                     " by quantity: " + detalle.getQuantity());
         }
 

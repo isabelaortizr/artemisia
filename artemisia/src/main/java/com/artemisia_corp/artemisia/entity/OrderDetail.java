@@ -3,6 +3,8 @@ package com.artemisia_corp.artemisia.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,6 +22,7 @@ public class OrderDetail {
 
     @Comment("Agrupamiento de una compra bajo un mismo id para consegir el usuario de compra y venta, estado y fecha")
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "group_id", nullable = false)
     private NotaVenta group;
 

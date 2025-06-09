@@ -1,9 +1,10 @@
-package com.upb.modulo_01.controller;
+package com.artemisia_corp.artemisia.controller;
 
-import com.upb.modulo_01.entity.MyUser;
-import com.upb.modulo_01.entity.dto.AuthenticationDto;
-import com.upb.modulo_01.entity.dto.OKAuthDto;
-import com.upb.modulo_01.service.UserService;
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
+import com.artemisia_corp.artemisia.entity.User;
+import com.artemisia_corp.artemisia.entity.dto.security.AuthenticationDto;
+import com.artemisia_corp.artemisia.entity.dto.security.OKAuthDto;
+import com.artemisia_corp.artemisia.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,10 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -25,18 +23,18 @@ import static org.springframework.http.ResponseEntity.ok;
 @Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
-    private final com.upb.modulo_01.config.JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/token")
     public ResponseEntity<OKAuthDto> token(@RequestBody AuthenticationDto data) {
         String username = data.getUsername();
-        MyUser user;
+        User user;
         try {
-            Optional<MyUser> userOptional = userService.findByUsername(data.getUsername());
+            Optional<User> userOptional = userService.getUserByName(data.getUsername());
             if (userOptional.isEmpty()) {
                 throw new BadCredentialsException("Email o contraseña son incorrectos");
             }

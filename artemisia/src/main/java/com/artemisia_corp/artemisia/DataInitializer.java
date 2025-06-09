@@ -1,9 +1,9 @@
-package com.upb.modulo_01;
+package com.artemisia_corp.artemisia;
 
-import com.upb.modulo_01.entity.MyUser;
-import com.upb.modulo_01.entity.enums.RoleType;
-import com.upb.modulo_01.entity.enums.StateEntity;
-import com.upb.modulo_01.repository.UserRepository;
+import com.artemisia_corp.artemisia.entity.User;
+import com.artemisia_corp.artemisia.entity.enums.StateEntity;
+import com.artemisia_corp.artemisia.entity.enums.UserRole;
+import com.artemisia_corp.artemisia.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -24,12 +24,10 @@ public class DataInitializer implements CommandLineRunner {
 
     private void init() {
         if (repository.count() == 0) {
-            MyUser root = repository.save(MyUser.builder()
-                    .username("root")
+            User root = repository.save(User.builder()
                     .name("root")
-                    .lastName("Root")
-                    .documentNumber("777777")
-                    .role(RoleType.ROLE_ADMIN)
+                    .mail("")
+                    .role(UserRole.ADMIN)
                     .status(StateEntity.ACTIVE)
                     .password(passwordEncoder.encode("Abc123**"))
                     .build());

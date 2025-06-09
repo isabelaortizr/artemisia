@@ -1,4 +1,4 @@
-package com.upb.modulo_01.config;
+package com.artemisia_corp.artemisia.config;
 
 import io.jsonwebtoken.SignatureAlgorithm;
 

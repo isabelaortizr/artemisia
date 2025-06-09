@@ -2,9 +2,11 @@ package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.*;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
+import com.artemisia_corp.artemisia.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private UserRepository userRepository;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    private ProductService productService;
 
     @Override
     public List<OrderDetailResponseDto> getAllOrderDetails() {
@@ -138,6 +142,30 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail updatedOrderDetail = orderDetailRepository.save(orderDetail);
         logsService.info("Order detail updated with ID: " + updatedOrderDetail.getId());
         return convertToDto(updatedOrderDetail);
+    }
+
+    @Override
+    public void updateQuantityOrderDetail(UpdateQuantityDetailDto updateDetailDto) {
+        long id = updateDetailDto.getOrderDetailId();
+        OrderDetail orderDetail = orderDetailRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("Order detail not found with ID: " + id);
+                    throw new RuntimeException("Order detail not found");
+                });
+
+        productRepository.findById(updateDetailDto.getProductId())
+                .orElseThrow(() -> {
+                    logsService.error("Product not found with ID: " + updateDetailDto.getProductId());
+                    throw new RuntimeException("Product not found");
+                });
+
+        orderDetail.setQuantity(updateDetailDto.getQuantity());
+
+        productService.manageStock(new ManageProductDto(updateDetailDto.getProductId(),
+                updateDetailDto.getQuantity()));
+
+        OrderDetail updatedOrderDetail = orderDetailRepository.save(orderDetail);
+        logsService.info("Order detail updated with ID: " + updatedOrderDetail.getId());
     }
 
     @Override

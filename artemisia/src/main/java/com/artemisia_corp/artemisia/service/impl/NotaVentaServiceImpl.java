@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
 import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
@@ -83,7 +84,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             ProductResponseDto p = productService.getProductById(detailDto.getProductId());
             products.put(detailDto.getProductId(), convertToProduct(p.getProductId(), p));
 
-            productService.manageStock(p.getProductId(), detailDto.getQuantity(), true);
+            productService.manageStock(new ManageProductDto(p.getProductId(),
+                    detailDto.getQuantity(),
+                    false));
             logsService.info("Reduced stock for product ID: " + detailDto.getProductId() +
                     " by quantity: " + detailDto.getQuantity());
 
@@ -100,22 +103,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             orderDetailService.createOrderDetail(detailDto, savedNotaVenta, products.get(detailDto.getProductId()));
         }
         return convertToDtoWithDetails(savedNotaVenta);
-    }
-
-    private Product convertToProduct(Long productId, ProductResponseDto preProduct) {
-        return Product.builder()
-                .productId(productId)
-                .name(preProduct.getName())
-                .technique(PaintingTechnique.valueOf(preProduct.getTechnique()))
-                .materials(preProduct.getMaterials())
-                .description(preProduct.getDescription())
-                .price(preProduct.getPrice())
-                .stock(preProduct.getStock())
-                .status(ProductStatus.valueOf(preProduct.getStatus()))
-                .image(preProduct.getImage())
-                .category(PaintingCategory.valueOf(preProduct.getCategory()))
-                .seller(userRepository.getReferenceById(preProduct.getSellerId()))
-                .build();
     }
 
     @Override
@@ -233,7 +220,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(id);
         for (OrderDetailResponseDto detalle : detalles) {
-            productService.manageStock(detalle.getProductId(), detalle.getQuantity(), false);
+            productService.manageStock(new ManageProductDto(detalle.getProductId(),
+                    detalle.getQuantity(),
+                    false));
             logsService.info("Augmented stock for product ID: " + detalle.getProductId() +
                     " by quantity: " + detalle.getQuantity());
         }
@@ -251,6 +240,11 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<NotaVentaResponseDto> getCompletedSalesByUser(Long userId) {
+        return notaVentaRepository.findAllNotaVentasByBuyer_Id(userId);
+    }
+
     private NotaVentaResponseDto convertToDtoWithDetails(NotaVenta notaVenta) {
         List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(notaVenta.getId());
 
@@ -262,6 +256,22 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .totalGlobal(notaVenta.getTotalGlobal())
                 .date(notaVenta.getDate())
                 .detalles(detalles)
+                .build();
+    }
+
+    private Product convertToProduct(Long productId, ProductResponseDto preProduct) {
+        return Product.builder()
+                .productId(productId)
+                .name(preProduct.getName())
+                .technique(PaintingTechnique.valueOf(preProduct.getTechnique()))
+                .materials(preProduct.getMaterials())
+                .description(preProduct.getDescription())
+                .price(preProduct.getPrice())
+                .stock(preProduct.getStock())
+                .status(ProductStatus.valueOf(preProduct.getStatus()))
+                .image(preProduct.getImage())
+                .category(PaintingCategory.valueOf(preProduct.getCategory()))
+                .seller(userRepository.getReferenceById(preProduct.getSellerId()))
                 .build();
     }
 }

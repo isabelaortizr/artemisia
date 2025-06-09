@@ -1,4 +1,4 @@
-package com.upb.modulo_01.entity.dto;
+package com.artemisia_corp.artemisia.entity.dto.security;
 
 import lombok.*;
 

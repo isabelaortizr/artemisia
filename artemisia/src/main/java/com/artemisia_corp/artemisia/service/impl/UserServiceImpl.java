@@ -1,7 +1,9 @@
 package com.artemisia_corp.artemisia.service.impl;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.user.*;
+import com.artemisia_corp.artemisia.entity.enums.StateEntity;
 import com.artemisia_corp.artemisia.entity.enums.UserRole;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.LogsService;
@@ -11,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -20,11 +23,31 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @Override
     public List<UserResponseDto> getAllUsers() {
         logsService.info("Fetching all users");
         return userRepository.findAllUsers();
+    }
+
+    @Override
+    public UserResponseDto login(LoginDto loginDto) {
+        logsService.info("Logging in user for: " + loginDto.getName());
+        if (((loginDto.getName() != null && !loginDto.getName().isEmpty())
+                || (loginDto.getMail() != null && !loginDto.getMail().isEmpty()))
+                && (loginDto.getPassword() != null && !loginDto.getPassword().isEmpty())) {
+            logsService.info("Encripting passowrd");
+            String encriptedPassword = passwordEncoder.encode(loginDto.getPassword());
+
+
+            if (!loginDto.getName().isEmpty()) return userRepository.loginUser(loginDto.getName(), encriptedPassword);
+            else if (!loginDto.getMail().isEmpty()) return userRepository.loginUser(loginDto.getMail(), encriptedPassword);
+            else throw new RuntimeException("Invalid login credentials");
+        }
+
+        return null;
     }
 
     @Override
@@ -39,6 +62,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findByUserIdToValidateSession(Long id) {
+        return this.userRepository.findById(id);
+    }
+
+    @Override
     public UserResponseDto createUser(UserRequestDto userDto) {
         if (userRepository.existsByMail(userDto.getMail())) {
             logsService.error("Email already in use: " + userDto.getMail());
@@ -50,6 +78,7 @@ public class UserServiceImpl implements UserService {
                 .mail(userDto.getMail())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .role(UserRole.valueOf(userDto.getRole()))
+                .status(StateEntity.valueOf("ACTIVE"))
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -89,11 +118,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, String token) {
+        Long userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        if (!userIdFromToken.equals(id)) {
+            logsService.error("Unauthorized delete attempt by user ID: " + userIdFromToken);
+            throw new RuntimeException("Unauthorized delete attempt");
+        }
+
         if (!userRepository.existsById(id)) {
             logsService.error("User not found with ID: " + id);
             throw new RuntimeException("User not found");
         }
+
         userRepository.deleteById(id);
         logsService.info("User deleted with ID: " + id);
     }
@@ -110,7 +146,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto updateEmail(Long userId, UserUpdateEmailDto emailDto) {
+    public Optional<User> getUserByName(String name) {
+        logsService.info("Fetching user by name: " + name);
+        return userRepository.findByName(name);
+    }
+
+    @Override
+    public UserResponseDto updateEmail(UserUpdateEmailDto emailDto) {
+        Long userId = emailDto.getUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + userId);
@@ -134,7 +177,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto updatePassword(Long userId, UserUpdatePasswordDto passwordDto) {
+    public UserResponseDto updatePassword(UserUpdatePasswordDto passwordDto) {
+        Long userId = passwordDto.getUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + userId);
@@ -146,13 +190,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Invalid current password");
         }
 
-        // Verify new passwords match
         if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmNewPassword())) {
             logsService.error("New passwords don't match for user ID: " + userId);
             throw new RuntimeException("New passwords don't match");
         }
 
-        // Verify new password is different from current
         if (passwordEncoder.matches(passwordDto.getNewPassword(), user.getPassword())) {
             logsService.error("New password must be different from current for user ID: " + userId);
             throw new RuntimeException("New password must be different from current");

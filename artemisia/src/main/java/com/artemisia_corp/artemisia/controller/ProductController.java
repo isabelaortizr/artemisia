@@ -1,7 +1,9 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
 import com.artemisia_corp.artemisia.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,9 +60,23 @@ public class ProductController {
 
     @PutMapping("/{productId}/reduce-stock")
     public ResponseEntity<Void> reduceStock(
-            @PathVariable Long productId,
-            @RequestParam Integer quantity) {
-        productService.manageStock(productId, quantity, true);
+            @RequestBody ManageProductDto manageProductDto) {
+        productService.manageStock(manageProductDto);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestBody ProductSearchDto dto) {
+        return ResponseEntity.ok(productService.searchProducts(dto));
+    }
+
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<ProductResponseDto>> getByCategory(@PathVariable String category) {
+        return ResponseEntity.ok(productService.getByCategory(category));
+    }
+
+    @GetMapping("/technique/{technique}")
+    public ResponseEntity<List<ProductResponseDto>> getByTechnique(@PathVariable String technique) {
+        return ResponseEntity.ok(productService.getByTechnique(technique));
     }
 }

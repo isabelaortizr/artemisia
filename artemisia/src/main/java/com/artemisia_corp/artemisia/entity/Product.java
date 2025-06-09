@@ -14,7 +14,7 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Entity
 @Table(name = "product")
-public class Product {
+public class Product extends AuditableEntity {
     @Comment("Identificador del producto")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PRODUCT_ID_GENERATOR")

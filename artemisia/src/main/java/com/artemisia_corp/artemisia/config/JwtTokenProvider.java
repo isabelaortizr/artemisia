@@ -1,9 +1,9 @@
-package com.upb.modulo_01.config;
+package com.artemisia_corp.artemisia.config;
 
-import com.upb.modulo_01.entity.MyUser;
-import com.upb.modulo_01.exception.InvalidJwtAuthenticationException;
-import com.upb.modulo_01.exception.NotDataFoundException;
-import com.upb.modulo_01.service.UserService;
+import com.artemisia_corp.artemisia.entity.User;
+import com.artemisia_corp.artemisia.entity.exception.InvalidJwtAuthenticationException;
+import com.artemisia_corp.artemisia.entity.exception.NotDataFoundException;
+import com.artemisia_corp.artemisia.service.UserService;
 import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +24,7 @@ import java.util.Optional;
 @Component
 public class JwtTokenProvider implements Serializable {
     private static final String USER_ID_CLAIM = "user_id";
+    private static final String USER_ROLE_CLAIM = "user_role";
 
     @Value("${security.jwt.token.secret-key:Ch4ng1t}")
     private String secretKey;
@@ -39,7 +40,7 @@ public class JwtTokenProvider implements Serializable {
         secretKeyByte = Base64.getDecoder().decode(secretKey);
     }
 
-    public String createToken(MyUser user) {
+    public String createToken(User user) {
         Date now = new Date();
         Date validity = plusMinutes(now, this.validityInMinutes);
         Claims claims = Jwts.claims()
@@ -48,6 +49,7 @@ public class JwtTokenProvider implements Serializable {
                 .setIssuedAt(new Date())
                 .setExpiration(validity);
         claims.put(USER_ID_CLAIM, user.getId());
+        claims.put(USER_ROLE_CLAIM, user.getRole());
 
         String token = Jwts.builder()
                 .setClaims(claims)
@@ -56,6 +58,15 @@ public class JwtTokenProvider implements Serializable {
                 .compact();
 
         return token;
+    }
+
+    public Long getUserIdFromToken(String token) {
+        String jwt = token.replace("Bearer ", "");
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey) // debe ser tu clave secreta
+                .parseClaimsJws(jwt)
+                .getBody();
+        return Long.parseLong(claims.getSubject());
     }
 
     private String getUsername(String token) {
@@ -83,7 +94,7 @@ public class JwtTokenProvider implements Serializable {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             if (claims.getBody().getExpiration().after(new Date())) {
-                MyUser authUser = this.userService.findByUserIdToValidateSession(getId(token)).orElseThrow(() -> new UsernameNotFoundException("Autenticación incorrecta"));
+                User authUser = this.userService.findByUserIdToValidateSession(getId(token)).orElseThrow(() -> new UsernameNotFoundException("Autenticación incorrecta"));
                 return Optional.of(new UsernamePasswordAuthenticationToken(authUser, "", authUser.getAuthorities()));
             }
             return Optional.empty();

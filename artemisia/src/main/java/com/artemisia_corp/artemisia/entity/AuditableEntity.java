@@ -1,4 +1,4 @@
-package com.upb.modulo_01.entity;
+package com.artemisia_corp.artemisia.entity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;

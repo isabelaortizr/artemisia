@@ -1,4 +1,4 @@
-package com.upb.modulo_01.entity.dto;
+package com.artemisia_corp.artemisia.entity.dto.security;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -12,7 +12,7 @@ import lombok.*;
 public class OKAuthDto {
     @JsonProperty("id_token")
     private String idToken;
-    @JsonProperty("refresh_token")
+    @JsonProperty("username")
     private String username;
 
 }

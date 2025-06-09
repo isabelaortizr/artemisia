@@ -1,6 +1,6 @@
-package com.upb.modulo_01.config;
+package com.artemisia_corp.artemisia.config;
 
-import com.upb.modulo_01.entity.MyUser;
+import com.artemisia_corp.artemisia.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +32,7 @@ public class InjectConfiguration {
             if(authentication.getPrincipal()==null || authentication.getPrincipal() instanceof String) {
                 return Optional.of("ADMIN");
             }
-            MyUser user = (MyUser) authentication.getPrincipal();
+            User user = (User) authentication.getPrincipal();
             try {
                 return Optional.ofNullable(user.getUsername());
             } catch (Exception e) {

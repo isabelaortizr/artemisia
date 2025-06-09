@@ -18,11 +18,6 @@ public class AddressController {
     @Autowired
     private AddressService addressService;
 
-    @GetMapping
-    public ResponseEntity<List<AddressResponseDto>> getAllAddresses() {
-        return ResponseEntity.ok(addressService.getAllAddresses());
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<AddressResponseDto> getAddressById(@PathVariable Long id) {
         return ResponseEntity.ok(addressService.getAddressById(id));

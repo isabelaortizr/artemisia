@@ -13,7 +13,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Setter
 @Entity
 @Table(name = "detail")
-public class OrderDetail {
+public class OrderDetail extends AuditableEntity {
     @Comment("Identificador del detalle")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DETAIL_ID_GENERATOR")

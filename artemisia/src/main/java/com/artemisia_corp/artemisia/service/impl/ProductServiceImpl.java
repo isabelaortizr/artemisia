@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.*;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.*;
 import com.artemisia_corp.artemisia.entity.enums.*;
 import com.artemisia_corp.artemisia.repository.*;
@@ -20,6 +21,8 @@ public class ProductServiceImpl implements ProductService {
     private UserRepository userRepository;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
 
     @Override
     public List<ProductResponseDto> getAllProducts() {
@@ -116,8 +119,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void manageStock(Long productId, Integer quantity, boolean reduceStock) {
-        Product product = productRepository.findById(productId)
+    public void manageStock(ManageProductDto manageProductDto) {
+        Long productId = manageProductDto.getProductId();
+        int quantity = manageProductDto.getQuantity();
+        boolean reduceStock = manageProductDto.isReduceStock();
+
+        Product product = productRepository.findProductByProductId(productId)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + productId);
                     throw new RuntimeException("Product not found");
@@ -132,7 +139,7 @@ public class ProductServiceImpl implements ProductService {
         if (reduceStock) {
             productRepository.reduceStock(productId, quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
-        } else if (!reduceStock) {
+        } else {
             productRepository.augmentStock(productId, quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         }
@@ -189,5 +196,23 @@ public class ProductServiceImpl implements ProductService {
                 .category(product.getCategory().name())
                 .sellerId(product.getSeller().getId())
                 .build();
+    }
+
+    @Override
+    public List<ProductResponseDto> searchProducts(ProductSearchDto dto) {
+        logsService.info("Searching products with filters");
+        return productRepository.searchWithFilters(dto);
+    }
+
+    @Override
+    public List<ProductResponseDto> getByCategory(String category) {
+        logsService.info("Fetching products by category: " + category);
+        return productRepository.findByCategory(PaintingCategory.valueOf(category));
+    }
+
+    @Override
+    public List<ProductResponseDto> getByTechnique(String technique) {
+        logsService.info("Fetching products by technique: " + technique);
+        return productRepository.findByTechnique(PaintingTechnique.valueOf(technique));
     }
 }

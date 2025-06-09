@@ -1,5 +1,6 @@
-package com.upb.modulo_01.config;
+package com.artemisia_corp.artemisia.config;
 
+import com.artemisia_corp.artemisia.entity.exception.InvalidJwtAuthenticationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -39,6 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
                 filterChain.doFilter(servletRequest, servletResponse);
                 return;
             }
+            log.info("Token: {}", token);
             try {
                 Optional<Authentication> optionalAuthentication = jwtTokenProvider.validateToken(token);
                 if (optionalAuthentication.isPresent()) {
@@ -64,7 +66,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
             servletResponse.setContentType(MediaType.APPLICATION_JSON.getType());
             servletResponse.getWriter().write(new ObjectMapper().writeValueAsString(HttpStatus.UNAUTHORIZED));
             servletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-        } catch (com.upb.modulo_01.exception.InvalidJwtAuthenticationException e) {
+        } catch (InvalidJwtAuthenticationException e) {
             log.error("Exepción al validar el JWT", e);
             servletResponse.setContentType(MediaType.APPLICATION_JSON.getType());
             servletResponse.getWriter().write(new ObjectMapper().writeValueAsString(HttpStatus.UNAUTHORIZED));

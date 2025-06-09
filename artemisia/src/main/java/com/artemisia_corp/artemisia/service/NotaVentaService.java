@@ -15,4 +15,5 @@ public interface NotaVentaService {
     void completeNotaVenta(Long id);
     void cancelarNotaVenta(Long id);
     List<NotaVentaResponseDto> getNotasVentaByEstado(VentaEstado estado);
+    List<NotaVentaResponseDto> getCompletedSalesByUser(Long userId);
 }

@@ -269,7 +269,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .price(preProduct.getPrice())
                 .stock(preProduct.getStock())
                 .status(ProductStatus.valueOf(preProduct.getStatus()))
-                .image(preProduct.getImage())
+                .imageUrl(preProduct.getImage())
                 .category(PaintingCategory.valueOf(preProduct.getCategory()))
                 .seller(userRepository.getReferenceById(preProduct.getSellerId()))
                 .build();

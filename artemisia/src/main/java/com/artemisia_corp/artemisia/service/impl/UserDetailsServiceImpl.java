@@ -15,9 +15,11 @@ public class UserDetailsServiceImpl implements org.springframework.security.core
     private final UserRepository userRepository;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("loadUserByUsername: {}", username);
         User authUser = this.userRepository.findByName(username.toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("No existe el usuario"));
         String password = authUser.getPassword();
+        log.info("password: {}", password);
         return new org.springframework.security.core.userdetails.User(
                 authUser.getUsername(),
                 password,

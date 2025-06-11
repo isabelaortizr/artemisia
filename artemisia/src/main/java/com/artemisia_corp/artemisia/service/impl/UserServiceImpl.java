@@ -23,8 +23,6 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private LogsService logsService;
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
 
     @Override
     public List<UserResponseDto> getAllUsers() {
@@ -119,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id, String token) {
-        Long userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        Long userIdFromToken = new JwtTokenProvider().getUserIdFromToken(token);
         if (!userIdFromToken.equals(id)) {
             logsService.error("Unauthorized delete attempt by user ID: " + userIdFromToken);
             throw new RuntimeException("Unauthorized delete attempt");
@@ -130,14 +128,18 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("User not found");
         }
 
-        userRepository.deleteById(id);
+        User user = userRepository.findUserById(userIdFromToken);
+        user.setStatus(StateEntity.valueOf("DELETED"));
+        user.setName(user.getName() + " DELETED");
+        user.setMail(user.getMail() + " DELETED");
+        userRepository.save(user);
         logsService.info("User deleted with ID: " + id);
     }
 
     @Override
     public UserResponseDto getUserByEmail(String email) {
         logsService.info("Fetching user by email: " + email);
-        User user = userRepository.findByMail(email)
+        User user = userRepository.findUserByMail(email)
                 .orElseThrow(() -> {
                     logsService.error("User not found with email: " + email);
                     throw new RuntimeException("User not found");

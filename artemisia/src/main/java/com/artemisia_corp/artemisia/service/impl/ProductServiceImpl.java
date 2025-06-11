@@ -63,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
                 .price(productDto.getPrice())
                 .stock(productDto.getStock())
                 .status(ProductStatus.valueOf(productDto.getStatus()))
-                .image(productDto.getImage())
+                .imageUrl(productDto.getImage())
                 .category(PaintingCategory.valueOf(productDto.getCategory()))
                 .build();
 
@@ -99,7 +99,7 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(productDto.getPrice());
         product.setStock(productDto.getStock());
         product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
-        product.setImage(productDto.getImage());
+        product.setImageUrl(productDto.getImage());
         product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
 
         Product updatedProduct = productRepository.save(product);
@@ -192,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
                 .price(product.getPrice())
                 .stock(product.getStock())
                 .status(product.getStatus().name())
-                .image(product.getImage())
+                .image(product.getImageUrl())
                 .category(product.getCategory().name())
                 .sellerId(product.getSeller().getId())
                 .build();

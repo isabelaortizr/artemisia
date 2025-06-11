@@ -1,4 +1,4 @@
-package com.artemisia_corp.artemisia.entity.dto.product;
+package com.artemisia_corp.artemisia.entity.dto.image;
 
 import lombok.*;
 

@@ -1,6 +1,6 @@
 package com.artemisia_corp.artemisia.controller;
 
-import com.artemisia_corp.artemisia.entity.dto.product.ImageUploadDto;
+import com.artemisia_corp.artemisia.entity.dto.image.ImageUploadDto;
 import com.artemisia_corp.artemisia.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

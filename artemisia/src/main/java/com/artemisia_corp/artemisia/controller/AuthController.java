@@ -40,7 +40,6 @@ public class AuthController {
             }
             user = userOptional.get();
 
-
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(data.getUsername(), data.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities()));
 
@@ -50,6 +49,7 @@ public class AuthController {
             okAuthDto.setUsername(user.getUsername());
             return ok(okAuthDto);
         } catch (BadCredentialsException e) {
+            log.info("Error al autentificar el usuario: {}", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "");
         } catch (
                 Exception e) {

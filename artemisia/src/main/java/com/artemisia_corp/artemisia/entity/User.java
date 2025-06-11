@@ -28,11 +28,11 @@ public class User extends AuditableEntity implements UserDetails {
     private Long id;
 
     @Comment("Nombre del usuario")
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, unique = true)
     private String name;
 
     @Comment("Correo del usuario")
-    @Column(length = 255, nullable = false, unique = true)
+    @Column(length = 255, nullable = true, unique = true)
     private String mail;
 
     @Comment("Contraseña del usuario")

@@ -79,5 +79,9 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
         }
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getServletPath().startsWith("/api/auth/");
+    }
 
 }

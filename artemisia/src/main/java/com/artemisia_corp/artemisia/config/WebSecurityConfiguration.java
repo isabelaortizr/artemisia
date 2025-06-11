@@ -35,13 +35,13 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                 .authorizeHttpRequests(
                         authorizationManagerRequestMatcherRegistry ->
                                 authorizationManagerRequestMatcherRegistry
-                                        .requestMatchers("/api/v1/auth/").permitAll()
-                                        .requestMatchers("/api/v1/auth/token").permitAll()
+ //                                       .requestMatchers("/api/auth/").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/auth/token").permitAll()
                                         .anyRequest().authenticated()
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors((cors) -> cors.configurationSource(apiConfigurationSource()));
         return http.build();
     }

@@ -26,7 +26,7 @@ public class DataInitializer implements CommandLineRunner {
         if (repository.count() == 0) {
             User root = repository.save(User.builder()
                     .name("root")
-                    .mail("")
+                    .mail("root@mail.com")
                     .role(UserRole.ADMIN)
                     .status(StateEntity.ACTIVE)
                     .password(passwordEncoder.encode("Abc123**"))

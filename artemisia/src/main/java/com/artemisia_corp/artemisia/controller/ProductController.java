@@ -58,7 +58,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsBySeller(sellerId));
     }
 
-    @PutMapping("/{productId}/reduce-stock")
+    @PutMapping("/reduce-stock")
     public ResponseEntity<Void> reduceStock(
             @RequestBody ManageProductDto manageProductDto) {
         productService.manageStock(manageProductDto);

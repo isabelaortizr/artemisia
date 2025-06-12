@@ -50,7 +50,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                                                     Product productParam) {
 
         NotaVenta notaVenta = notaVentaParam;
-        if (notaVenta == null && orderDetailDto.getGroupId() != null) {
+        if (notaVenta == null || orderDetailDto.getGroupId() != null) {
             notaVenta = notaVentaRepository.findById(orderDetailDto.getGroupId())
                     .orElseThrow(() -> {
                         logsService.error("Sale note not found with ID: " + orderDetailDto.getGroupId());
@@ -59,7 +59,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         }
 
         Product product = productParam;
-        if (product == null && orderDetailDto.getProductId() != null) {
+        if (product == null || orderDetailDto.getProductId() != null) {
             product = productRepository.findById(orderDetailDto.getProductId())
                     .orElseThrow(() -> {
                         logsService.error("Product not found with ID: " + orderDetailDto.getProductId());

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "FROM Product p")
     List<ProductResponseDto> findAllProducts();
 
-    Optional<Product> findProductByProductId(Long productId);
+    @Query("SELECT p FROM Product p WHERE p.productId = :p_productId")
+    Optional<Product> findProductByProductId(@Param("p_productId") Long productId);
 
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p)" +
             "FROM Product p WHERE p.stock > 0 AND p.status = 'AVAILABLE'")
@@ -31,13 +33,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.seller = :sellerId")
     List<Product> findProductBySeller(@Param("sellerId") Long sellerId);
 
+    @Transactional
     @Modifying
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("UPDATE Product p SET p.stock = p.stock - :quantity WHERE p.productId = :productId")
     void reduceStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
+    @Transactional
     @Modifying
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("UPDATE Product p SET p.stock = p.stock + :quantity WHERE p.productId = :productId")
     void augmentStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 

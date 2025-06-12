@@ -28,6 +28,6 @@ public class Image {
 
     @Comment("Vendedor que subió la imagen")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
-    private User seller;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product_id;
 }

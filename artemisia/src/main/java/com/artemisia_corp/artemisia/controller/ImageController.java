@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.entity.dto.image.ImageUploadDto;
 import com.artemisia_corp.artemisia.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class ImageController {
     }
 
     @DeleteMapping("/{id}")
+    @Secured(value = {"ROLE_ADMIN"})
     public ResponseEntity<Void> deleteImage(@PathVariable Long id) {
         imageService.deleteImage(id);
         return ResponseEntity.noContent().build();

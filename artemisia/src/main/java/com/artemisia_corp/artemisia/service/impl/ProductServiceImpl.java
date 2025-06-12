@@ -49,11 +49,6 @@ public class ProductServiceImpl implements ProductService {
                     throw new RuntimeException("User not found");
                 });
 
-        if (!seller.getRole().equals(UserRole.SELLER)) {
-            logsService.error("User is not a seller: " + productDto.getSellerId());
-            throw new RuntimeException("Only sellers can create products");
-        }
-
         Product product = Product.builder()
                 .seller(seller)
                 .name(productDto.getName())
@@ -85,11 +80,6 @@ public class ProductServiceImpl implements ProductService {
                     logsService.error("User not found with ID: " + productDto.getSellerId());
                     throw new RuntimeException("User not found");
                 });
-
-        if (!seller.getRole().equals(UserRole.SELLER)) {
-            logsService.error("User is not a seller: " + productDto.getSellerId());
-            throw new RuntimeException("Only sellers can update products");
-        }
 
         product.setSeller(seller);
         product.setName(productDto.getName());

@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ImageUploadDto {
-    private Long sellerId;
+    private Long productId;
     private String fileName;
     private String base64Image;
 }

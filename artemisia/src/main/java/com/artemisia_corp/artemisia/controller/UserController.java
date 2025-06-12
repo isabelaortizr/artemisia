@@ -57,9 +57,11 @@ public class UserController {
         return ResponseEntity.ok(userService.updateEmail(emailDto));
     }
 
-    @PutMapping("/{id}/password")
+    @PutMapping("/{userId}/password")  // <- ID en la URL
     public ResponseEntity<UserResponseDto> updatePassword(
+            @PathVariable Long userId,  // <- ID aquí
             @RequestBody UserUpdatePasswordDto passwordDto) {
+        passwordDto.setUserId(userId);  // Asigna el ID al DTO
         return ResponseEntity.ok(userService.updatePassword(passwordDto));
     }
 }

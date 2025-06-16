@@ -1,16 +1,12 @@
 package com.artemisia_corp.artemisia.controller;
 
-import com.artemisia_corp.artemisia.entity.Logs;
 import com.artemisia_corp.artemisia.entity.dto.logs.LogsResponseDto;
 import com.artemisia_corp.artemisia.service.LogsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @Controller

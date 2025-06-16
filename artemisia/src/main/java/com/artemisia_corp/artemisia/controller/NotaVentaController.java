@@ -54,9 +54,20 @@ public class NotaVentaController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelNotaVenta(@PathVariable Long id) {
+        notaVentaService.cancelarNotaVenta(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<NotaVentaResponseDto>> getNotasVentaByEstado(
             @PathVariable VentaEstado estado) {
         return ResponseEntity.ok(notaVentaService.getNotasVentaByEstado(estado));
+    }
+
+    @GetMapping("/historial-usuario/{id}")
+    public ResponseEntity<List<NotaVentaResponseDto>> getHistory(@RequestBody @PathVariable Long id) {
+            return ResponseEntity.ok(notaVentaService.getCompletedSalesByUser(id));
     }
 }

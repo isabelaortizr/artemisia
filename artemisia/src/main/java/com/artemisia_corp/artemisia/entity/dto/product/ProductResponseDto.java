@@ -30,7 +30,7 @@ public class ProductResponseDto {
         this.price = product.getPrice();
         this.stock = product.getStock();
         this.status = product.getStatus().name();
-        this.image = product.getImage();
+        this.image = product.getImageUrl();
         this.category = product.getCategory().name();
         this.sellerId = product.getSeller().getId();
     }

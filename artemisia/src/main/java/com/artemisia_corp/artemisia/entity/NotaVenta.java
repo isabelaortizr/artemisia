@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "nota_venta")
-public class NotaVenta {
+public class NotaVenta extends AuditableEntity {
     @Comment("Identificador de la nota de venta")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "NOTA_VENTA_ID_GENERATOR")

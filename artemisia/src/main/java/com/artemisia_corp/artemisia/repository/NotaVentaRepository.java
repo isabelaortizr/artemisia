@@ -17,7 +17,7 @@ public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
             "FROM NotaVenta nv")
     List<NotaVentaResponseDto> findAllNotaVentas();
 
-    List<NotaVenta> findByEstadoVenta(VentaEstado estadoVenta);
+    List<NotaVentaResponseDto> findAllNotaVentasByBuyer_Id(Long buyerId);
 
-    List<NotaVentaResponseDto> findByBuyer_Id(Long buyerId);
+    List<NotaVenta> findByEstadoVenta(VentaEstado estadoVenta);
 }

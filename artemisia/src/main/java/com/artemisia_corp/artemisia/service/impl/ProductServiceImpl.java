@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.*;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.*;
 import com.artemisia_corp.artemisia.entity.enums.*;
 import com.artemisia_corp.artemisia.repository.*;
@@ -20,6 +21,8 @@ public class ProductServiceImpl implements ProductService {
     private UserRepository userRepository;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
 
     @Override
     public List<ProductResponseDto> getAllProducts() {
@@ -46,11 +49,6 @@ public class ProductServiceImpl implements ProductService {
                     throw new RuntimeException("User not found");
                 });
 
-        if (!seller.getRole().equals(UserRole.SELLER)) {
-            logsService.error("User is not a seller: " + productDto.getSellerId());
-            throw new RuntimeException("Only sellers can create products");
-        }
-
         Product product = Product.builder()
                 .seller(seller)
                 .name(productDto.getName())
@@ -60,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
                 .price(productDto.getPrice())
                 .stock(productDto.getStock())
                 .status(ProductStatus.valueOf(productDto.getStatus()))
-                .image(productDto.getImage())
+                .imageUrl(productDto.getImage())
                 .category(PaintingCategory.valueOf(productDto.getCategory()))
                 .build();
 
@@ -83,11 +81,6 @@ public class ProductServiceImpl implements ProductService {
                     throw new RuntimeException("User not found");
                 });
 
-        if (!seller.getRole().equals(UserRole.SELLER)) {
-            logsService.error("User is not a seller: " + productDto.getSellerId());
-            throw new RuntimeException("Only sellers can update products");
-        }
-
         product.setSeller(seller);
         product.setName(productDto.getName());
         product.setTechnique(PaintingTechnique.valueOf(productDto.getTechnique()));
@@ -96,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(productDto.getPrice());
         product.setStock(productDto.getStock());
         product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
-        product.setImage(productDto.getImage());
+        product.setImageUrl(productDto.getImage());
         product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
 
         Product updatedProduct = productRepository.save(product);
@@ -116,23 +109,32 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void reduceStock(Long productId, Integer quantity) {
-        Product product = productRepository.findById(productId)
+    public void manageStock(ManageProductDto manageProductDto) {
+        Long productId = manageProductDto.getProductId();
+        int quantity = manageProductDto.getQuantity();
+        boolean reduceStock = manageProductDto.isReduceStock();
+
+        Product product = productRepository.findProductByProductId(productId)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + productId);
                     throw new RuntimeException("Product not found");
                 });
 
-        if (product.getStock() < quantity) {
+        if (product.getStock() < quantity ||
+                product.getStock() - quantity < 0) {
             logsService.error("Insufficient stock for product ID: " + productId);
             throw new RuntimeException("Insufficient stock");
         }
 
-        productRepository.reduceStock(productId, quantity);
-        logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+        if (reduceStock) {
+            productRepository.reduceStock(productId, quantity);
+            logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+        } else {
+            productRepository.augmentStock(productId, quantity);
+            logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+        }
 
-        // Update product status if stock reaches zero
-        if (product.getStock() - quantity <= 0) {
+        if (product.getStock() - quantity == 0) {
             product.setStatus(ProductStatus.UNAVAILABLE);
             productRepository.save(product);
             logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
@@ -180,9 +182,27 @@ public class ProductServiceImpl implements ProductService {
                 .price(product.getPrice())
                 .stock(product.getStock())
                 .status(product.getStatus().name())
-                .image(product.getImage())
+                .image(product.getImageUrl())
                 .category(product.getCategory().name())
                 .sellerId(product.getSeller().getId())
                 .build();
+    }
+
+    @Override
+    public List<ProductResponseDto> searchProducts(ProductSearchDto dto) {
+        logsService.info("Searching products with filters");
+        return productRepository.searchWithFilters(dto);
+    }
+
+    @Override
+    public List<ProductResponseDto> getByCategory(String category) {
+        logsService.info("Fetching products by category: " + category);
+        return productRepository.findByCategory(PaintingCategory.valueOf(category));
+    }
+
+    @Override
+    public List<ProductResponseDto> getByTechnique(String technique) {
+        logsService.info("Fetching products by technique: " + technique);
+        return productRepository.findByTechnique(PaintingTechnique.valueOf(technique));
     }
 }

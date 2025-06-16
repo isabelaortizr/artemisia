@@ -7,6 +7,8 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
-public class UserDeleteDto {
-    private long id;
+public class LoginDto {
+    private String name;
+    private String mail;
+    private String password;
 }

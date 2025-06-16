@@ -1,7 +1,9 @@
 package com.artemisia_corp.artemisia.service.impl;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.user.*;
+import com.artemisia_corp.artemisia.entity.enums.StateEntity;
 import com.artemisia_corp.artemisia.entity.enums.UserRole;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.LogsService;
@@ -11,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -28,6 +31,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseDto login(LoginDto loginDto) {
+        logsService.info("Logging in user for: " + loginDto.getName());
+        if (((loginDto.getName() != null && !loginDto.getName().isEmpty())
+                || (loginDto.getMail() != null && !loginDto.getMail().isEmpty()))
+                && (loginDto.getPassword() != null && !loginDto.getPassword().isEmpty())) {
+            logsService.info("Encripting passowrd");
+            String encriptedPassword = passwordEncoder.encode(loginDto.getPassword());
+
+
+            if (!loginDto.getName().isEmpty()) return userRepository.loginUser(loginDto.getName(), encriptedPassword);
+            else if (!loginDto.getMail().isEmpty()) return userRepository.loginUser(loginDto.getMail(), encriptedPassword);
+            else throw new RuntimeException("Invalid login credentials");
+        }
+
+        return null;
+    }
+
+    @Override
     public UserResponseDto getUserById(Long id) {
         logsService.info("Fetching user with ID: " + id);
         User user = userRepository.findById(id)
@@ -36,6 +57,11 @@ public class UserServiceImpl implements UserService {
                     throw new RuntimeException("User not found");
                 });
         return convertToDto(user);
+    }
+
+    @Override
+    public Optional<User> findByUserIdToValidateSession(Long id) {
+        return this.userRepository.findById(id);
     }
 
     @Override
@@ -50,6 +76,7 @@ public class UserServiceImpl implements UserService {
                 .mail(userDto.getMail())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .role(UserRole.valueOf(userDto.getRole()))
+                .status(StateEntity.valueOf("ACTIVE"))
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -89,24 +116,96 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, String token) {
+        Long userIdFromToken = new JwtTokenProvider().getUserIdFromToken(token);
+        if (!userIdFromToken.equals(id)) {
+            logsService.error("Unauthorized delete attempt by user ID: " + userIdFromToken);
+            throw new RuntimeException("Unauthorized delete attempt");
+        }
+
         if (!userRepository.existsById(id)) {
             logsService.error("User not found with ID: " + id);
             throw new RuntimeException("User not found");
         }
-        userRepository.deleteById(id);
+
+        User user = userRepository.findUserById(userIdFromToken);
+        user.setStatus(StateEntity.valueOf("DELETED"));
+        user.setName(user.getName() + " DELETED");
+        user.setMail(user.getMail() + " DELETED");
+        userRepository.save(user);
         logsService.info("User deleted with ID: " + id);
     }
 
     @Override
     public UserResponseDto getUserByEmail(String email) {
         logsService.info("Fetching user by email: " + email);
-        User user = userRepository.findByMail(email)
+        User user = userRepository.findUserByMail(email)
                 .orElseThrow(() -> {
                     logsService.error("User not found with email: " + email);
                     throw new RuntimeException("User not found");
                 });
         return convertToDto(user);
+    }
+
+    @Override
+    public Optional<User> getUserByName(String name) {
+        logsService.info("Fetching user by name: " + name);
+        return userRepository.findByName(name);
+    }
+
+    @Override
+    public UserResponseDto updateEmail(UserUpdateEmailDto emailDto) {
+        Long userId = emailDto.getUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + userId);
+                    throw new RuntimeException("User not found");
+                });
+
+        if (!passwordEncoder.matches(emailDto.getCurrentPassword(), user.getPassword())) {
+            logsService.error("Invalid current password for user ID: " + userId);
+            throw new RuntimeException("Invalid current password");
+        }
+
+        if (userRepository.existsByMail(emailDto.getNewEmail())) {
+            logsService.error("Email already in use: " + emailDto.getNewEmail());
+            throw new RuntimeException("Email already in use");
+        }
+
+        user.setMail(emailDto.getNewEmail());
+        User updatedUser = userRepository.save(user);
+        logsService.info("Email updated for user ID: " + userId);
+        return convertToDto(updatedUser);
+    }
+
+    @Override
+    public UserResponseDto updatePassword(UserUpdatePasswordDto passwordDto) {
+        Long userId = passwordDto.getUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + userId);
+                    throw new RuntimeException("User not found");
+                });
+
+        if (!passwordEncoder.matches(passwordDto.getCurrentPassword(), user.getPassword())) {
+            logsService.error("Invalid current password for user ID: " + userId);
+            throw new RuntimeException("Invalid current password");
+        }
+
+        if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmNewPassword())) {
+            logsService.error("New passwords don't match for user ID: " + userId);
+            throw new RuntimeException("New passwords don't match");
+        }
+
+        if (passwordEncoder.matches(passwordDto.getNewPassword(), user.getPassword())) {
+            logsService.error("New password must be different from current for user ID: " + userId);
+            throw new RuntimeException("New password must be different from current");
+        }
+
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        User updatedUser = userRepository.save(user);
+        logsService.info("Password updated for user ID: " + userId);
+        return convertToDto(updatedUser);
     }
 
     private UserResponseDto convertToDto(User user) {

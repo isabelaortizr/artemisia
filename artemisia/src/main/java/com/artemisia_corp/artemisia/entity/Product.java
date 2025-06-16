@@ -14,7 +14,7 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Entity
 @Table(name = "product")
-public class Product {
+public class Product extends AuditableEntity {
     @Comment("Identificador del producto")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PRODUCT_ID_GENERATOR")
@@ -57,8 +57,8 @@ public class Product {
     private ProductStatus status;
 
     @Comment("Direccion de la imagen")
-    @Column(length = 250, nullable = false)
-    private String image;
+    @Column(name = "image_url", length = 250, nullable = true)
+    private String imageUrl;
 
     @Comment("Categoria del producto")
     @Enumerated(EnumType.STRING)

@@ -245,6 +245,15 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return notaVentaRepository.findAllNotaVentasByBuyer_Id(userId);
     }
 
+    @Override
+    public void ingresarIdTransaccion(String idTransaccion, Long notaVentaId) {
+        NotaVenta notaVenta = notaVentaRepository.getReferenceById(notaVentaId);
+
+        notaVenta.setIdTransaccion(idTransaccion);
+        notaVentaRepository.save(notaVenta);
+        logsService.info("Sale note updated with ID: " + notaVentaId);
+    }
+
     private NotaVentaResponseDto convertToDtoWithDetails(NotaVenta notaVenta) {
         List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(notaVenta.getId());
 

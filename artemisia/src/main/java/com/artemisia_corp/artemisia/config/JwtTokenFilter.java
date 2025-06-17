@@ -1,6 +1,6 @@
 package com.artemisia_corp.artemisia.config;
 
-import com.artemisia_corp.artemisia.entity.exception.InvalidJwtAuthenticationException;
+import com.artemisia_corp.artemisia.exception.InvalidJwtAuthenticationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -40,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
                 filterChain.doFilter(servletRequest, servletResponse);
                 return;
             }
-            log.info("Token: {}", token);
+            // log.info("Token: {}", token);
             try {
                 Optional<Authentication> optionalAuthentication = jwtTokenProvider.validateToken(token);
                 if (optionalAuthentication.isPresent()) {
@@ -81,7 +81,9 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().startsWith("/api/auth/");
+        return request.getServletPath().startsWith("/api/auth/")
+                //|| request.getServletPath().startsWith("/api/stereum-pay/")
+        ;
     }
 
 }

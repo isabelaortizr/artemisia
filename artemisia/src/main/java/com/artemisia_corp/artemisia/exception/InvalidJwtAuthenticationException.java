@@ -1,4 +1,4 @@
-package com.artemisia_corp.artemisia.entity.exception;
+package com.artemisia_corp.artemisia.exception;
 
 public class InvalidJwtAuthenticationException extends RuntimeException {
     public InvalidJwtAuthenticationException(String message) {

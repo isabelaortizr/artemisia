@@ -43,4 +43,8 @@ public class NotaVenta extends AuditableEntity {
     @Comment("Fecha en la que se creo la compra")
     @Column(nullable = false)
     private LocalDateTime date;
+
+    @Comment("Identificador de la transaccion de stereum")
+    @Column(name = "id_transaccion", nullable = true, length = 250)
+    private String idTransaccion;
 }

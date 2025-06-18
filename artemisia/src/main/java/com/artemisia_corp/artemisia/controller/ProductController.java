@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-            @RequestMapping("/api/products")
+@RequestMapping("/api/products")
 public class ProductController {
 
     @Autowired

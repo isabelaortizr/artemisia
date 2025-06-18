@@ -11,6 +11,7 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Entity
 @Table(name = "address")
+@ToString(callSuper = true)
 public class Address extends AuditableEntity {
     @Comment("Identificador de la direccion")
     @Id

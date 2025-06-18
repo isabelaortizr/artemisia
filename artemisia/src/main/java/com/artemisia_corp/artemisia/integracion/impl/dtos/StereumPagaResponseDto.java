@@ -25,4 +25,6 @@ public class StereumPagaResponseDto {
     private String onMainNet;
     @JsonProperty("collecting_account")
     private String collectingAccount;
+    @JsonProperty("expiration_time")
+    private Long expirationTime;
 }

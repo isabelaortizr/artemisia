@@ -78,7 +78,7 @@ public class JwtTokenProvider implements Serializable {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    private Long getId(String token) {
+    public Long getId(String token) {
         String id= Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getId();
         return Long.parseLong(id);
     }

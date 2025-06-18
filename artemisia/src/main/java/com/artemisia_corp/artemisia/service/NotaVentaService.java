@@ -1,7 +1,9 @@
 package com.artemisia_corp.artemisia.service;
 
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.AddToCartDto;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.RespuestaVerificacionNotaVentaDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 
 import java.util.List;
@@ -17,4 +19,7 @@ public interface NotaVentaService {
     List<NotaVentaResponseDto> getNotasVentaByEstado(VentaEstado estado);
     List<NotaVentaResponseDto> getCompletedSalesByUser(Long userId);
     void ingresarIdTransaccion(String idTransaccion, Long notaVentaId);
+    void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta);
+    NotaVentaResponseDto getActiveCartByUserId(Long userId);
+    NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto);
 }

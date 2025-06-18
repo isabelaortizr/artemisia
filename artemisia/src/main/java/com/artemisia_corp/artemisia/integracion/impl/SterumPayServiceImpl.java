@@ -5,6 +5,7 @@ import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.*;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
+import com.artemisia_corp.artemisia.utils.JWTUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,6 @@ import java.util.UUID;
 @Service
 public class SterumPayServiceImpl implements SterumPayService {
     private String jwtToken = null;
-    private LocalDateTime validacionToken = null;
 
     @Value("${stereum-pay.url-base}")
     private String urlBase;
@@ -44,7 +44,6 @@ public class SterumPayServiceImpl implements SterumPayService {
     @Autowired
     @Lazy
     private NotaVentaService notaVentaService;
-
 
     @Override
     public StereumAuthResponse obtenerTokenAutenticacion() {
@@ -76,14 +75,12 @@ public class SterumPayServiceImpl implements SterumPayService {
         }
         jwtToken = response.getBody().getAccessToken();
 
-        validacionToken = LocalDateTime.now().plusHours(8);
-
         return response.getBody();
     }
 
     @Override
     public StereumPagaResponseDto crearCargoCobro(StereumPagaDto chargeDto, Long idNotaVenta) {
-        if (validacionToken == null || LocalDateTime.now().isAfter(validacionToken)) obtenerTokenAutenticacion();
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<StereumPagaResponseDto> response;
 
@@ -107,7 +104,7 @@ public class SterumPayServiceImpl implements SterumPayService {
 
         StereumPagaResponseDto body = response.getBody();
 
-        //notaVentaService.ingresarIdTransaccion(body.getId(), idNotaVenta);
+        notaVentaService.ingresarIdTransaccion(body.getId(), idNotaVenta);
 
         return body;
     }
@@ -115,7 +112,7 @@ public class SterumPayServiceImpl implements SterumPayService {
 
     @Override
     public EstadoResponseDto obtenerEstadoCobro(String id_transaccion) {
-        if (validacionToken == null || LocalDateTime.now().isAfter(validacionToken)) obtenerTokenAutenticacion();
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<EstadoResponseDto> response;
 
@@ -137,7 +134,7 @@ public class SterumPayServiceImpl implements SterumPayService {
 
     @Override
     public CurrencyConversionResponseDto conversionBob (CurrencyConversionDto conversionEntity) {
-        if (validacionToken == null || LocalDateTime.now().isAfter(validacionToken)) obtenerTokenAutenticacion();
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<CurrencyConversionResponseDto> response;
 
@@ -161,7 +158,7 @@ public class SterumPayServiceImpl implements SterumPayService {
 
     @Override
     public EstadoResponseDto cancelarCargo(String id_transaccion) {
-        if (validacionToken == null || LocalDateTime.now().isAfter(validacionToken)) obtenerTokenAutenticacion();
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<EstadoResponseDto> response;
 

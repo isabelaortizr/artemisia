@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface UserService {
     List<UserResponseDto> getAllUsers();
-    UserResponseDto login(LoginDto LoginDto);
     UserResponseDto getUserById(Long id);
     Optional<User> findByUserIdToValidateSession(Long id);
     UserResponseDto createUser(UserRequestDto userDto);

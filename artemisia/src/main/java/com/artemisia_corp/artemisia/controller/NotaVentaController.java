@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.AddToCartDto;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
@@ -70,4 +71,16 @@ public class NotaVentaController {
     public ResponseEntity<List<NotaVentaResponseDto>> getHistory(@RequestBody @PathVariable Long id) {
             return ResponseEntity.ok(notaVentaService.getCompletedSalesByUser(id));
     }
+
+    @PostMapping("/add")
+    public ResponseEntity<NotaVentaResponseDto> addToCart(@RequestBody AddToCartDto addToCartDto) {
+        return new ResponseEntity<>(notaVentaService.addProductToCart(addToCartDto), HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<NotaVentaResponseDto> getCart(@PathVariable Long userId) {
+        return new ResponseEntity<>(notaVentaService.getActiveCartByUserId(userId), HttpStatus.OK);
+    }
+
+
 }

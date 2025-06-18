@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
@@ -17,7 +18,12 @@ public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
             "FROM NotaVenta nv")
     List<NotaVentaResponseDto> findAllNotaVentas();
 
+    @Query("SELECT nv FROM NotaVenta nv WHERE nv.idTransaccion =:transaction_id order by nv.id desc limit 1")
+    NotaVenta findNotaVentaByIdTransaccion(@Param("transaction_id") String transactionId);
+
     List<NotaVentaResponseDto> findAllNotaVentasByBuyer_Id(Long buyerId);
 
     List<NotaVenta> findByEstadoVenta(VentaEstado estadoVenta);
+
+    Optional<NotaVenta> findByBuyer_IdAndEstadoVenta(Long buyerId, VentaEstado estadoVenta);
 }

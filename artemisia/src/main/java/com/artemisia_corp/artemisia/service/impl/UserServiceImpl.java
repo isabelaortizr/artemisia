@@ -35,24 +35,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto login(LoginDto loginDto) {
-        logsService.info("Logging in user for: " + loginDto.getName());
-        if (((loginDto.getName() != null && !loginDto.getName().isEmpty())
-                || (loginDto.getMail() != null && !loginDto.getMail().isEmpty()))
-                && (loginDto.getPassword() != null && !loginDto.getPassword().isEmpty())) {
-            logsService.info("Encripting passowrd");
-            String encriptedPassword = passwordEncoder.encode(loginDto.getPassword());
-
-
-            if (!loginDto.getName().isEmpty()) return userRepository.loginUser(loginDto.getName(), encriptedPassword);
-            else if (!loginDto.getMail().isEmpty()) return userRepository.loginUser(loginDto.getMail(), encriptedPassword);
-            else throw new RuntimeException("Invalid login credentials");
-        }
-
-        return null;
-    }
-
-    @Override
     public UserResponseDto getUserById(Long id) {
         logsService.info("Fetching user with ID: " + id);
         User user = userRepository.findById(id)

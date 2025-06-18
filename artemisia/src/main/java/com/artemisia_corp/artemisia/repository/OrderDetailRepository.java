@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
@@ -15,4 +16,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     List<OrderDetailResponseDto> findAllOrderDetails();
 
     List<OrderDetailResponseDto> findByGroup_Id(Long groupId);
+
+    Optional<OrderDetail> findByGroup_IdAndProduct_ProductId(Long groupId, Long productId);
 }

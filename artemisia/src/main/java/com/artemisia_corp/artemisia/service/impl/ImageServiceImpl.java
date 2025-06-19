@@ -2,7 +2,6 @@ package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.Image;
 import com.artemisia_corp.artemisia.entity.Product;
-import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.image.ImageUploadDto;
 import com.artemisia_corp.artemisia.repository.ImageRepository;
 import com.artemisia_corp.artemisia.repository.ProductRepository;
@@ -31,7 +30,7 @@ public class ImageServiceImpl implements ImageService {
                 .build();
 
         imageRepository.save(image);
-        logsService.info("Image uploaded to DB for product ID: " + product.getProductId());
+        logsService.info("Image uploaded to DB for product ID: " + product.getId());
     }
 
     @Override

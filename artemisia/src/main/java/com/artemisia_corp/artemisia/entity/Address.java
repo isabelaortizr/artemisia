@@ -11,13 +11,12 @@ import org.hibernate.annotations.Comment;
 @Setter
 @Entity
 @Table(name = "address")
-@ToString(callSuper = true)
 public class Address extends AuditableEntity {
     @Comment("Identificador de la direccion")
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ADDRESS_ID_GENERATOR")
     @SequenceGenerator(name = "ADDRESS_ID_GENERATOR", sequenceName = "seq_address_id", allocationSize = 1)
-    private Long addressId;
+    private Long id;
 
     @Comment("Direccion dada")
     @Column(length = 250, nullable = false)

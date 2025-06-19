@@ -1,7 +1,6 @@
 package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.*;
-import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
@@ -18,6 +17,8 @@ import com.artemisia_corp.artemisia.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -53,9 +53,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     private AddressService addressService;
 
     @Override
-    public List<NotaVentaResponseDto> getAllNotasVenta() {
+    public Page<NotaVentaResponseDto> getAllNotasVenta(Pageable pageable) {
         logsService.info("Fetching all sales notes");
-        return notaVentaRepository.findAllNotaVentas();
+        return notaVentaRepository.findAllNotaVentas(pageable);
     }
 
     @Override
@@ -121,16 +121,16 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     @Override
     @Transactional
     public NotaVentaResponseDto updateNotaVenta(Long id, NotaVentaRequestDto notaVentaDto) {
-        NotaVenta notaVenta = notaVentaRepository.findById(id)
+        User buyer = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + id);
+                    throw new RuntimeException("User not found");
+                });
+
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id, VentaEstado.ON_CART)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
                     throw new RuntimeException("Sale note not found");
-                });
-
-        User buyer = userRepository.findById(notaVentaDto.getUserId())
-                .orElseThrow(() -> {
-                    logsService.error("User not found with ID: " + notaVentaDto.getUserId());
-                    throw new RuntimeException("User not found");
                 });
 
         Address address = addressRepository.findById(notaVentaDto.getBuyerAddress())
@@ -169,14 +169,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         }
 
         for (OrderDetailRequestDto detailDto : notaVentaDto.getDetalles()) {
-            detailDto.setGroupId(id);
+            detailDto.setGroupId(notaVenta.getId());
             OrderDetailResponseDto existingDetail = existingDetails.stream()
                     .filter(d -> d.getProductId().equals(detailDto.getProductId()))
                     .findFirst()
                     .orElse(null);
 
             if (existingDetail != null) {
-                detailDto.setGroupId(id);
+                detailDto.setGroupId(notaVenta.getId());
                 orderDetailService.updateOrderDetail(existingDetail.getId(), detailDto);
             } else {
                 orderDetailService.createOrderDetail(detailDto, updatedNotaVenta, products.get(detailDto.getProductId()));
@@ -189,24 +189,45 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     @Override
     @Transactional
     public void deleteNotaVenta(Long id) {
-        if (!notaVentaRepository.existsById(id)) {
+        userRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + id);
+                    throw new RuntimeException("User not found");
+                });
+
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id, VentaEstado.ON_CART)
+                .orElseThrow(() -> {
+                    logsService.error("Sale note not found with ID: " + id);
+                    throw new RuntimeException("Sale note not found");
+                });
+
+        if (notaVenta == null) {
             logsService.error("Sale note not found with ID: " + id);
             throw new RuntimeException("Sale note not found");
         }
 
         logsService.info("Deleting Details affiliated with ID: " + id);
+        /*
         orderDetailService.getOrderDetailsByNotaVenta(id).forEach(detail -> {
             orderDetailService.deleteOrderDetail(detail.getId());
         });
+         */
 
-        notaVentaRepository.deleteById(id);
-        logsService.info("Sale note deleted with ID: " + id);
+        notaVenta.setEstadoVenta(VentaEstado.DELETED);
+        notaVentaRepository.save(notaVenta);
+        logsService.info("Sale note deleted with ID: " + notaVenta.getId());
     }
 
     @Override
     @Transactional
     public void completeNotaVenta(Long id) {
-        NotaVenta notaVenta = notaVentaRepository.findById(id)
+        userRepository.findById(id)
+                .orElseThrow(() -> {
+                    logsService.error("User not found with ID: " + id);
+                    throw new RuntimeException("User not found");
+                });
+
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id, VentaEstado.ON_CART)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
                     throw new RuntimeException("Sale note not found");
@@ -250,16 +271,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
-    public List<NotaVentaResponseDto> getNotasVentaByEstado(VentaEstado estado) {
+    public Page<NotaVentaResponseDto> getNotasVentaByEstado(VentaEstado estado, Pageable pageable) {
         logsService.info("Fetching sale notes with status: " + estado);
-        return notaVentaRepository.findByEstadoVenta(estado).stream()
-                .map(this::convertToDtoWithDetails)
-                .collect(Collectors.toList());
+        return notaVentaRepository.findByEstadoVenta(estado, pageable);
     }
 
     @Override
-    public List<NotaVentaResponseDto> getCompletedSalesByUser(Long userId) {
-        return notaVentaRepository.findAllNotaVentasByBuyer_Id(userId);
+    public Page<NotaVentaResponseDto> getCompletedSalesByUser(Long userId, Pageable pageable) {
+        return notaVentaRepository.findAllNotaVentasByBuyer_Id(userId, pageable);
     }
 
     @Override
@@ -312,20 +331,15 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                                 throw new RuntimeException("User not found");
                             });
 
-                    List<AddressResponseDto> addresses = addressService.getAddressesByUser(addToCartDto.getUserId());
-                    if (addresses.isEmpty()) {
+                    Address address = addressRepository.findLastAddressByUser_Id(buyer.getId());
+                    if (address == null) {
                         logsService.error("User has no addresses");
                         throw new RuntimeException("User must have at least one address");
                     }
 
-                    Address defaultAddress = addressRepository.
-                            getById(addresses.getFirst().getAddressId());
-
-                    log.info("Address: {}", defaultAddress);
-
                     NotaVenta newCart = NotaVenta.builder()
                             .buyer(buyer)
-                            .buyerAddress(defaultAddress)
+                            .buyerAddress(address)
                             .estadoVenta(VentaEstado.ON_CART)
                             .date(LocalDateTime.now())
                             .totalGlobal(0.0)
@@ -340,14 +354,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     throw new RuntimeException("Product not found");
                 });
 
-        Optional<OrderDetail> existingDetail = orderDetailRepository.findByGroup_IdAndProduct_ProductId(cart.getId(), product.getProductId());
+        Optional<OrderDetail> existingDetail = orderDetailRepository.findByGroupIdAndProductId(cart.getId(), product.getId());
 
         if (existingDetail.isPresent()) {
             OrderDetail detail = existingDetail.get();
             int newQuantity = detail.getQuantity() + addToCartDto.getQuantity();
 
             if (newQuantity > product.getStock()) {
-                logsService.error("Not enough stock for product ID: " + product.getProductId());
+                logsService.error("Not enough stock for product ID: " + product.getId());
                 throw new RuntimeException("Not enough stock available");
             }
 
@@ -356,13 +370,13 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             orderDetailRepository.save(detail);
         } else {
             if (addToCartDto.getQuantity() > product.getStock()) {
-                logsService.error("Not enough stock for product ID: " + product.getProductId());
+                logsService.error("Not enough stock for product ID: " + product.getId());
                 throw new RuntimeException("Not enough stock available");
             }
 
             OrderDetailRequestDto detailDto = OrderDetailRequestDto.builder()
                     .groupId(cart.getId())
-                    .productId(product.getProductId())
+                    .productId(product.getId())
                     .sellerId(product.getSeller().getId())
                     .productName(product.getName())
                     .quantity(addToCartDto.getQuantity())
@@ -397,7 +411,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return NotaVentaResponseDto.builder()
                 .id(notaVenta.getId())
                 .userId(notaVenta.getBuyer().getId())
-                .buyerAddress(notaVenta.getBuyerAddress().getAddressId())
+                .buyerAddress(notaVenta.getBuyerAddress().getId())
                 .estadoVenta(notaVenta.getEstadoVenta().name())
                 .totalGlobal(notaVenta.getTotalGlobal())
                 .date(notaVenta.getDate())
@@ -407,7 +421,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
     private Product convertToProduct(Long productId, ProductResponseDto preProduct) {
         return Product.builder()
-                .productId(productId)
+                .id(productId)
                 .name(preProduct.getName())
                 .technique(PaintingTechnique.valueOf(preProduct.getTechnique()))
                 .materials(preProduct.getMaterials())

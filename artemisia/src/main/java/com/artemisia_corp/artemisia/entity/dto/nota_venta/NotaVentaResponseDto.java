@@ -24,7 +24,7 @@ public class NotaVentaResponseDto {
     public NotaVentaResponseDto(NotaVenta notaVenta) {
         this.id = notaVenta.getId();
         this.userId = notaVenta.getBuyer().getId();
-        this.buyerAddress = notaVenta.getBuyerAddress().getAddressId();
+        this.buyerAddress = notaVenta.getBuyerAddress().getId();
         this.estadoVenta = notaVenta.getEstadoVenta().name();
         this.totalGlobal = notaVenta.getTotalGlobal();
         this.date = notaVenta.getDate();

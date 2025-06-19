@@ -6,6 +6,10 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,8 +25,13 @@ public class NotaVentaController {
     private NotaVentaService notaVentaService;
 
     @GetMapping
-    public ResponseEntity<List<NotaVentaResponseDto>> getAllNotasVenta() {
-        return ResponseEntity.ok(notaVentaService.getAllNotasVenta());
+    public ResponseEntity<Page<NotaVentaResponseDto>> getAllNotasVenta(
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        return ResponseEntity.ok(notaVentaService.getAllNotasVenta(pageable));
     }
 
     @GetMapping("/{id}")
@@ -62,14 +71,25 @@ public class NotaVentaController {
     }
 
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<NotaVentaResponseDto>> getNotasVentaByEstado(
-            @PathVariable VentaEstado estado) {
-        return ResponseEntity.ok(notaVentaService.getNotasVentaByEstado(estado));
+    public ResponseEntity<Page<NotaVentaResponseDto>> getNotasVentaByEstado(
+            @PathVariable VentaEstado estado,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        return ResponseEntity.ok(notaVentaService.getNotasVentaByEstado(estado, pageable));
     }
 
     @GetMapping("/historial-usuario/{id}")
-    public ResponseEntity<List<NotaVentaResponseDto>> getHistory(@RequestBody @PathVariable Long id) {
-            return ResponseEntity.ok(notaVentaService.getCompletedSalesByUser(id));
+    public ResponseEntity<Page<NotaVentaResponseDto>> getHistory(
+            @RequestBody @PathVariable Long id,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        return ResponseEntity.ok(notaVentaService.getCompletedSalesByUser(id, pageable));
     }
 
     @PostMapping("/add")

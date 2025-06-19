@@ -19,7 +19,6 @@ import java.util.Date;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@ToString
 public abstract class AuditableEntity implements Serializable {
 
     @CreatedDate

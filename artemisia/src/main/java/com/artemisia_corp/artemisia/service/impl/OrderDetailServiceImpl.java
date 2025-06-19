@@ -8,6 +8,8 @@ import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import com.artemisia_corp.artemisia.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,9 +30,9 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private ProductService productService;
 
     @Override
-    public List<OrderDetailResponseDto> getAllOrderDetails() {
+    public Page<OrderDetailResponseDto> getAllOrderDetails(Pageable pageable) {
         logsService.info("Fetching all order details");
-        return orderDetailRepository.findAllOrderDetails();
+        return orderDetailRepository.findAllOrderDetails(pageable);
     }
 
     @Override
@@ -98,7 +100,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return OrderDetailResponseDto.builder()
                 .id(savedOrderDetail.getId())
                 .groupId(notaVenta.getId())
-                .productId(product.getProductId())
+                .productId(product.getId())
                 .sellerId(seller.getId())
                 .productName(savedOrderDetail.getProductName())
                 .quantity(savedOrderDetail.getQuantity())
@@ -179,6 +181,12 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
     @Override
+    public Page<OrderDetailResponseDto> getOrderDetailsByNotaVenta(Long notaVentaId, Pageable pageable) {
+        logsService.info("Fetching order details for sale note ID: " + notaVentaId);
+        return orderDetailRepository.findByGroup_Id(notaVentaId, pageable);
+    }
+
+    @Override
     public List<OrderDetailResponseDto> getOrderDetailsByNotaVenta(Long notaVentaId) {
         logsService.info("Fetching order details for sale note ID: " + notaVentaId);
         return orderDetailRepository.findByGroup_Id(notaVentaId);
@@ -188,7 +196,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return OrderDetailResponseDto.builder()
                 .id(orderDetail.getId())
                 .groupId(orderDetail.getGroup().getId())
-                .productId(orderDetail.getProduct().getProductId())
+                .productId(orderDetail.getProduct().getId())
                 .sellerId(orderDetail.getSeller().getId())
                 .productName(orderDetail.getProductName())
                 .quantity(orderDetail.getQuantity())

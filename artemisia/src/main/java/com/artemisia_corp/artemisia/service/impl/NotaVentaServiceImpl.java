@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     @Override
     public Page<NotaVentaResponseDto> getAllNotasVenta(Pageable pageable) {
         logsService.info("Fetching all sales notes");
-        return notaVentaRepository.findAllNotaVentas(pageable);
+        Page<NotaVentaResponseDto> notaVentaPage = notaVentaRepository.findAllNotaVentas(pageable);
+        return notaVentaPage.map(this::enrichWithOrderDetails);
     }
 
     @Override
@@ -273,12 +275,15 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     @Override
     public Page<NotaVentaResponseDto> getNotasVentaByEstado(VentaEstado estado, Pageable pageable) {
         logsService.info("Fetching sale notes with status: " + estado);
-        return notaVentaRepository.findByEstadoVenta(estado, pageable);
+        Page<NotaVentaResponseDto> notaVentaPage = notaVentaRepository.findByEstadoVenta(estado, pageable);
+        return notaVentaPage.map(this::enrichWithOrderDetails);
     }
 
     @Override
     public Page<NotaVentaResponseDto> getCompletedSalesByUser(Long userId, Pageable pageable) {
-        return notaVentaRepository.findAllNotaVentasByBuyer_Id(userId, pageable);
+        logsService.info("Fetching completed sales for user ID: " + userId);
+        Page<NotaVentaResponseDto> notaVentaPage = notaVentaRepository.findAllNotaVentasByBuyer_Id(userId, pageable);
+        return notaVentaPage.map(this::enrichWithOrderDetails);
     }
 
     @Override
@@ -417,6 +422,13 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .date(notaVenta.getDate())
                 .detalles(detalles)
                 .build();
+    }
+
+    private NotaVentaResponseDto enrichWithOrderDetails(NotaVentaResponseDto dto) {
+        Pageable firstPage = PageRequest.of(0, Integer.MAX_VALUE);
+        Page<OrderDetailResponseDto> details = orderDetailService.getOrderDetailsByNotaVenta(dto.getId(), firstPage);
+        dto.setDetalles(details.getContent());
+        return dto;
     }
 
     private Product convertToProduct(Long productId, ProductResponseDto preProduct) {

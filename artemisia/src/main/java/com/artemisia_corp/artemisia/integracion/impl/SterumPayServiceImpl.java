@@ -79,13 +79,15 @@ public class SterumPayServiceImpl implements SterumPayService {
     }
 
     @Override
-    public StereumPagaResponseDto crearCargoCobro(StereumPagaDto chargeDto, Long idNotaVenta) {
+    public StereumPagaResponseDto crearCargoCobro(StereumPagaDto chargeDto, Long userId) {
         if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<StereumPagaResponseDto> response;
 
         chargeDto.setIdempotencyKey(this.getUUID());
         chargeDto.setCallback(this.urlBase);
+
+        log.info("ChargeDto: {}", chargeDto);
 
         try {
             response = restClient.post()
@@ -104,7 +106,7 @@ public class SterumPayServiceImpl implements SterumPayService {
 
         StereumPagaResponseDto body = response.getBody();
 
-        notaVentaService.ingresarIdTransaccion(body.getId(), idNotaVenta);
+        notaVentaService.ingresarIdTransaccion(body.getId(), notaVentaService.getActiveCartByUserId(userId).getId());
 
         return body;
     }

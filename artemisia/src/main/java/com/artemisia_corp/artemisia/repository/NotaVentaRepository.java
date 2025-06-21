@@ -32,5 +32,8 @@ public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
             "FROM NotaVenta nv WHERE nv.estadoVenta=:estado_venta")
     Page<NotaVentaResponseDto> findByEstadoVenta(@Param("estado_venta") VentaEstado estadoVenta, Pageable pageable);
 
-    Optional<NotaVenta> findByBuyer_IdAndEstadoVenta(Long buyerId, VentaEstado estadoVenta);
+    @Query("SELECT nv FROM NotaVenta nv " +
+            "WHERE nv.buyer.id =:buyer_id AND nv.estadoVenta = 'ON_CART' " +
+            "ORDER BY nv.id DESC LIMIT 1")
+    Optional<NotaVenta> findByBuyer_IdAndEstadoVenta(@Param("buyer_id") Long buyerId);
 }

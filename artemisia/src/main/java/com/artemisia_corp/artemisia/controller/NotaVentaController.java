@@ -1,10 +1,10 @@
 package com.artemisia_corp.artemisia.controller;
 
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.AddToCartDto;
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaRequestDto;
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
+import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/api/notas-venta")
 public class NotaVentaController {
@@ -102,5 +103,24 @@ public class NotaVentaController {
         return new ResponseEntity<>(notaVentaService.getActiveCartByUserId(userId), HttpStatus.OK);
     }
 
+    @PostMapping("/create_transaction")
+    public ResponseEntity<StereumPagaResponseDto> conseguirTransaccion(@RequestBody RequestPaymentDto respuesta) {
+        try {
+            return ResponseEntity.ok(notaVentaService.getPaymentInfo(respuesta));
+        } catch (Exception e) {
+            log.error("Error al verificar la transacción: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
+    @PostMapping("/verify_transaction")
+    public ResponseEntity<Void> verificarTransaccion(@RequestBody RespuestaVerificacionNotaVentaDto respuesta) {
+        try {
+            notaVentaService.obtenerRespuestaTransaccion(respuesta);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("Error al verificar la transacción: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

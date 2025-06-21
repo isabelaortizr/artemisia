@@ -1,10 +1,8 @@
 package com.artemisia_corp.artemisia.service;
 
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.AddToCartDto;
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaRequestDto;
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.RespuestaVerificacionNotaVentaDto;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
+import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,4 +22,5 @@ public interface NotaVentaService {
     void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta);
     NotaVentaResponseDto getActiveCartByUserId(Long userId);
     NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto);
+    StereumPagaResponseDto getPaymentInfo(RequestPaymentDto request);
 }

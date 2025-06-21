@@ -6,8 +6,10 @@ import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
+@ToString
 public class StereumPagaDto {
     private String country;
     private String amount;

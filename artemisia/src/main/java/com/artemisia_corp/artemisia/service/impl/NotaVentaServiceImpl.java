@@ -12,6 +12,8 @@ import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.EstadoResponseDto;
+import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaDto;
+import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +52,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     private LogsService logsService;
     @Autowired
     private SterumPayService sterumPayService;
-    @Autowired
-    private AddressService addressService;
 
     @Override
     public Page<NotaVentaResponseDto> getAllNotasVenta(Pageable pageable) {
@@ -129,7 +129,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     throw new RuntimeException("User not found");
                 });
 
-        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id, VentaEstado.ON_CART)
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
                     throw new RuntimeException("Sale note not found");
@@ -197,7 +197,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     throw new RuntimeException("User not found");
                 });
 
-        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id, VentaEstado.ON_CART)
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
                     throw new RuntimeException("Sale note not found");
@@ -229,7 +229,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     throw new RuntimeException("User not found");
                 });
 
-        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id, VentaEstado.ON_CART)
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
                     throw new RuntimeException("Sale note not found");
@@ -288,7 +288,11 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
     @Override
     public void ingresarIdTransaccion(String idTransaccion, Long notaVentaId) {
-        NotaVenta notaVenta = notaVentaRepository.getReferenceById(notaVentaId);
+        NotaVenta notaVenta = notaVentaRepository.findById(notaVentaId)
+                .orElseThrow(() -> {
+                    logsService.error("Sale note not found with ID: " + notaVentaId);
+                    throw new RuntimeException("Sale note not found");
+                });
 
         notaVenta.setIdTransaccion(idTransaccion);
         notaVentaRepository.save(notaVenta);
@@ -301,34 +305,58 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
 
-        if ("PAYED".equals(estado.getStatus())) {
+        if ("PAGADO".equals(estado.getStatus())) {
             logsService.info("Transaction completed successfully for ID: " + notaVenta.getId());
-            notaVenta.setEstadoVenta(VentaEstado.PAYED);
-            notaVentaRepository.save(notaVenta);
-            completeNotaVenta(notaVenta.getId());
-        } else if ("CANCELED".equals(estado.getStatus())) {
+            completeNotaVenta(notaVenta.getBuyer().getId());
+        } else if ("CANCELADA".equals(estado.getStatus())) {
             logsService.info("Transaction canceled for ID: " + notaVenta.getId());
-            deleteNotaVenta(notaVenta.getId());
+            deleteNotaVenta(notaVenta.getBuyer().getId());
         } else {
-            logsService.warning("Transaction has not been finalized for ID: " + notaVenta.getId());
+            logsService.warning("Transaction has not been finalized for ID: " + notaVenta.getId() + " with status: " + estado.getStatus());
         }
     }
 
     @Override
+    @Transactional
     public NotaVentaResponseDto getActiveCartByUserId(Long userId) {
-        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId, VentaEstado.ON_CART)
+        Optional<NotaVenta> existingNotaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId);
+
+        if (existingNotaVenta.isPresent()) {
+                return convertToDtoWithDetails(existingNotaVenta.get());
+        }
+
+        logsService.info("No active cart found for user ID: " + userId + ", creating new one");
+
+        User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    logsService.error("No active cart found for user ID: " + userId);
-                    throw new RuntimeException("No active cart found");
+                    logsService.error("User not found with ID: " + userId);
+                    throw new RuntimeException("User not found");
                 });
 
-        return convertToDtoWithDetails(notaVenta);
+        Address address = addressRepository.findLastAddressByUser_Id(userId);
+        if (address == null) {
+            logsService.error("User has no addresses");
+            throw new RuntimeException("User must have at least one address");
+        }
+
+        NotaVenta newNotaVenta = NotaVenta.builder()
+                .buyer(buyer)
+                .buyerAddress(address)
+                .estadoVenta(VentaEstado.ON_CART)
+                .date(LocalDateTime.now())
+                .totalGlobal(0.0)
+                .build();
+
+        NotaVenta savedNotaVenta = notaVentaRepository.save(newNotaVenta);
+        logsService.info("Created new sale note for user ID: " + userId);
+
+        return convertToDtoWithDetails(savedNotaVenta);
     }
 
     @Override
     @Transactional
     public NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto) {
-        NotaVenta cart = notaVentaRepository.findByBuyer_IdAndEstadoVenta(addToCartDto.getUserId(), VentaEstado.ON_CART)
+        NotaVenta cart = notaVentaRepository.findByBuyer_IdAndEstadoVenta(addToCartDto.getUserId())
                 .orElseGet(() -> {
                     User buyer = userRepository.findById(addToCartDto.getUserId())
                             .orElseThrow(() -> {
@@ -403,6 +431,24 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return convertToDtoWithDetails(cart);
     }
 
+    @Override
+    @Transactional
+    public StereumPagaResponseDto getPaymentInfo(RequestPaymentDto request) {
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(request.getUserId())
+                .orElseThrow(() -> {
+                    logsService.error("Sale note not found for user ID: " + request.getUserId());
+                    throw new RuntimeException("Sale note not found");
+                });
+
+        return sterumPayService.crearCargoCobro(StereumPagaDto.builder()
+                    .country(request.getCountry())
+                    .amount(notaVenta.getTotalGlobal().toString())
+                    .network(request.getNetwork())
+                    .currency(request.getCurrency())
+                    .chargeReason(request.getChargeReason())
+                    .build(),
+                request.getUserId());
+    }
     private boolean isNotaVentaCompleted(Long notaVentaId) {
         NotaVenta notaVenta = notaVentaRepository.getReferenceById(notaVentaId);
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
@@ -420,6 +466,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .estadoVenta(notaVenta.getEstadoVenta().name())
                 .totalGlobal(notaVenta.getTotalGlobal())
                 .date(notaVenta.getDate())
+                .idTransaccion(notaVenta.getIdTransaccion())
                 .detalles(detalles)
                 .build();
     }

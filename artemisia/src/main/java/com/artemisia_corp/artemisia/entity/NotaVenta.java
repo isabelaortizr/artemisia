@@ -28,7 +28,7 @@ public class NotaVenta extends AuditableEntity {
 
     @Comment("Direccion a la cual se debe enviar el producto")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buyer_address", nullable = false)
+    @JoinColumn(name = "buyer_address", nullable = true)
     private Address buyerAddress;
 
     @Comment("Estado actual de la venta, en carrito o completada")

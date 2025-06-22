@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Aplicar estilo global solo a botones directos del body (no los que están dentro de formularios o secciones específicas) */
+body > button {
+  background-color: #1a1a1a;
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;

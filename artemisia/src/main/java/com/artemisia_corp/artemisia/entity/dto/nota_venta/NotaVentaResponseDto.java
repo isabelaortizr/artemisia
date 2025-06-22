@@ -19,14 +19,16 @@ public class NotaVentaResponseDto {
     private String estadoVenta;
     private Double totalGlobal;
     private LocalDateTime date;
+    private String idTransaccion;
     private List<OrderDetailResponseDto> detalles;
 
     public NotaVentaResponseDto(NotaVenta notaVenta) {
         this.id = notaVenta.getId();
         this.userId = notaVenta.getBuyer().getId();
-        this.buyerAddress = notaVenta.getBuyerAddress().getAddressId();
+        this.buyerAddress = notaVenta.getBuyerAddress().getId();
         this.estadoVenta = notaVenta.getEstadoVenta().name();
         this.totalGlobal = notaVenta.getTotalGlobal();
+        this.idTransaccion = notaVenta.getIdTransaccion();
         this.date = notaVenta.getDate();
     }
 }

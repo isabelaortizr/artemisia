@@ -5,6 +5,10 @@ import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseD
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateQuantityDetailDto;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,8 +24,13 @@ public class OrderDetailController {
     private OrderDetailService orderDetailService;
 
     @GetMapping
-    public ResponseEntity<List<OrderDetailResponseDto>> getAllOrderDetails() {
-        return ResponseEntity.ok(orderDetailService.getAllOrderDetails());
+    public ResponseEntity<Page<OrderDetailResponseDto>> getAllOrderDetails(
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        return ResponseEntity.ok(orderDetailService.getAllOrderDetails(pageable));
     }
 
     @GetMapping("/{id}")
@@ -56,8 +65,13 @@ public class OrderDetailController {
     }
 
     @GetMapping("/nota-venta/{notaVentaId}")
-    public ResponseEntity<List<OrderDetailResponseDto>> getOrderDetailsByNotaVenta(
-            @PathVariable Long notaVentaId) {
-        return ResponseEntity.ok(orderDetailService.getOrderDetailsByNotaVenta(notaVentaId));
+    public ResponseEntity<Page<OrderDetailResponseDto>> getOrderDetailsByNotaVenta(
+            @PathVariable Long notaVentaId,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        return ResponseEntity.ok(orderDetailService.getOrderDetailsByNotaVenta(notaVentaId, pageable));
     }
 }

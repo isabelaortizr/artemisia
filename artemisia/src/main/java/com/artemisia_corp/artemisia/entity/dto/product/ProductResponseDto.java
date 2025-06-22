@@ -22,7 +22,7 @@ public class ProductResponseDto {
     private Long sellerId;
 
     public ProductResponseDto(Product product) {
-        this.productId = product.getProductId();
+        this.productId = product.getId();
         this.name = product.getName();
         this.technique = product.getTechnique().name();
         this.materials = product.getMaterials();

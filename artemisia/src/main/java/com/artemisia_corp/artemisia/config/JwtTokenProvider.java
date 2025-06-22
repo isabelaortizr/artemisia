@@ -1,14 +1,15 @@
 package com.artemisia_corp.artemisia.config;
 
 import com.artemisia_corp.artemisia.entity.User;
-import com.artemisia_corp.artemisia.entity.exception.InvalidJwtAuthenticationException;
-import com.artemisia_corp.artemisia.entity.exception.NotDataFoundException;
+import com.artemisia_corp.artemisia.exception.InvalidJwtAuthenticationException;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.service.UserService;
 import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,6 +26,7 @@ import java.util.Optional;
 public class JwtTokenProvider implements Serializable {
     private static final String USER_ID_CLAIM = "user_id";
     private static final String USER_ROLE_CLAIM = "user_role";
+    private static final String USER_EMAIL_CLAIM = "user_email";
 
     @Value("${security.jwt.token.secret-key:Ch4ng1t}")
     private String secretKey;
@@ -33,7 +35,6 @@ public class JwtTokenProvider implements Serializable {
     private int validityInMinutes;
     @Autowired
     private UserService userService;
-
 
     @PostConstruct
     protected void init() {
@@ -50,6 +51,7 @@ public class JwtTokenProvider implements Serializable {
                 .setExpiration(validity);
         claims.put(USER_ID_CLAIM, user.getId());
         claims.put(USER_ROLE_CLAIM, user.getRole());
+        claims.put(USER_EMAIL_CLAIM, user.getMail());
 
         String token = Jwts.builder()
                 .setClaims(claims)
@@ -57,23 +59,26 @@ public class JwtTokenProvider implements Serializable {
                 .signWith(SignatureAlgorithm.HS256, secretKeyByte)
                 .compact();
 
+        log.info("User id: {}. Token: {}", user.getId(), token);
+
         return token;
     }
 
-    public Long getUserIdFromToken(String token) {
+    public String getUserIdFromToken(String token) {
         String jwt = token.replace("Bearer ", "");
         Claims claims = Jwts.parser()
-                .setSigningKey(secretKey) // debe ser tu clave secreta
+                .setSigningKey(secretKey)
                 .parseClaimsJws(jwt)
                 .getBody();
-        return Long.parseLong(claims.getSubject());
+        log.info("ID: {}", claims.getSubject());
+        return String.valueOf(claims.getSubject());
     }
 
     private String getUsername(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    private Long getId(String token) {
+    public Long getId(String token) {
         String id= Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getId();
         return Long.parseLong(id);
     }

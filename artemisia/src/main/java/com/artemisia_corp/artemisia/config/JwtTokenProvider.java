@@ -71,7 +71,7 @@ public class JwtTokenProvider implements Serializable {
                 .parseClaimsJws(jwt)
                 .getBody();
         log.info("ID: {}", claims.getSubject());
-        return String.valueOf(claims.getSubject());
+        return String.valueOf(claims.getId());
     }
 
     private String getUsername(String token) {

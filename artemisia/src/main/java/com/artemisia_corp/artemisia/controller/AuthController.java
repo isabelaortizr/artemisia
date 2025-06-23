@@ -49,7 +49,7 @@ public class AuthController {
             okAuthDto.setUsername(user.getUsername());
             return ok(okAuthDto);
         } catch (BadCredentialsException e) {
-            log.info("Error al autentificar el usuario: {}", e);
+            log.error("Error al autentificar el usuario: {}", data.getUsername(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "");
         } catch (
                 Exception e) {

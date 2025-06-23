@@ -9,6 +9,8 @@ import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.service.LogsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -53,7 +55,7 @@ public class AddressServiceImpl implements AddressService {
                 .build();
 
         Address savedAddress = addressRepository.save(address);
-        logsService.info("Address created with ID: " + savedAddress.getAddressId());
+        logsService.info("Address created with ID: " + savedAddress.getId());
         return convertToDto(savedAddress);
     }
 
@@ -75,7 +77,7 @@ public class AddressServiceImpl implements AddressService {
         address.setUser(user);
 
         Address updatedAddress = addressRepository.save(address);
-        logsService.info("Address updated with ID: " + updatedAddress.getAddressId());
+        logsService.info("Address updated with ID: " + updatedAddress.getId());
         return convertToDto(updatedAddress);
     }
 
@@ -90,14 +92,14 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public List<AddressResponseDto> getAddressesByUser(Long userId) {
+    public Page<AddressResponseDto> getAddressesByUser(Long userId, Pageable pageable) {
         logsService.info("Fetching addresses for user ID: " + userId);
-        return addressRepository.findByUser_Id(userId);
+        return addressRepository.findByUser_Id(userId, pageable);
     }
 
     private AddressResponseDto convertToDto(Address address) {
         return AddressResponseDto.builder()
-                .addressId(address.getAddressId())
+                .addressId(address.getId())
                 .direction(address.getDirection())
                 .userId(address.getUser().getId())
                 .build();

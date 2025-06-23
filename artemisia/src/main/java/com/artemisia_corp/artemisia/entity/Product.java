@@ -19,7 +19,7 @@ public class Product extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "PRODUCT_ID_GENERATOR")
     @SequenceGenerator(name = "PRODUCT_ID_GENERATOR", sequenceName = "seq_product_id", allocationSize = 1)
-    private Long productId;
+    private Long id;
 
     @Comment("Usuario que puso el producto a la venta")
     @ManyToOne(fetch = FetchType.LAZY)

@@ -28,7 +28,7 @@ public class NotaVenta extends AuditableEntity {
 
     @Comment("Direccion a la cual se debe enviar el producto")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buyer_address", nullable = false)
+    @JoinColumn(name = "buyer_address", nullable = true)
     private Address buyerAddress;
 
     @Comment("Estado actual de la venta, en carrito o completada")
@@ -43,4 +43,8 @@ public class NotaVenta extends AuditableEntity {
     @Comment("Fecha en la que se creo la compra")
     @Column(nullable = false)
     private LocalDateTime date;
+
+    @Comment("Identificador de la transaccion de stereum")
+    @Column(name = "id_transaccion", nullable = true, length = 250)
+    private String idTransaccion;
 }

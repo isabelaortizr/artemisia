@@ -2,17 +2,29 @@ package com.artemisia_corp.artemisia.controller;
 
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
+import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.AddressService;
+import com.artemisia_corp.artemisia.utils.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Controller
-    @RequestMapping("/api/addresses")
+@RequestMapping("/api/addresses")
 public class AddressController {
 
     @Autowired
@@ -42,7 +54,31 @@ public class AddressController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AddressResponseDto>> getAddressesByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(addressService.getAddressesByUser(userId));
+    public ResponseEntity<Page<AddressResponseDto>> getAddressesByUser(
+            @PathVariable Long userId,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir,
+
+            @RequestParam(name = "nit", required = false) String nit,
+            @RequestParam(name = "nombre", required = false) String nombre,
+
+            @RequestParam(value = "from", required = false) @DateTimeFormat(pattern = DateUtils.FORMAT_ISO_8601_SHORT) Date from,
+            @RequestParam(value = "to" , required = false) @DateTimeFormat(pattern = DateUtils.FORMAT_ISO_8601_SHORT) Date to) {
+
+        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autorizado");
+
+
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+            return ResponseEntity.ok(addressService.getAddressesByUser(userId, pageable));
+        } catch (OperationException e) {
+            log.error("Error al listar el empresas. Causa:{}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("Error al listar el empresas", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

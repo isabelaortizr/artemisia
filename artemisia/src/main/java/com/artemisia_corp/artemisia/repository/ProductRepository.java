@@ -2,57 +2,56 @@ package com.artemisia_corp.artemisia.repository;
 
 import com.artemisia_corp.artemisia.entity.Product;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
-import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
 import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
 import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
-import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p)" +
             "FROM Product p")
-    List<ProductResponseDto> findAllProducts();
+    Page<ProductResponseDto> findAllProducts(Pageable pageable);
 
-    @Query("SELECT p FROM Product p WHERE p.productId = :p_productId")
-    Optional<Product> findProductByProductId(@Param("p_productId") Long productId);
+    @Query("SELECT p FROM Product p WHERE p.id = :p_productId")
+    Optional<Product> findProductById(@Param("p_productId") Long productId);
 
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p)" +
             "FROM Product p WHERE p.stock > 0 AND p.status = 'AVAILABLE'")
-    List<ProductResponseDto> findAllAvailableProducts();
-
-    @Query("SELECT p FROM Product p WHERE p.seller = :sellerId")
-    List<Product> findProductBySeller(@Param("sellerId") Long sellerId);
+    Page<ProductResponseDto> findAllAvailableProducts(Pageable pageable);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Product p SET p.stock = p.stock - :quantity WHERE p.productId = :productId")
+    @Query("UPDATE Product p SET p.stock = p.stock - :quantity WHERE p.id = :productId")
     void reduceStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     @Transactional
     @Modifying
-    @Query("UPDATE Product p SET p.stock = p.stock + :quantity WHERE p.productId = :productId")
+    @Query("UPDATE Product p SET p.stock = p.stock + :quantity WHERE p.id = :productId")
     void augmentStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p) " +
-            "FROM Product p WHERE (:#{#dto.category} IS NULL " +
-            "OR p.category = :#{#dto.category}) AND (:#{#dto.technique} IS NULL " +
-            "OR p.technique = :#{#dto.technique}) AND (:#{#dto.priceMin} IS NULL " +
-            "OR p.price >= :#{#dto.priceMin}) AND (:#{#dto.priceMax} IS NULL " +
-            "OR p.price <= :#{#dto.priceMax})")
-    List<ProductResponseDto> searchWithFilters(@Param("dto") ProductSearchDto dto);
+            "FROM Product p WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
+            "AND (:technique IS NULL OR :technique = '' OR p.technique = :technique) " +
+            "AND (:priceMin IS NULL OR p.price >= :priceMin) " +
+            "AND (:priceMax IS NULL OR p.price <= :priceMax)")
+    Page<ProductResponseDto> searchWithFilters(
+            @Param("category") PaintingCategory category,
+            @Param("technique") PaintingTechnique technique,
+            @Param("priceMin") Double priceMin,
+            @Param("priceMax") Double priceMax,
+            Pageable pageable);
 
-    List<ProductResponseDto> findBySeller_Id(Long sellerId);
+    Page<ProductResponseDto> findBySeller_Id(Long sellerId, Pageable pageable);
 
-    List<ProductResponseDto> findByCategory(PaintingCategory category);
-    List<ProductResponseDto> findByTechnique(PaintingTechnique technique);
+    Page<ProductResponseDto> findByCategory(PaintingCategory category, Pageable pageable);
+    Page<ProductResponseDto> findByTechnique(PaintingTechnique technique, Pageable pageable);
 }

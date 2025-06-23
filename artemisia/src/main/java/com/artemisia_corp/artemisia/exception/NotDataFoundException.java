@@ -1,4 +1,4 @@
-package com.artemisia_corp.artemisia.entity.exception;
+package com.artemisia_corp.artemisia.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

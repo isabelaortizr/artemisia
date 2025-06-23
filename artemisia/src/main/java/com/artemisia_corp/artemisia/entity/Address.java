@@ -16,7 +16,7 @@ public class Address extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ADDRESS_ID_GENERATOR")
     @SequenceGenerator(name = "ADDRESS_ID_GENERATOR", sequenceName = "seq_address_id", allocationSize = 1)
-    private Long addressId;
+    private Long id;
 
     @Comment("Direccion dada")
     @Column(length = 250, nullable = false)

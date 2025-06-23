@@ -9,6 +9,7 @@ import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,29 +24,14 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
 
     @Override
     public List<UserResponseDto> getAllUsers() {
         logsService.info("Fetching all users");
         return userRepository.findAllUsers();
-    }
-
-    @Override
-    public UserResponseDto login(LoginDto loginDto) {
-        logsService.info("Logging in user for: " + loginDto.getName());
-        if (((loginDto.getName() != null && !loginDto.getName().isEmpty())
-                || (loginDto.getMail() != null && !loginDto.getMail().isEmpty()))
-                && (loginDto.getPassword() != null && !loginDto.getPassword().isEmpty())) {
-            logsService.info("Encripting passowrd");
-            String encriptedPassword = passwordEncoder.encode(loginDto.getPassword());
-
-
-            if (!loginDto.getName().isEmpty()) return userRepository.loginUser(loginDto.getName(), encriptedPassword);
-            else if (!loginDto.getMail().isEmpty()) return userRepository.loginUser(loginDto.getMail(), encriptedPassword);
-            else throw new RuntimeException("Invalid login credentials");
-        }
-
-        return null;
     }
 
     @Override
@@ -117,9 +103,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id, String token) {
-        Long userIdFromToken = new JwtTokenProvider().getUserIdFromToken(token);
-        if (!userIdFromToken.equals(id)) {
-            logsService.error("Unauthorized delete attempt by user ID: " + userIdFromToken);
+        String userNameFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        Optional<User> userOptional = userRepository.findByName(userNameFromToken);
+        if (userOptional.isEmpty()) {
+            logsService.error("User not found with name: " + userNameFromToken);
+            throw new RuntimeException("User not found");
+        }
+        User user = userOptional.get();
+
+        if (!user.getId().equals(id)) {
+            logsService.error("Unauthorized delete attempt by user ID: " + userNameFromToken);
             throw new RuntimeException("Unauthorized delete attempt");
         }
 
@@ -128,7 +121,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("User not found");
         }
 
-        User user = userRepository.findUserById(userIdFromToken);
         user.setStatus(StateEntity.valueOf("DELETED"));
         user.setName(user.getName() + " DELETED");
         user.setMail(user.getMail() + " DELETED");

@@ -20,7 +20,7 @@ public class OrderDetailResponseDto {
     public OrderDetailResponseDto(OrderDetail detalleVenta) {
         this.id = detalleVenta.getId();
         this.groupId = detalleVenta.getGroup().getId();
-        this.productId = detalleVenta.getProduct().getProductId();
+        this.productId = detalleVenta.getProduct().getId();
         this.sellerId = detalleVenta.getSeller().getId();
         this.productName = detalleVenta.getProduct().getName();
         this.quantity = detalleVenta.getQuantity();

@@ -14,7 +14,7 @@ public class AddressResponseDto {
     private Long userId;
 
     public AddressResponseDto(Address address) {
-        this.addressId = address.getAddressId();
+        this.addressId = address.getId();
         this.direction = address.getDirection();
         this.userId = address.getUser().getId();
     }

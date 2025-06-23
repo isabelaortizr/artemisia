@@ -7,12 +7,14 @@ import com.artemisia_corp.artemisia.entity.enums.*;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+@Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
     @Autowired
@@ -25,9 +27,9 @@ public class ProductServiceImpl implements ProductService {
     private OrderDetailRepository orderDetailRepository;
 
     @Override
-    public List<ProductResponseDto> getAllProducts() {
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
         logsService.info("Fetching all products");
-        return productRepository.findAllProducts();
+        return productRepository.findAllProducts(pageable);
     }
 
     @Override
@@ -63,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
                 .build();
 
         Product savedProduct = productRepository.save(product);
-        logsService.info("Product created with ID: " + savedProduct.getProductId());
+        logsService.info("Product created with ID: " + savedProduct.getId());
         return convertToDto(savedProduct);
     }
 
@@ -93,7 +95,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
 
         Product updatedProduct = productRepository.save(product);
-        logsService.info("Product updated with ID: " + updatedProduct.getProductId());
+        logsService.info("Product updated with ID: " + updatedProduct.getId());
         return convertToDto(updatedProduct);
     }
 
@@ -114,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
         int quantity = manageProductDto.getQuantity();
         boolean reduceStock = manageProductDto.isReduceStock();
 
-        Product product = productRepository.findProductByProductId(productId)
+        Product product = productRepository.findProductById(productId)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + productId);
                     throw new RuntimeException("Product not found");
@@ -143,10 +145,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> getAvailableProducts() {
+    public Page<ProductResponseDto> getAvailableProducts(Pageable pageable) {
         logsService.info("Fetching all available products (stock > 0)");
         try {
-            return productRepository.findAllAvailableProducts();
+            return productRepository.findAllAvailableProducts(pageable);
         } catch (Exception e) {
             logsService.error("Error fetching available products: " + e.getMessage());
             throw new RuntimeException("Error fetching available products", e);
@@ -155,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductResponseDto> getProductsBySeller(Long sellerId) {
+    public Page<ProductResponseDto> getProductsBySeller(Long sellerId, Pageable pageable) {
         logsService.info("Fetching products for seller ID: " + sellerId);
 
         // Verificar que el vendedor existe
@@ -165,7 +167,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         try {
-            return productRepository.findBySeller_Id(sellerId);
+            return productRepository.findBySeller_Id(sellerId, pageable);
         } catch (Exception e) {
             logsService.error("Error fetching products for seller: " + e.getMessage());
             throw new RuntimeException("Error fetching products for seller", e);
@@ -174,7 +176,7 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductResponseDto convertToDto(Product product) {
         return ProductResponseDto.builder()
-                .productId(product.getProductId())
+                .productId(product.getId())
                 .name(product.getName())
                 .technique(product.getTechnique().name())
                 .materials(product.getMaterials())
@@ -189,20 +191,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponseDto> searchProducts(ProductSearchDto dto) {
+    public Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable) {
         logsService.info("Searching products with filters");
-        return productRepository.searchWithFilters(dto);
+        log.info("dto: " + dto);
+        return productRepository.searchWithFilters(PaintingCategory.valueOf(dto.getCategory()), PaintingTechnique.valueOf(dto.getTechnique()), dto.getPriceMin(), dto.getPriceMax(), pageable);
     }
 
     @Override
-    public List<ProductResponseDto> getByCategory(String category) {
+    public Page<ProductResponseDto> getByCategory(String category, Pageable pageable) {
         logsService.info("Fetching products by category: " + category);
-        return productRepository.findByCategory(PaintingCategory.valueOf(category));
+        return productRepository.findByCategory(PaintingCategory.valueOf(category), pageable);
     }
 
     @Override
-    public List<ProductResponseDto> getByTechnique(String technique) {
+    public Page<ProductResponseDto> getByTechnique(String technique, Pageable pageable) {
         logsService.info("Fetching products by technique: " + technique);
-        return productRepository.findByTechnique(PaintingTechnique.valueOf(technique));
+        return productRepository.findByTechnique(PaintingTechnique.valueOf(technique), pageable);
     }
 }

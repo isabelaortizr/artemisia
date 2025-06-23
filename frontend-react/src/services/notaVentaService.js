@@ -1,38 +1,44 @@
 // src/services/notaVentaService.js
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function getCart(userId) {
-    const token = localStorage.getItem("authToken");
-    const res = await fetch(`${API_URL}/notas-venta/user/${userId}`, {
-        method: "GET",
+async function addToCart({ productId, quantity }) {
+    const token  = localStorage.getItem('authToken');
+    const userId = localStorage.getItem('userId');  // ← lo sacamos de localStorage
+    if (!userId) throw new Error('No userId found, please login first');
+
+    const res = await fetch(`${API_URL}/notas-venta/add`, {
+        method: 'POST',
         headers: {
-            "Content-Type":  "application/json",
-            "Authorization": `Bearer ${token}`,
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
         },
+        body: JSON.stringify({
+            userId:    parseInt(userId, 10),
+            productId,
+            quantity
+        }),
     });
+
     if (!res.ok) {
+        // intenta leer el body de error, si no viene JSON, lanza genérico
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `Error ${res.status}`);
+        throw new Error(err.message || `Error ${res.status} al añadir al carrito`);
     }
-    return res.json(); // devuelve la NotaVentaResponseDto
+
+    // devuelve la nota de venta actualizada
+    return res.json();
 }
 
-// (Ya tenías esto para añadir al carrito…)
-async function addToCart(dto) {
-    const token = localStorage.getItem("authToken");
-    const res = await fetch(`${API_URL}/notas-venta/add`, {
-        method: "POST",
-        headers: {
-            "Content-Type":  "application/json",
-            "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(dto),
+async function getCart(userId) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/user/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `Error ${res.status}`);
+        throw new Error(err.message || `Error ${res.status} al cargar carrito`);
     }
     return res.json();
 }
 
-export default { getCart, addToCart };
+export default { addToCart, getCart };

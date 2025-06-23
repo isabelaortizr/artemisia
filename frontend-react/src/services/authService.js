@@ -21,15 +21,19 @@ async function login({ username, password }) {
 
     const body = await res.json();
     console.log("🔐 Respuesta login:", body);
-    // return body;
+    // body === { id_token, username, user_id }
+
     return {
-        token: body.id_token,
-        user: body.username
+        token:   body.id_token,
+        user:    body.username,
+        userId:  body.user_id
     };
 }
 
 function logout() {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
 }
 
 export default { login, logout };

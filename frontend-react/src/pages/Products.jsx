@@ -1,52 +1,128 @@
 // src/pages/Products.jsx
 import { useState, useEffect } from 'react';
-import productService from '../services/productService';
 import { Link } from 'react-router-dom';
+import notaVentaService from '../services/notaVentaService';
+import productService    from '../services/productService';
+import cartIcon          from '../assets/cart-icon.png'; // ajusta la ruta si hace falta
 
 const Products = () => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading]   = useState(true);
-    const [error, setError]       = useState(null);
+    const [products, setProducts]     = useState([]);
+    const [loading, setLoading]       = useState(true);
+    const [error, setError]           = useState(null);
+    const [expanded, setExpanded]     = useState([]);
+    const [page, setPage]             = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
 
     useEffect(() => {
-        productService.getProducts()
-            .then(data => {
-                setProducts(data);
-                setLoading(false);
+        setLoading(true);
+        productService.getProducts(page, 9)
+            .then(({ items, totalPages }) => {
+                setProducts(items);
+                setTotalPages(totalPages);
             })
-            .catch(err => {
-                setError(err.message || 'Error al cargar productos');
-                setLoading(false);
+            .catch(err => setError(err.message || 'Error al cargar productos'))
+            .finally(() => setLoading(false));
+    }, [page]);
+
+    const toggleExpand = (id) => {
+        setExpanded(prev =>
+            prev.includes(id)
+                ? prev.filter(x => x !== id)
+                : [...prev, id]
+        );
+    };
+
+    const handleAddToCart = async (prod) => {
+        try {
+            const updatedNota = await notaVentaService.addToCart({
+                productId: prod.productId,
+                quantity:  1
             });
-    }, []);
+            console.log('Carrito actualizado:', updatedNota);
+            // aquí podrías actualizar un estado global de carrito o mostrar un toast...
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
+        }
+    };
 
     if (loading) return <p className="text-center mt-10">Cargando productos...</p>;
     if (error)   return <p className="text-center mt-10 text-red-500">{error}</p>;
 
     return (
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="relative max-w-7xl mx-auto p-6">
+            {/* Botón de carrito en esquina superior derecha */}
+            <Link to="/cart" className="absolute top-6 right-6">
+                <img
+                    src={cartIcon}
+                    alt="Ir al carrito"
+                    className="w-10 h-10 hover:opacity-80 transition"
+                />
+            </Link>
+
             <h2 className="text-3xl font-semibold mb-8 text-center">Catálogo de Productos</h2>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map(prod => (
-                    <div
-                        key={prod.id}
-                        className="border rounded-xl p-4 shadow-md hover:shadow-xl transition"
-                    >
-                        <img
-                            src={prod.imageUrl || 'https://via.placeholder.com/300x200'}
-                            alt={prod.name}
-                            className="w-full h-48 object-cover rounded-lg"
-                        />
-                        <h3 className="mt-4 font-semibold text-lg">{prod.name}</h3>
-                        <p className="text-gray-500 mt-1">${prod.price.toFixed(2)}</p>
-                        <Link
-                            to={`/products/${prod.id}`}
-                            className="mt-4 block w-full text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
+                {products.map(prod => {
+                    const isExpanded = expanded.includes(prod.productId);
+                    return (
+                        <div
+                            key={prod.productId}
+                            className={`border rounded-xl p-4 shadow-md transition-transform duration-200 ${
+                                isExpanded ? 'scale-105' : 'hover:shadow-xl'
+                            }`}
                         >
-                            Ver detalle
-                        </Link>
-                    </div>
-                ))}
+                            <img
+                                src={prod.imageUrl || 'https://via.placeholder.com/300x200'}
+                                alt={prod.name}
+                                className="w-full h-48 object-cover rounded-lg"
+                            />
+                            <h3 className="mt-4 font-semibold text-lg">{prod.name}</h3>
+                            <p className="text-gray-500 mt-1">${prod.price.toFixed(2)}</p>
+
+                            <button
+                                onClick={() => toggleExpand(prod.productId)}
+                                className="mt-4 text-indigo-600 hover:underline"
+                            >
+                                {isExpanded ? 'Ver menos ▲' : 'Ver más ▼'}
+                            </button>
+
+                            {isExpanded && (
+                                <div className="mt-4 text-sm text-gray-700 space-y-2">
+                                    <p><strong>Técnica:</strong> {prod.technique}</p>
+                                    {prod.category    && <p><strong>Categoría:</strong> {prod.category}</p>}
+                                    {prod.description && <p><strong>Descripción:</strong> {prod.description}</p>}
+                                </div>
+                            )}
+
+                            <button
+                                onClick={() => handleAddToCart(prod)}
+                                className="mt-6 w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
+                            >
+                                Añadir al carrito
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Controles de paginación */}
+            <div className="flex justify-center items-center space-x-4 mt-8">
+                <button
+                    onClick={() => setPage(p => Math.max(p - 1, 0))}
+                    disabled={page === 0}
+                    className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Anterior
+                </button>
+                <span>Página {page + 1} de {totalPages}</span>
+                <button
+                    onClick={() => setPage(p => Math.min(p + 1, totalPages - 1))}
+                    disabled={page + 1 >= totalPages}
+                    className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Siguiente
+                </button>
             </div>
         </div>
     );

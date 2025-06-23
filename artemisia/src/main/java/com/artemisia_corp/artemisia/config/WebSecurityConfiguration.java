@@ -56,4 +56,12 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/api/**")
+//                .allowedOrigins("http://localhost:5173")  // ajusta el puerto de Vite
+//                .allowedMethods("*")
+//                .allowCredentials(true);
+//    }
 }

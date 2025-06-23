@@ -34,9 +34,9 @@ function Products() {
       id="Products"
     >
       <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 text-center">
-        Available{' '}
+        Artemisia's{' '}
         <span className="underline underline-offset-4 decoration-1 font-light">
-          Masterpieces
+          Best Solds
         </span>
       </h1>
       <p className="text-center text-white mb-8 max-w-80 mx-auto">

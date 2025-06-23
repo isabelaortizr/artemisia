@@ -14,5 +14,8 @@ public class OKAuthDto {
     private String idToken;
     @JsonProperty("username")
     private String username;
+    @JsonProperty("user_id")
+    private String id;
+
 
 }

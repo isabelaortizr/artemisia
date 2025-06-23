@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { assets } from '../assets/assets';
+import { Link } from 'react-router-dom';
 
-function Navbar() {
+function Navbar({ showSignUpButton = true }) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
@@ -20,7 +21,9 @@ function Navbar() {
   return (
     <div className="absolute top-0 left-0 w-full z-20">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <img src={assets.logo} alt="Logo" className="h-10" />
+        <Link to="/">
+          <img src={assets.logo} alt="Logo" className="h-10 cursor-pointer" />
+        </Link>
 
         <ul className="hidden md:flex gap-8 text-sm font-medium text-white">
           <li><a href="#Header" className="hover:text-gray-400">Home</a></li>
@@ -29,9 +32,13 @@ function Navbar() {
           <li><a href="#Profile" className="hover:text-gray-400">My Profile</a></li>
         </ul>
 
-        <button className="hidden md:block bg-white px-8 py-2 rounded-full">
-          Sign Up
-        </button>
+        {showSignUpButton && (
+          <Link to="/register">
+            <button className="hidden md:block bg-white px-8 py-2 rounded-full hover:bg-gray-200 transition">
+              Sign Up
+            </button>
+          </Link>
+        )}
 
         <img
           src={assets.menu_icon}
@@ -40,7 +47,6 @@ function Navbar() {
           alt="menu"
         />
       </div>
-
 
       {/* Menú móvil deslizante */}
       <div

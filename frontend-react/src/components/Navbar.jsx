@@ -34,7 +34,7 @@ function Navbar({ showSignUpButton = true }) {
 
         {showSignUpButton && (
           <Link to="/register">
-            <button className="hidden md:block bg-white px-8 py-2 rounded-full hover:bg-gray-200 transition">
+            <button className="hidden md:block bg-white px-8 py-2 rounded-full hover:bg-black hover:text-white transition">
               Sign Up
             </button>
           </Link>

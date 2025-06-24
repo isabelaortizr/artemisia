@@ -11,6 +11,7 @@ import LandingPage from "./LandingPage";
 import Login from "./pages/Login";
 import Register     from "./pages/Register";      // ← Nueva importación
 import Products    from './pages/Products';
+import Profile  from './pages/Profile';
 import Cart        from "./pages/Cart";
 import Checkout   from "./pages/Checkout";
 
@@ -23,6 +24,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/products" element={<Products />} />  {/* Catálogo */}
+            <Route path="/profile"  element={<Profile />} />  {/* ← Aquí */}
             <Route path="/cart"     element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
 

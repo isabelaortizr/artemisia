@@ -5,6 +5,7 @@ import notaVentaService from '../services/notaVentaService';
 import productService   from '../services/productService';
 import cartIcon         from '../assets/cart-icon.png';
 import logoutIcon       from '../assets/logout-icon.png'; // tu icono de logout
+import profileIcon      from '../assets/profile-icon.png'; // tu icono de perfil
 import authService      from '../services/authService';
 
 const Products = () => {
@@ -75,6 +76,11 @@ const Products = () => {
                     className="w-10 h-10 hover:opacity-80 transition"
                 />
             </button>
+
+            {/* Botón perfil */}
+            <Link to="/profile" className="absolute top-6 right-60">
+                <img src={profileIcon} alt="Mi Perfil" className="w-10 h-10 hover:opacity-80 transition" />
+            </Link>
 
             {/* Botón carrito */}
             <Link to="/cart" className="absolute top-6 right-6">

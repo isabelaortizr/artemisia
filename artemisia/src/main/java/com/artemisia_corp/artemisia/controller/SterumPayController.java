@@ -39,10 +39,12 @@ public class SterumPayController {
         }
     }
 
-    @PostMapping("/conversion-bob")
-    public ResponseEntity<CurrencyConversionResponseDto> conversionBob(@RequestBody CurrencyConversionDto conversionDto) {
+    @PostMapping("/conversion-bob/{nota_venta_id}")
+    public ResponseEntity<CurrencyConversionResponseDto> conversionBob(
+            @PathVariable("userId") Long userId,
+            @RequestBody CurrencyConversionDto conversionDto) {
         try {
-            CurrencyConversionResponseDto response = sterumPayService.conversionBob(conversionDto);
+            CurrencyConversionResponseDto response = sterumPayService.conversionBob(conversionDto, userId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error al realizar la conversion de bob.", e);

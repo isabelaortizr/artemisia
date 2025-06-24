@@ -47,14 +47,14 @@ function Products() {
       <div className="flex justify-end items-center mb-8">
         <button
           onClick={prevProduct}
-          className="p-3 bg-amber-50 rounded mr-2 hover:scale-105 transition"
+          className="p-3 bg-white rounded mr-2 hover:scale-105 transition"
           aria-label="Previous Product"
         >
           <img src={assets.left_arrow} alt="Previous" />
         </button>
         <button
           onClick={nextProduct}
-          className="p-3 bg-amber-50 rounded hover:scale-105 transition"
+          className="p-3 bg-white rounded hover:scale-105 transition"
           aria-label="Next Product"
         >
           <img src={assets.right_arrow} alt="Next" />

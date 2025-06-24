@@ -8,6 +8,9 @@ import Register from './pages/Register';
 import Footer from './components/Footer';
 import ProductsLanding from './components/ProductsLanding';
 import Products from './pages/Products';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+
 
 const Home = () => (
   <div className='w-full overflow-hidden bg-black'>
@@ -25,7 +28,10 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/products" element={<Products />} /> {/* ← esta línea es clave */}
+        <Route path="/products" element={<Products />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+
 
       </Routes>
     </Router>

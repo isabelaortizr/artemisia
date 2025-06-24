@@ -6,7 +6,6 @@ import { assets } from '../assets/assets';
 import productService from '../services/productService';
 import notaVentaService from '../services/notaVentaService';
 import cartIcon from '../assets/cart-icon.png';
-import logoutIcon from '../assets/logout-icon.png';
 
 const Products = () => {
   const [products, setProducts] = useState([]);

@@ -25,4 +25,44 @@ async function getProducts(page = 0, size = 10) {
     };
 }
 
-export default { getProducts };
+
+async function createProduct({
+                                 sellerId,
+                                 name,
+                                 technique,
+                                 materials,
+                                 description,
+                                 price,
+                                 stock,
+                                 status,
+                                 image,
+                                 category
+                             }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            sellerId,
+            name,
+            technique,
+            materials,
+            description,
+            price,
+            stock,
+            status,
+            image,
+            category
+        }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al crear producto`);
+    }
+    return res.json(); // ProductResponseDto
+}
+
+export default { getProducts, createProduct };

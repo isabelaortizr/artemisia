@@ -12,7 +12,7 @@ import Login from "./pages/Login";
 import Register     from "./pages/Register";      // ← Nueva importación
 import Products    from './pages/Products';
 import Cart        from "./pages/Cart";
-import Checkout from './pages/Checkout';
+import Checkout   from "./pages/Checkout";
 
 function App() {
   // return <LandingPage />;

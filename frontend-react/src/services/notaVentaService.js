@@ -41,4 +41,34 @@ async function getCart(userId) {
     return res.json();
 }
 
-export default { addToCart, getCart };
+async function createTransaction({
+                                     userId,
+                                     currency = "BOB",
+                                     chargeReason = "Compra en Artemisia",
+                                     network = "BISA",
+                                     country = "BO"
+                                 }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/create_transaction`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            user_id:     Number(userId),
+            currency,
+            charge_reason: chargeReason,
+            network,
+            country
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error creando transacción (${res.status})`);
+    }
+    return res.json(); // StereumPagaResponseDto
+}
+
+export default { addToCart, getCart, createTransaction };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { assets, projectsData } from '../assets/assets';
 
-function Products() {
+function ProductsLanding() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsToShow, setCardsToShow] = useState(1);
 
@@ -101,4 +101,4 @@ function Products() {
   );
 }
 
-export default Products;
+export default ProductsLanding;

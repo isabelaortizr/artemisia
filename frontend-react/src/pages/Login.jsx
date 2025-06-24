@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
 import { assets } from '../assets/assets';  // importar imágenes
 import Navbar from '../components/Navbar';  // navbar
+import Footer from '../components/Footer';
 
 const Login = () => {
   const [username, setUsername] = useState('');

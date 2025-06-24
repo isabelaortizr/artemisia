@@ -28,7 +28,7 @@ function Navbar({ showSignUpButton = true }) {
         <ul className="hidden md:flex gap-8 text-sm font-medium text-white">
           <li><a href="#Header" className="hover:text-gray-400">Home</a></li>
           <li><a href="#About" className="hover:text-gray-400">About</a></li>
-          <li><a href="#Products" className="hover:text-gray-400">Products</a></li>
+          <li><Link to="/products"   className="hover:text-gray-400">Products</Link></li>
           <li><a href="#Profile" className="hover:text-gray-400">My Profile</a></li>
         </ul>
 

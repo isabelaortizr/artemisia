@@ -65,14 +65,14 @@ const Products = () => {
       style={{ backgroundImage: `url(${assets.bg_image})` }}
     >
       {/* Overlay oscuro */}
-      <div className="absolute inset-0 bg-black bg-opacity-70 z-0" />
+      <div className="absolute inset-0  bg-opacity-70 z-0" />
 
       <div className="relative z-10">
         <Navbar showSignUpButton={false} />
 
         {/* Toast */}
         {toastMessage && (
-          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded shadow-lg z-50">
             {toastMessage}
           </div>
         )}
@@ -82,9 +82,9 @@ const Products = () => {
           <div className="flex justify-between items-center mb-8 flex-col sm:flex-row gap-4 sm:gap-0">
             <h2 className="text-3xl font-bold text-white">Available Pieces</h2>
             <div className="flex items-center gap-4">
-              <Link to="/">
+              {/* <Link to="/">
                 <img src={logoutIcon} alt="Cerrar sesión" className="w-8 h-8 hover:opacity-80" />
-              </Link>
+              </Link> */}
               <Link to="/cart">
                 <img src={cartIcon} alt="Carrito" className="w-8 h-8 hover:opacity-80" />
               </Link>
@@ -157,8 +157,6 @@ const Products = () => {
             </button>
           </div>
         </div>
-
-        <Footer />
       </div>
     </div>
   );

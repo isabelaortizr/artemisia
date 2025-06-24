@@ -58,7 +58,7 @@ const Register = () => {
 
         {/* Name */}
         <div className="mb-4">
-          <label htmlFor="name" className="block text-sm mb-2">Name</label>
+          <label htmlFor="name" className="block text-sm mb-2">Username</label>
           <input
             id="name"
             type="text"

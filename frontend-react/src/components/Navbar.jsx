@@ -28,7 +28,7 @@ function Navbar({ showSignUpButton = true }) {
         <ul className="hidden md:flex gap-8 text-sm font-medium text-white">
           <li><a href="#Header" className="hover:text-gray-400">Home</a></li>
           <li><a href="#About" className="hover:text-gray-400">About</a></li>
-          <li><Link to="/products"   className="hover:text-gray-400">Products</Link></li>
+          <li><a href="#ProductsLanding" className="hover:text-gray-400">Products</a></li>
           <li><a href="#Profile" className="hover:text-gray-400">My Profile</a></li>
         </ul>
 
@@ -65,7 +65,7 @@ function Navbar({ showSignUpButton = true }) {
         <ul className="flex flex-col items-center gap-4 mt-5 px-5 text-lg font-medium">
           <a href="#Header" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Home</a>
           <a href="#About" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">About</a>
-          <a href="#Products" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Products</a>
+          <a href="#ProductsLanding" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Products</a>
           <a href="#Profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">My Profile</a>
         </ul>
       </div>

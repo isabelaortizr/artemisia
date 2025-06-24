@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.entity.Address;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.repository.AddressRepository;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.AddressService;
@@ -36,7 +37,7 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Address not found with ID: " + id);
-                    throw new RuntimeException("Address not found");
+                    throw new NotDataFoundException("Address not found");
                 });
         return convertToDto(address);
     }
@@ -46,7 +47,7 @@ public class AddressServiceImpl implements AddressService {
         User user = userRepository.findById(addressDto.getUserId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + addressDto.getUserId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         Address address = Address.builder()
@@ -64,13 +65,13 @@ public class AddressServiceImpl implements AddressService {
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Address not found with ID: " + id);
-                    throw new RuntimeException("Address not found");
+                    throw new NotDataFoundException("Address not found");
                 });
 
         User user = userRepository.findById(addressDto.getUserId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + addressDto.getUserId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         address.setDirection(addressDto.getDirection());
@@ -85,7 +86,7 @@ public class AddressServiceImpl implements AddressService {
     public void deleteAddress(Long id) {
         if (!addressRepository.existsById(id)) {
             logsService.error("Address not found with ID: " + id);
-            throw new RuntimeException("Address not found");
+            throw new NotDataFoundException("Address not found");
         }
         addressRepository.deleteById(id);
         logsService.info("Address deleted with ID: " + id);

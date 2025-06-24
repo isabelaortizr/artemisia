@@ -3,6 +3,7 @@ package com.artemisia_corp.artemisia.service.impl;
 import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
@@ -41,7 +42,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Order detail not found with ID: " + id);
-                    throw new RuntimeException("Order detail not found");
+                    throw new NotDataFoundException("Order detail not found");
                 });
         return convertToDto(orderDetail);
     }
@@ -56,7 +57,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             notaVenta = notaVentaRepository.findById(orderDetailDto.getGroupId())
                     .orElseThrow(() -> {
                         logsService.error("Sale note not found with ID: " + orderDetailDto.getGroupId());
-                        throw new RuntimeException("Sale note not found");
+                        throw new NotDataFoundException("Sale note not found");
                     });
         }
 
@@ -65,14 +66,14 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             product = productRepository.findById(orderDetailDto.getProductId())
                     .orElseThrow(() -> {
                         logsService.error("Product not found with ID: " + orderDetailDto.getProductId());
-                        throw new RuntimeException("Product not found");
+                        throw new NotDataFoundException("Product not found");
                     });
         }
 
         User seller = userRepository.findById(orderDetailDto.getSellerId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + orderDetailDto.getSellerId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         OrderDetail orderDetail = OrderDetail.builder()
@@ -113,25 +114,25 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Order detail not found with ID: " + id);
-                    throw new RuntimeException("Order detail not found");
+                    throw new NotDataFoundException("Order detail not found");
                 });
 
         NotaVenta notaVenta = notaVentaRepository.findById(orderDetailDto.getGroupId())
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + orderDetailDto.getGroupId());
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         Product product = productRepository.findById(orderDetailDto.getProductId())
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + orderDetailDto.getProductId());
-                    throw new RuntimeException("Product not found");
+                    throw new NotDataFoundException("Product not found");
                 });
 
         User seller = userRepository.findById(orderDetailDto.getSellerId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + orderDetailDto.getSellerId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         orderDetail.setGroup(notaVenta);
@@ -152,13 +153,13 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Order detail not found with ID: " + id);
-                    throw new RuntimeException("Order detail not found");
+                    throw new NotDataFoundException("Order detail not found");
                 });
 
         productRepository.findById(updateDetailDto.getProductId())
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + updateDetailDto.getProductId());
-                    throw new RuntimeException("Product not found");
+                    throw new NotDataFoundException("Product not found");
                 });
 
         orderDetail.setQuantity(updateDetailDto.getQuantity());
@@ -174,7 +175,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public void deleteOrderDetail(Long id) {
         if (!orderDetailRepository.existsById(id)) {
             logsService.error("Order detail not found with ID: " + id);
-            throw new RuntimeException("Order detail not found");
+            throw new NotDataFoundException("Order detail not found");
         }
         orderDetailRepository.deleteById(id);
         logsService.info("Order detail deleted with ID: " + id);

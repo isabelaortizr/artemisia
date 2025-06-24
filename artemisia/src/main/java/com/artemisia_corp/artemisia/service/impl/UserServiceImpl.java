@@ -5,6 +5,7 @@ import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.user.*;
 import com.artemisia_corp.artemisia.entity.enums.StateEntity;
 import com.artemisia_corp.artemisia.entity.enums.UserRole;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.UserService;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + id);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
         return convertToDto(user);
     }
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto createUser(UserRequestDto userDto) {
         if (userRepository.existsByMail(userDto.getMail())) {
             logsService.error("Email already in use: " + userDto.getMail());
-            throw new RuntimeException("Email already in use");
+            throw new NotDataFoundException("Email already in use");
         }
 
         User user = User.builder()
@@ -75,13 +76,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + id);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         if (!user.getMail().equals(userDto.getMail())) {
             if (userRepository.existsByMail(userDto.getMail())) {
                 logsService.error("Email already in use: " + userDto.getMail());
-                throw new RuntimeException("Email already in use");
+                throw new NotDataFoundException("Email already in use");
             }
         }
 
@@ -107,18 +108,18 @@ public class UserServiceImpl implements UserService {
         Optional<User> userOptional = userRepository.findByName(userNameFromToken);
         if (userOptional.isEmpty()) {
             logsService.error("User not found with name: " + userNameFromToken);
-            throw new RuntimeException("User not found");
+            throw new NotDataFoundException("User not found");
         }
         User user = userOptional.get();
 
         if (!user.getId().equals(id)) {
             logsService.error("Unauthorized delete attempt by user ID: " + userNameFromToken);
-            throw new RuntimeException("Unauthorized delete attempt");
+            throw new NotDataFoundException("Unauthorized delete attempt");
         }
 
         if (!userRepository.existsById(id)) {
             logsService.error("User not found with ID: " + id);
-            throw new RuntimeException("User not found");
+            throw new NotDataFoundException("User not found");
         }
 
         user.setStatus(StateEntity.valueOf("DELETED"));
@@ -134,7 +135,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findUserByMail(email)
                 .orElseThrow(() -> {
                     logsService.error("User not found with email: " + email);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
         return convertToDto(user);
     }
@@ -151,17 +152,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + userId);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         if (!passwordEncoder.matches(emailDto.getCurrentPassword(), user.getPassword())) {
             logsService.error("Invalid current password for user ID: " + userId);
-            throw new RuntimeException("Invalid current password");
+            throw new NotDataFoundException("Invalid current password");
         }
 
         if (userRepository.existsByMail(emailDto.getNewEmail())) {
             logsService.error("Email already in use: " + emailDto.getNewEmail());
-            throw new RuntimeException("Email already in use");
+            throw new NotDataFoundException("Email already in use");
         }
 
         user.setMail(emailDto.getNewEmail());
@@ -176,22 +177,22 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + userId);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         if (!passwordEncoder.matches(passwordDto.getCurrentPassword(), user.getPassword())) {
             logsService.error("Invalid current password for user ID: " + userId);
-            throw new RuntimeException("Invalid current password");
+            throw new NotDataFoundException("Invalid current password");
         }
 
         if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmNewPassword())) {
             logsService.error("New passwords don't match for user ID: " + userId);
-            throw new RuntimeException("New passwords don't match");
+            throw new NotDataFoundException("New passwords don't match");
         }
 
         if (passwordEncoder.matches(passwordDto.getNewPassword(), user.getPassword())) {
             logsService.error("New password must be different from current for user ID: " + userId);
-            throw new RuntimeException("New password must be different from current");
+            throw new NotDataFoundException("New password must be different from current");
         }
 
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));

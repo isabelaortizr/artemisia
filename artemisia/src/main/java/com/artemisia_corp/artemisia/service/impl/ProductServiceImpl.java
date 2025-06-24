@@ -4,7 +4,9 @@ import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.*;
 import com.artemisia_corp.artemisia.entity.enums.*;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.repository.*;
+import com.artemisia_corp.artemisia.service.ImageService;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,21 +26,32 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private LogsService logsService;
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
+    private ImageService imageService;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
         logsService.info("Fetching all products");
-        return productRepository.findAllProducts(pageable);
+        Page<ProductResponseDto> products = productRepository.findAllProducts(pageable);
+
+        for (ProductResponseDto product : products.getContent()) {
+            String image = imageService.getLatestImage(product.getProductId());
+            if (image != null && !image.isBlank()) {
+                product.setImage(image);
+            }
+        }
+
+        return products;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDto getProductById(Long id) {
         logsService.info("Fetching product with ID: " + id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + id);
-                    throw new RuntimeException("Product not found");
+                    throw new NotDataFoundException("Product not found");
                 });
         return convertToDto(product);
     }
@@ -48,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
         User seller = userRepository.findById(productDto.getSellerId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + productDto.getSellerId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         Product product = Product.builder()
@@ -74,13 +87,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + id);
-                    throw new RuntimeException("Product not found");
+                    throw new NotDataFoundException("Product not found");
                 });
 
         User seller = userRepository.findById(productDto.getSellerId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + productDto.getSellerId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         product.setSeller(seller);
@@ -103,7 +116,7 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
             logsService.error("Product not found with ID: " + id);
-            throw new RuntimeException("Product not found");
+            throw new NotDataFoundException("Product not found");
         }
         productRepository.deleteById(id);
         logsService.info("Product deleted with ID: " + id);
@@ -119,13 +132,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findProductById(productId)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + productId);
-                    throw new RuntimeException("Product not found");
+                    throw new NotDataFoundException("Product not found");
                 });
 
         if (product.getStock() < quantity ||
                 product.getStock() - quantity < 0) {
             logsService.error("Insufficient stock for product ID: " + productId);
-            throw new RuntimeException("Insufficient stock");
+            throw new NotDataFoundException("Insufficient stock");
         }
 
         if (reduceStock) {
@@ -151,7 +164,7 @@ public class ProductServiceImpl implements ProductService {
             return productRepository.findAllAvailableProducts(pageable);
         } catch (Exception e) {
             logsService.error("Error fetching available products: " + e.getMessage());
-            throw new RuntimeException("Error fetching available products", e);
+            throw new NotDataFoundException("Error fetching available products", e);
         }
     }
 
@@ -163,18 +176,20 @@ public class ProductServiceImpl implements ProductService {
         // Verificar que el vendedor existe
         if (!userRepository.existsById(sellerId)) {
             logsService.error("Seller not found with ID: " + sellerId);
-            throw new RuntimeException("Seller not found with ID: " + sellerId);
+            throw new NotDataFoundException("Seller not found with ID: " + sellerId);
         }
 
         try {
             return productRepository.findBySeller_Id(sellerId, pageable);
         } catch (Exception e) {
             logsService.error("Error fetching products for seller: " + e.getMessage());
-            throw new RuntimeException("Error fetching products for seller", e);
+            throw new NotDataFoundException("Error fetching products for seller", e);
         }
     }
 
     private ProductResponseDto convertToDto(Product product) {
+        String image = imageService.getLatestImage(product.getId());
+
         return ProductResponseDto.builder()
                 .productId(product.getId())
                 .name(product.getName())
@@ -184,7 +199,7 @@ public class ProductServiceImpl implements ProductService {
                 .price(product.getPrice())
                 .stock(product.getStock())
                 .status(product.getStatus().name())
-                .image(product.getImageUrl())
+                .image(image != null && !image.isBlank() ? image : product.getImageUrl() != null ? product.getImageUrl() : "")
                 .category(product.getCategory().name())
                 .sellerId(product.getSeller().getId())
                 .build();

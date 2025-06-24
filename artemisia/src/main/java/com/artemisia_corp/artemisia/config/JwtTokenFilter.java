@@ -81,9 +81,11 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().startsWith("/api/auth/")
-                //|| request.getServletPath().startsWith("/api/stereum-pay/")
-        ;
+        return request.getServletPath().startsWith("/api/auth/") ||
+                request.getServletPath().startsWith("/swagger-ui/") ||
+                request.getServletPath().startsWith("/v3/api-docs/") ||
+                request.getServletPath().startsWith("/swagger-resources/") ||
+                request.getServletPath().equals("/swagger-ui.html");
     }
 
 }

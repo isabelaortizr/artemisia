@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.integracion.impl;
 
 import com.artemisia_corp.artemisia.crypto.CryptoRSA;
+import com.artemisia_corp.artemisia.entity.NotaVenta;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.*;
@@ -135,10 +136,14 @@ public class SterumPayServiceImpl implements SterumPayService {
     }
 
     @Override
-    public CurrencyConversionResponseDto conversionBob (CurrencyConversionDto conversionEntity) {
+    public CurrencyConversionResponseDto conversionBob (CurrencyConversionDto conversionEntity, Long userId) {
         if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<CurrencyConversionResponseDto> response;
+
+        Double total = notaVentaService.getActiveCartByUserId(userId).getTotalGlobal();
+
+        conversionEntity.setAmount(total);
 
         try {
             response = restClient.get()

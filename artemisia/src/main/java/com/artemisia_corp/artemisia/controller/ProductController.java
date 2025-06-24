@@ -7,6 +7,12 @@ import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.ProductService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,11 +33,17 @@ import java.util.List;
 @Slf4j
 @Controller
 @RequestMapping("/api/products")
+@Tag(name = "Product Management", description = "Endpoints for managing products")
 public class ProductController {
 
     @Autowired
     private ProductService productService;
 
+    @Operation(summary = "Get all products", description = "Returns paginated list of all products")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Page.class)))
+    })
     @GetMapping
     public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
@@ -42,29 +54,58 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
+    @Operation(summary = "Get product by ID", description = "Returns a single product by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
+    @Operation(summary = "Create a new product", description = "Creates a new product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Product created successfully",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto productDto) {
         ProductResponseDto response = productService.createProduct(productDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Update a product", description = "Updates an existing product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product updated successfully",
+                    content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
             @PathVariable Long id, @RequestBody ProductRequestDto productDto) {
         return ResponseEntity.ok(productService.updateProduct(id, productDto));
     }
 
+    @Operation(summary = "Delete a product", description = "Deletes a product by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get available products", description = "Returns paginated list of available products (in stock)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Page.class)))
+    })
     @GetMapping("/available")
     public ResponseEntity<Page<ProductResponseDto>> getAvailableProducts(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
@@ -75,6 +116,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAvailableProducts(pageable));
     }
 
+    @Operation(summary = "Get products by seller", description = "Returns paginated list of products for a specific seller")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "404", description = "Seller not found")
+    })
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<Page<ProductResponseDto>> getProductsBySeller(
             @PathVariable Long sellerId,
@@ -86,6 +133,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsBySeller(sellerId, pageable));
     }
 
+    @Operation(summary = "Reduce product stock", description = "Reduces the stock quantity of a product")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Stock reduced successfully"),
+            @ApiResponse(responseCode = "404", description = "Product not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid quantity")
+    })
     @PutMapping("/reduce-stock")
     public ResponseEntity<Void> reduceStock(
             @RequestBody ManageProductDto manageProductDto) {
@@ -93,6 +146,13 @@ public class ProductController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Search products", description = "Searches products based on various criteria")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters")
+    })
     @PostMapping("/search")
     public ResponseEntity<Page<ProductResponseDto>> searchProducts(
             @RequestBody ProductSearchDto dto,
@@ -118,6 +178,12 @@ public class ProductController {
         }
     }
 
+    @Operation(summary = "Get products by category", description = "Returns paginated list of products filtered by category")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
     @GetMapping("/category/{category}")
     public ResponseEntity<Page<ProductResponseDto>> getByCategory(
             @PathVariable String category,
@@ -129,6 +195,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.getByCategory(category, pageable));
     }
 
+    @Operation(summary = "Get products by technique", description = "Returns paginated list of products filtered by technique")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "404", description = "Technique not found")
+    })
     @GetMapping("/technique/{technique}")
     public ResponseEntity<Page<ProductResponseDto>> getByTechnique(
             @PathVariable String technique,

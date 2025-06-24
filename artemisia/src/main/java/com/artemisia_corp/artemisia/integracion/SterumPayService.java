@@ -6,6 +6,6 @@ public interface SterumPayService {
     StereumAuthResponse obtenerTokenAutenticacion();
     StereumPagaResponseDto crearCargoCobro(StereumPagaDto chargeDTO, Long idNotaVenta);
     EstadoResponseDto obtenerEstadoCobro(String id_transaccion);
-    CurrencyConversionResponseDto conversionBob (CurrencyConversionDto conversionEntity);
+        CurrencyConversionResponseDto conversionBob (CurrencyConversionDto conversionEntity, Long userId);
     EstadoResponseDto cancelarCargo(String id_transaccion);
 }

@@ -10,6 +10,7 @@ import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
 import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
 import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.EstadoResponseDto;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaDto;
@@ -66,7 +67,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         NotaVenta notaVenta = notaVentaRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
         return convertToDtoWithDetails(notaVenta);
     }
@@ -77,13 +78,13 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         User buyer = userRepository.findById(notaVentaDto.getUserId())
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + notaVentaDto.getUserId());
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         Address address = addressRepository.findById(notaVentaDto.getBuyerAddress())
                 .orElseThrow(() -> {
                     logsService.error("Address not found with ID: " + notaVentaDto.getBuyerAddress());
-                    throw new RuntimeException("Address not found");
+                    throw new NotDataFoundException("Address not found");
                 });
 
         NotaVenta notaVenta = NotaVenta.builder()
@@ -126,19 +127,19 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         User buyer = userRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + id);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         Address address = addressRepository.findById(notaVentaDto.getBuyerAddress())
                 .orElseThrow(() -> {
                     logsService.error("Address not found with ID: " + notaVentaDto.getBuyerAddress());
-                    throw new RuntimeException("Address not found");
+                    throw new NotDataFoundException("Address not found");
                 });
 
         notaVenta.setBuyer(buyer);
@@ -194,18 +195,18 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         userRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + id);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         if (notaVenta == null) {
             logsService.error("Sale note not found with ID: " + id);
-            throw new RuntimeException("Sale note not found");
+            throw new NotDataFoundException("Sale note not found");
         }
 
         logsService.info("Deleting Details affiliated with ID: " + id);
@@ -226,13 +227,13 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         userRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + id);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         if (notaVenta.getEstadoVenta() == VentaEstado.PAYED) {
@@ -253,7 +254,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         NotaVenta notaVenta = notaVentaRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + id);
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         if (!isNotaVentaCompleted(id)) throw new RuntimeException("Compra no fue completada");
@@ -291,7 +292,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         NotaVenta notaVenta = notaVentaRepository.findById(notaVentaId)
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found with ID: " + notaVentaId);
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         notaVenta.setIdTransaccion(idTransaccion);
@@ -330,7 +331,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + userId);
-                    throw new RuntimeException("User not found");
+                    throw new NotDataFoundException("User not found");
                 });
 
         Address address = addressRepository.findLastAddressByUser_Id(userId);
@@ -361,13 +362,13 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     User buyer = userRepository.findById(addToCartDto.getUserId())
                             .orElseThrow(() -> {
                                 logsService.error("User not found with ID: " + addToCartDto.getUserId());
-                                throw new RuntimeException("User not found");
+                                throw new NotDataFoundException("User not found");
                             });
 
                     Address address = addressRepository.findLastAddressByUser_Id(buyer.getId());
                     if (address == null) {
                         logsService.error("User has no addresses");
-                        throw new RuntimeException("User must have at least one address");
+                        throw new NotDataFoundException("User must have at least one address");
                     }
 
                     NotaVenta newCart = NotaVenta.builder()
@@ -384,7 +385,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         Product product = productRepository.findById(addToCartDto.getProductId())
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + addToCartDto.getProductId());
-                    throw new RuntimeException("Product not found");
+                    throw new NotDataFoundException("Product not found");
                 });
 
         Optional<OrderDetail> existingDetail = orderDetailRepository.findByGroupIdAndProductId(cart.getId(), product.getId());
@@ -395,7 +396,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
             if (newQuantity > product.getStock()) {
                 logsService.error("Not enough stock for product ID: " + product.getId());
-                throw new RuntimeException("Not enough stock available");
+                throw new NotDataFoundException("Not enough stock available");
             }
 
             detail.setQuantity(newQuantity);
@@ -404,7 +405,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         } else {
             if (addToCartDto.getQuantity() > product.getStock()) {
                 logsService.error("Not enough stock for product ID: " + product.getId());
-                throw new RuntimeException("Not enough stock available");
+                throw new NotDataFoundException("Not enough stock available");
             }
 
             OrderDetailRequestDto detailDto = OrderDetailRequestDto.builder()
@@ -437,7 +438,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(request.getUserId())
                 .orElseThrow(() -> {
                     logsService.error("Sale note not found for user ID: " + request.getUserId());
-                    throw new RuntimeException("Sale note not found");
+                    throw new NotDataFoundException("Sale note not found");
                 });
 
         return sterumPayService.crearCargoCobro(StereumPagaDto.builder()

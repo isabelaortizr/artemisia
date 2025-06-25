@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateOrderDetailDto {
-    private Long userId;      // ID del usuario
-    private Long productId;   // ID del producto
-    private int quantity = 1;
+    private Long userId;
+    private Long productId;
+    private int quantity;
 }
 

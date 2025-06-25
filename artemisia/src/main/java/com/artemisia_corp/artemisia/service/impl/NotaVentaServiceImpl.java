@@ -373,7 +373,17 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         Optional<NotaVenta> existingNotaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId);
 
         if (existingNotaVenta.isPresent()) {
-                return convertToDtoWithDetails(existingNotaVenta.get());
+            NotaVenta notaVenta = existingNotaVenta.get();
+            double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(notaVenta.getId());
+
+            if (notaVenta.getTotalGlobal() != recalculatedTotal) {
+                logsService.info("Updating totalGlobal for active cart of user ID: " + userId);
+                notaVenta.setTotalGlobal(recalculatedTotal);
+                notaVentaRepository.save(notaVenta);
+            }
+
+            return convertToDtoWithDetails(notaVenta);
+
         }
 
         logsService.info("No active cart found for user ID: " + userId + ", creating new one");
@@ -505,7 +515,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
     @Override
     @Transactional
-    public void updateOrderDetailStock(UpdateOrderDetailDto updateOrderDetailDto) {
+    public NotaVentaResponseDto updateOrderDetailStock(UpdateOrderDetailDto updateOrderDetailDto) {
         Long userId = updateOrderDetailDto.getUserId();
         Long productId = updateOrderDetailDto.getProductId();
         int quantity = updateOrderDetailDto.getQuantity();
@@ -531,14 +541,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     logsService.error("El producto no se encuentra en el carrito.");
                     return new IllegalArgumentException("El producto no se encuentra en el carrito.");
                 });
-        quantity += orderDetail.getQuantity();
 
         orderDetailService.updateQuantityOrderDetail(new UpdateQuantityDetailDto(orderDetail.getId(), quantity));
 
-        orderDetailRepository.save(orderDetail);
+        NotaVenta nv = notaVentaRepository.getReferenceById(activeCart.getId());
 
         log.info("La cantidad del producto con id {} en el carrito del usuario con id {} se ha actualizado a {}",
                 productId, userId, quantity);
+        return convertToDtoWithDetails(nv);
     }
 
     private boolean isNotaVentaCompleted(Long notaVentaId) {

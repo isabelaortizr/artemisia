@@ -143,8 +143,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail orderDetail = orderDetailRepository.findById(updateDetailDto.getOrderDetailId())
                 .orElseThrow(() -> new NotDataFoundException("Order detail not found with ID: " + updateDetailDto.getOrderDetailId()));
 
-        if (updateDetailDto.getQuantity() == null || updateDetailDto.getQuantity() <= 0) {
+        if (updateDetailDto.getQuantity() == null || updateDetailDto.getQuantity() < 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0.");
+        } else if (updateDetailDto.getQuantity() == 0) {
+            this.deleteOrderDetail(orderDetail.getId());
+            return;
         }
 
         productService.manageStock(new ManageProductDto(orderDetail.getProduct().getId(),
@@ -152,11 +155,17 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         productService.manageStock(new ManageProductDto(orderDetail.getProduct().getId(),
                 updateDetailDto.getQuantity()));
 
+        NotaVenta notaVenta = orderDetail.getGroup();
+        notaVenta.setTotalGlobal(notaVenta.getTotalGlobal() - orderDetail.getTotal());
+
         orderDetail.setQuantity(updateDetailDto.getQuantity());
         orderDetail.setTotal(orderDetail.getProduct().getPrice() * orderDetail.getQuantity());
 
         OrderDetail updatedOrderDetail = orderDetailRepository.save(orderDetail);
         logsService.info("Order detail updated with ID: " + updatedOrderDetail.getId());
+
+        notaVenta.setTotalGlobal(notaVenta.getTotalGlobal() + orderDetail.getTotal());
+        notaVentaRepository.save(notaVenta);
     }
 
     @Override

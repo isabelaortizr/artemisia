@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.entity.Address;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
+import com.artemisia_corp.artemisia.entity.enums.AddressStatus;
 import com.artemisia_corp.artemisia.exception.ClientNotFoundException;
 import com.artemisia_corp.artemisia.exception.IncompleteAddressException;
 import com.artemisia_corp.artemisia.exception.NotDataFoundException;
@@ -53,7 +54,7 @@ public class AddressServiceImpl implements AddressService {
                     log.error("Address not found: The address with ID " + id + " does not exist.");
                     logsService.error("Address not found: The address with ID " + id + " does not exist.");
                     return new NotDataFoundException("Address not found: The address with ID " +
-                            id + " does not exist.");
+                            id + " does not exist" );
                 });
 
         return convertToDto(address);
@@ -61,25 +62,23 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressResponseDto createAddress(AddressRequestDto addressDto) {
+        validateMandatoryFields(addressDto);
+
         User user = userRepository.findById(addressDto.getUserId())
-                .orElseThrow(() -> {
-                    log.error("Client not found: The user with ID " +
-                                    addressDto.getUserId() + " does not exist.");
-                    logsService.error("Client not found: The user with ID " +
-                            addressDto.getUserId() + " does not exist.");
-                    return new ClientNotFoundException("Client not found: The user with ID " +
-                            addressDto.getUserId() + " does not exist.");
-                });
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (addressDto.getDirection() == null || addressDto.getDirection().trim().isEmpty()) {
-            log.error("Address is incomplete: 'Direction' is missing.");
-            logsService.error("Address is incomplete: 'Direction' is missing.");
-            throw new IncompleteAddressException("Address is incomplete: 'Direction' is missing.");
-        }
+        Address address = Address.builder()
+                .recipientName(addressDto.getRecipientName())
+                .recipientSurname(addressDto.getRecipientSurname())
+                .country(addressDto.getCountry())
+                .city(addressDto.getCity())
+                .street(addressDto.getStreet())
+                .houseNumber(addressDto.getHouseNumber())
+                .extra(addressDto.getExtra())
+                .status(AddressStatus.ACTIVE)
+                .user(user)
+                .build();
 
-        Address address = new Address();
-        address.setDirection(addressDto.getDirection());
-        address.setUser(user);
         Address savedAddress = addressRepository.save(address);
 
         return convertToDto(savedAddress);
@@ -87,24 +86,25 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressResponseDto updateAddress(Long id, AddressRequestDto addressDto) {
-        Address existingAddress = addressRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Address not found: The address with ID " + id + " does not exist.");
-                    logsService.error("Address not found: The address with ID " + id + " does not exist.");
-                    return new NotDataFoundException("Address not found: The address with ID " + id + " does not exist.");
-                });
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Address not found"));
 
-        User user = userRepository.findById(addressDto.getUserId())
-                .orElseThrow(() -> new ClientNotFoundException("Client not found: The user with ID " + addressDto.getUserId() + " does not exist."));
+        if (addressDto.getRecipientName() != null && !addressDto.getRecipientName().isEmpty()) 
+            address.setRecipientName(addressDto.getRecipientName());
+        if (addressDto.getRecipientSurname() != null && !addressDto.getRecipientSurname().isEmpty())
+            address.setRecipientSurname(addressDto.getRecipientSurname());
+        if (addressDto.getCountry() != null && !addressDto.getCountry().isEmpty())
+            address.setCountry(addressDto.getCountry());
+        if (addressDto.getCity() != null && !addressDto.getCity().isEmpty())
+            address.setCity(addressDto.getCity());
+        if (addressDto.getStreet() != null && !addressDto.getStreet().isEmpty())
+            address.setStreet(addressDto.getStreet());
+        if (addressDto.getHouseNumber() != null && !addressDto.getHouseNumber().isEmpty())
+            address.setHouseNumber(addressDto.getHouseNumber());
+        address.setExtra(addressDto.getExtra());
 
-        if (addressDto.getDirection() == null || addressDto.getDirection().trim().isEmpty()) {
-            throw new IncompleteAddressException("Address is incomplete: 'Direction' is missing.");
-        }
 
-        existingAddress.setDirection(addressDto.getDirection());
-        existingAddress.setUser(user);
-
-        Address updatedAddress = addressRepository.save(existingAddress);
+        Address updatedAddress = addressRepository.save(address);
 
         return convertToDto(updatedAddress);
     }
@@ -114,7 +114,8 @@ public class AddressServiceImpl implements AddressService {
         Address existingAddress = addressRepository.findById(id)
                 .orElseThrow(() -> new NotDataFoundException("Address not found: The address with ID " + id + " does not exist."));
 
-        addressRepository.delete(existingAddress);
+        existingAddress.setStatus(AddressStatus.DELETED);
+        addressRepository.save(existingAddress);
     }
 
     @Override
@@ -127,7 +128,7 @@ public class AddressServiceImpl implements AddressService {
                     return new ClientNotFoundException("Client not found: The user with ID " + userId + " does not exist.");
                 });
 
-        Page<Address> addressPage = addressRepository.findByUser(user, pageable);
+        Page<Address> addressPage = addressRepository.findByUserAndStatus(user, AddressStatus.ACTIVE, pageable);
 
         if (addressPage.isEmpty()) {
             log.error("No addresses found: The user with ID " + userId + " does not have any addresses.");
@@ -141,8 +142,34 @@ public class AddressServiceImpl implements AddressService {
     private AddressResponseDto convertToDto(Address address) {
         return AddressResponseDto.builder()
                 .addressId(address.getId())
-                .direction(address.getDirection())
+                .recipientName(address.getRecipientName())
+                .recipientSurname(address.getRecipientSurname())
+                .country(address.getCountry())
+                .city(address.getCity())
+                .street(address.getStreet())
+                .houseNumber(address.getHouseNumber())
+                .extra(address.getExtra())
                 .userId(address.getUser().getId())
                 .build();
+    }
+
+    private void validateMandatoryFields(AddressRequestDto addressDto) {
+        log.info("Validating mandatory fields for address: " + addressDto);
+        if (addressDto == null ||
+                addressDto.getUserId() == null ||
+                addressDto.getRecipientName() == null ||
+                addressDto.getRecipientSurname() == null ||
+                addressDto.getCountry() == null ||
+                addressDto.getCity() == null ||
+                addressDto.getStreet() == null ||
+                addressDto.getHouseNumber() == null ||
+                addressDto.getRecipientName().isEmpty() ||
+                addressDto.getRecipientSurname().isEmpty() ||
+                addressDto.getCountry().isEmpty() ||
+                addressDto.getCity().isEmpty() ||
+                addressDto.getStreet().isEmpty() ||
+                addressDto.getHouseNumber().isEmpty()) {
+            throw new IncompleteAddressException("All mandatory fields (name, surname, country, city, street, houseNumber) must be provided");
+        }
     }
 }

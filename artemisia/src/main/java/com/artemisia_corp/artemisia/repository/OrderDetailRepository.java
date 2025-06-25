@@ -25,5 +25,5 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     Optional<OrderDetail> findByGroupIdAndProductId(Long groupId, Long productId);
 
     @Query("SELECT SUM(od.total) FROM OrderDetail od WHERE od.group.id = :notaVentaId")
-    double calculateTotalByNotaVenta(@Param("notaVentaId") Long notaVentaId);
+    Double calculateTotalByNotaVenta(@Param("notaVentaId") Long notaVentaId);
 }

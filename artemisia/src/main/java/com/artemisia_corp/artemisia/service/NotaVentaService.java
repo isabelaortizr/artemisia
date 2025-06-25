@@ -19,6 +19,7 @@ public interface NotaVentaService {
     Page<NotaVentaResponseDto> getCompletedSalesByUser(Long userId, Pageable pageable);
     void ingresarIdTransaccion(String idTransaccion, Long notaVentaId);
     void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta);
+    void assignAddressToNotaVenta(SetAddressDto setAddressDto);
     NotaVentaResponseDto getActiveCartByUserId(Long userId);
     NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto);
     StereumPagaResponseDto getPaymentInfo(RequestPaymentDto request);

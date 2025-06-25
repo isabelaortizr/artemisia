@@ -8,10 +8,8 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateQuantityDetailDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
-import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
-import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
-import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
-import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
+import com.artemisia_corp.artemisia.entity.enums.*;
+import com.artemisia_corp.artemisia.exception.IncompleteAddressException;
 import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.EstadoResponseDto;
@@ -19,7 +17,9 @@ import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaDto;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -101,17 +102,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         NotaVentaResponseDto nv = this.getActiveCartByUserId(buyer.getId());
 
-        Address address = addressRepository.findLastAddressByUser_Id(notaVentaDto.getUserId());
-
-        if (address == null) {
-            log.error("User has no addresses");
-            logsService.error("User has no addresses");
-            throw new RuntimeException("User must have at least one address");
-        }
-
         NotaVenta notaVenta = NotaVenta.builder()
                 .buyer(buyer)
-                .buyerAddress(address)
                 .totalGlobal(0.0)
                 .estadoVenta(VentaEstado.ON_CART)
                 .date(LocalDateTime.now())
@@ -164,10 +156,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 });
 
         Address address = addressRepository.findById(notaVentaDto.getBuyerAddress())
-                .orElseThrow(() -> {
-                    logsService.error("Address not found with ID: " + notaVentaDto.getBuyerAddress());
-                    return new NotDataFoundException("Address not found");
-                });
+                .orElse(null);
 
         notaVenta.setBuyer(buyer);
         notaVenta.setBuyerAddress(address);
@@ -369,16 +358,36 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
+    @Transactional
+    public void assignAddressToNotaVenta(SetAddressDto setAddressDto) {
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(setAddressDto.getUserId())
+                .orElseThrow(() -> {
+                    log.error("NotaVenta not found with User ID: " + setAddressDto.getUserId() + " " +
+                            "In class NotaVentaServiceImpl.assignAddressToNotaVenta() method.");
+                    logsService.error("NotaVenta not found with ID: " + setAddressDto.getUserId() + " " +
+                            "In class NotaVentaServiceImpl.assignAddressToNotaVenta() method.");
+                    return new EntityNotFoundException("NotaVenta not found with ID: " + setAddressDto.getUserId());
+                });
+
+        Address address = addressRepository.findAddressByIdAndUser_Id(setAddressDto.getAddressId(), setAddressDto.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("Address not found with ID: " + setAddressDto));
+
+        notaVenta.setBuyerAddress(address);
+
+        notaVentaRepository.save(notaVenta);
+    }
+
+    @Override
     public NotaVentaResponseDto getActiveCartByUserId(Long userId) {
         Optional<NotaVenta> existingNotaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId);
 
         if (existingNotaVenta.isPresent()) {
             NotaVenta notaVenta = existingNotaVenta.get();
-            double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(notaVenta.getId());
+            Double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(notaVenta.getId());
 
-            if (notaVenta.getTotalGlobal() != recalculatedTotal) {
+            if (!Objects.equals(notaVenta.getTotalGlobal(), recalculatedTotal)) {
                 logsService.info("Updating totalGlobal for active cart of user ID: " + userId);
-                notaVenta.setTotalGlobal(recalculatedTotal);
+                notaVenta.setTotalGlobal(recalculatedTotal != null ? recalculatedTotal : 0.0);
                 notaVentaRepository.save(notaVenta);
             }
 
@@ -393,15 +402,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     return new NotDataFoundException("User not found");
                 });
 
-        Address address = addressRepository.findLastAddressByUser_Id(userId);
-        if (address == null) {
-            logsService.error("User has no addresses");
-            throw new RuntimeException("User must have at least one address");
-        }
-
         NotaVenta newNotaVenta = NotaVenta.builder()
                 .buyer(buyer)
-                .buyerAddress(address)
                 .estadoVenta(VentaEstado.ON_CART)
                 .date(LocalDateTime.now())
                 .totalGlobal(0.0)
@@ -424,15 +426,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                                 return new NotDataFoundException("User not found");
                             });
 
-                    Address address = addressRepository.findLastAddressByUser_Id(buyer.getId());
-                    if (address == null) {
-                        logsService.error("User has no addresses");
-                        throw new NotDataFoundException("User must have at least one address");
-                    }
 
                     NotaVenta newCart = NotaVenta.builder()
                             .buyer(buyer)
-                            .buyerAddress(address)
                             .estadoVenta(VentaEstado.ON_CART)
                             .date(LocalDateTime.now())
                             .totalGlobal(0.0)
@@ -502,6 +498,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     return new NotDataFoundException("Sale note not found");
                 });
 
+        if (notaVenta.getBuyerAddress() == null || notaVenta.getBuyerAddress().getStatus() == AddressStatus.DELETED) {
+            log.error("Address not found for user ID: " + notaVenta.getBuyer().getId() +
+                    notaVenta.getBuyer().getId() + " in class NotaVentaServiceImpl.getPaymentInfo() method.");
+            logsService.error("Address not found for user ID: " +
+                    notaVenta.getBuyer().getId() + " in class NotaVentaServiceImpl.getPaymentInfo() method.");
+            throw new NotDataFoundException("Address not found");
+        }
+
         return sterumPayService.crearCargoCobro(StereumPagaDto.builder()
                     .country(request.getCountry())
                     .amount(notaVenta.getTotalGlobal().toString())
@@ -569,7 +573,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return NotaVentaResponseDto.builder()
                 .id(notaVenta.getId())
                 .userId(notaVenta.getBuyer().getId())
-                .buyerAddress(notaVenta.getBuyerAddress().getId())
+                .buyerAddress(notaVenta.getBuyerAddress() != null ? notaVenta.getBuyerAddress().getId() : null)
                 .estadoVenta(notaVenta.getEstadoVenta().name())
                 .totalGlobal(notaVenta.getTotalGlobal())
                 .date(notaVenta.getDate())

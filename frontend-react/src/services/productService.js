@@ -65,4 +65,26 @@ async function createProduct({
     return res.json(); // ProductResponseDto
 }
 
+async function getProductsBySeller(sellerId, page = 0, size = 10, sortBy = 'id', sortDir = 'ASC') {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/products/seller/${sellerId}?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al cargar obras del vendedor`);
+    }
+    const pageData = await res.json();
+    return {
+        items: pageData.content,
+        totalPages: pageData.totalPages
+    };
+}
+
 export default { getProducts, createProduct };

@@ -16,6 +16,7 @@ import AddArt      from './pages/AddArt.jsx';
 import Profile  from './pages/Profile';
 import Cart        from "./pages/Cart";
 import Checkout   from "./pages/Checkout";
+import MyWorks from './pages/MyWorks';
 
 function App() {
   // return <LandingPage />;
@@ -25,12 +26,13 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/products" element={<Products />} />  {/* Catálogo */}
+            <Route path="/products" element={<Products />} />
             <Route path="/menu"      element={<SellerMenu />} />
             <Route path="/add-art" element={<AddArt />} />
-            <Route path="/profile"  element={<Profile />} />  {/* ← Aquí */}
+            <Route path="/profile"  element={<Profile />} />
             <Route path="/cart"     element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/my-works" element={<MyWorks />} />
 
         </Routes>
       </BrowserRouter>

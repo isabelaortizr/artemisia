@@ -2,6 +2,7 @@ package com.artemisia_corp.artemisia.controller;
 
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -45,7 +47,8 @@ public class AddressController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<AddressResponseDto> getAddressById(@PathVariable Long id) {
-        return ResponseEntity.ok(addressService.getAddressById(id));
+        AddressResponseDto response = addressService.getAddressById(id);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Create a new address", description = "Creates a new address")
@@ -57,7 +60,7 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<AddressResponseDto> createAddress(@RequestBody AddressRequestDto addressDto) {
         AddressResponseDto response = addressService.createAddress(addressDto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Update an address", description = "Updates an existing address")
@@ -70,7 +73,8 @@ public class AddressController {
     @PutMapping("/{id}")
     public ResponseEntity<AddressResponseDto> updateAddress(
             @PathVariable Long id, @RequestBody AddressRequestDto addressDto) {
-        return ResponseEntity.ok(addressService.updateAddress(id, addressDto));
+        AddressResponseDto response = addressService.updateAddress(id, addressDto);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Delete an address", description = "Deletes an address by its ID")
@@ -110,7 +114,8 @@ public class AddressController {
 
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-            return ResponseEntity.ok(addressService.getAddressesByUser(userId, pageable));
+            Page<AddressResponseDto> response = addressService.getAddressesByUser(userId, pageable);
+            return ResponseEntity.ok(response);
         } catch (OperationException e) {
             log.error("Error al listar el empresas. Causa:{}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

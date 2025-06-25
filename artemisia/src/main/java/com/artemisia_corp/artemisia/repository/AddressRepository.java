@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.repository;
 
 import com.artemisia_corp.artemisia.entity.Address;
+import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,8 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto(a)" +
             "FROM Address a")
     List<AddressResponseDto> findAllAddresses();
+
+    Page<Address> findByUser(User user, Pageable pageable);
 
     Page<AddressResponseDto> findByUser_Id(Long userId, Pageable pageable);
 

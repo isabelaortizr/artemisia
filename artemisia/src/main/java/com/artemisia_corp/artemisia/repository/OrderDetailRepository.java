@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.repository;
 
+import com.artemisia_corp.artemisia.entity.NotaVenta;
 import com.artemisia_corp.artemisia.entity.OrderDetail;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
 import org.springframework.data.domain.Page;

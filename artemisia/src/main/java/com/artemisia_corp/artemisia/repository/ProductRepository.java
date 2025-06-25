@@ -18,7 +18,7 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p)" +
-            "FROM Product p")
+            "FROM Product p WHERE p.status != 'DELETED'")
     Page<ProductResponseDto> findAllProducts(Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.id = :p_productId")
@@ -42,7 +42,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "FROM Product p WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
             "AND (:technique IS NULL OR :technique = '' OR p.technique = :technique) " +
             "AND (:priceMin IS NULL OR p.price >= :priceMin) " +
-            "AND (:priceMax IS NULL OR p.price <= :priceMax)")
+            "AND (:priceMax IS NULL OR p.price <= :priceMax) " +
+            "AND p.status != 'DELETED'")
     Page<ProductResponseDto> searchWithFilters(
             @Param("category") PaintingCategory category,
             @Param("technique") PaintingTechnique technique,

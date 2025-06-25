@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.controller;
 
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
+import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
@@ -205,5 +206,17 @@ public class NotaVentaController {
             log.error("Error al verificar la transacción: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @Operation(summary = "Update stock for OrderDetail", description = "Updates the stock quantity for a specific product in a user's active cart")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order detail stock updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or validation error"),
+            @ApiResponse(responseCode = "404", description = "Resource not found")
+    })
+    @PutMapping("/order-detail/update-stock")
+    public ResponseEntity<Void> updateOrderDetailStock(@RequestBody UpdateOrderDetailDto updateOrderDetailDto) {
+        notaVentaService.updateOrderDetailStock(updateOrderDetailDto);
+        return ResponseEntity.ok().build();
     }
 }

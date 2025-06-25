@@ -1,12 +1,14 @@
 package com.artemisia_corp.artemisia.controller;
 
 import com.artemisia_corp.artemisia.entity.dto.image.ImageUploadDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/images")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Image Management", description = "Endpoints for managing images")
 public class ImageController {
     private final ImageService imageService;
@@ -33,10 +36,8 @@ public class ImageController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Image deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Image not found"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
     })
     @DeleteMapping("/{id}")
-    @Secured(value = {"ROLE_ADMIN"})
     public ResponseEntity<Void> deleteImage(@PathVariable Long id) {
         imageService.deleteImage(id);
         return ResponseEntity.noContent().build();

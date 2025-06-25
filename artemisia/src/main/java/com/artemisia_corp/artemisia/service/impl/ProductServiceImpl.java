@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.service.impl;
 
 import com.artemisia_corp.artemisia.entity.*;
+import com.artemisia_corp.artemisia.entity.dto.image.ImageUploadDto;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.*;
 import com.artemisia_corp.artemisia.entity.enums.*;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
 
 @Slf4j
 @Service
@@ -47,22 +50,21 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public ProductResponseDto getProductById(Long id) {
-        logsService.info("Fetching product with ID: " + id);
+        if (id == null || id <= 0) {
+            log.error("Product ID must not be null be greater than 0.");
+            logsService.error("Product ID must not be null be greater than 0.");
+            throw new IllegalArgumentException("Product ID must not be null be greater than 0.");
+        }
+
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    logsService.error("Product not found with ID: " + id);
-                    throw new NotDataFoundException("Product not found");
-                });
+                .orElseThrow(() -> new NotDataFoundException("Product not found with ID: " + id));
+
         return convertToDto(product);
     }
 
     @Override
     public ProductResponseDto createProduct(ProductRequestDto productDto) {
-        User seller = userRepository.findById(productDto.getSellerId())
-                .orElseThrow(() -> {
-                    logsService.error("User not found with ID: " + productDto.getSellerId());
-                    throw new NotDataFoundException("User not found");
-                });
+        User seller = this.verifyProduct(productDto);
 
         Product product = Product.builder()
                 .seller(seller)
@@ -73,11 +75,15 @@ public class ProductServiceImpl implements ProductService {
                 .price(productDto.getPrice())
                 .stock(productDto.getStock())
                 .status(ProductStatus.valueOf(productDto.getStatus()))
-                .imageUrl(productDto.getImage())
+                //.imageUrl(productDto.getImage())
                 .category(PaintingCategory.valueOf(productDto.getCategory()))
                 .build();
 
         Product savedProduct = productRepository.save(product);
+        if (productDto.getImage() != null && !productDto.getImage().isBlank()) {
+            imageService.uploadImage(new ImageUploadDto(savedProduct.getId(), product.getName(), productDto.getImage()));
+        }
+
         logsService.info("Product created with ID: " + savedProduct.getId());
         return convertToDto(savedProduct);
     }
@@ -86,15 +92,12 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto updateProduct(Long id, ProductRequestDto productDto) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
+                    log.error("Product not found with ID: " + id);
                     logsService.error("Product not found with ID: " + id);
-                    throw new NotDataFoundException("Product not found");
+                    return new NotDataFoundException("Product not found");
                 });
 
-        User seller = userRepository.findById(productDto.getSellerId())
-                .orElseThrow(() -> {
-                    logsService.error("User not found with ID: " + productDto.getSellerId());
-                    throw new NotDataFoundException("User not found");
-                });
+        User seller = this.verifyProduct(productDto);
 
         product.setSeller(seller);
         product.setName(productDto.getName());
@@ -112,13 +115,52 @@ public class ProductServiceImpl implements ProductService {
         return convertToDto(updatedProduct);
     }
 
+    private User verifyProduct(ProductRequestDto productDto) {
+        if (productDto == null) {
+            log.error("Product data is required.");
+            logsService.error("Product data is required.");
+            throw new IllegalArgumentException("Product data is required.");
+        }
+        if (productDto.getName() == null || productDto.getName().trim().isEmpty()) {
+            log.error("Product name is required.");
+            logsService.error("Product name is required.");
+            throw new IllegalArgumentException("Product name is required.");
+        }
+        if (productDto.getCategory() == null || productDto.getCategory().trim().isEmpty()) {
+            log.error("Product category is required.");
+            logsService.error("Product category is required.");
+            throw new IllegalArgumentException("Product category is required.");
+        }
+        if (productDto.getTechnique() == null || productDto.getTechnique().trim().isEmpty()) {
+            log.error("Product category is required.");
+            logsService.error("Product category is required.");
+            throw new IllegalArgumentException("Product category is required.");
+        }
+        if (productDto.getPrice() == null || productDto.getPrice() <= 0) {
+            log.error("Product price must be greater than 0.");
+            logsService.error("Product price must be greater than 0.");
+            throw new IllegalArgumentException("Product price must be greater than 0.");
+        }
+
+        return userRepository.findById(productDto.getSellerId())
+                .orElseThrow(() -> {
+                    log.error("User not found with ID: " + productDto.getSellerId());
+                    logsService.error("User not found with ID: " + productDto.getSellerId());
+                    return new NotDataFoundException("User not found");
+                });
+    }
+
     @Override
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
+            log.error("Product not found with ID: " + id);
             logsService.error("Product not found with ID: " + id);
             throw new NotDataFoundException("Product not found");
         }
-        productRepository.deleteById(id);
+
+        Product product = productRepository.getReferenceById(id);
+        product.setStatus(ProductStatus.DELETED);
+        productRepository.save(product);
         logsService.info("Product deleted with ID: " + id);
     }
 
@@ -132,17 +174,21 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findProductById(productId)
                 .orElseThrow(() -> {
                     logsService.error("Product not found with ID: " + productId);
-                    throw new NotDataFoundException("Product not found");
+                    return new NotDataFoundException("Product not found");
                 });
 
-        if (product.getStock() < quantity ||
-                product.getStock() - quantity < 0) {
-            logsService.error("Insufficient stock for product ID: " + productId);
-            throw new NotDataFoundException("Insufficient stock");
-        }
-
         if (reduceStock) {
+            if (product.getStock() < quantity ||
+                    product.getStock() - quantity < 0) {
+                logsService.error("Insufficient stock for product ID: " + productId);
+                throw new NotDataFoundException("Insufficient stock");
+            }
             productRepository.reduceStock(productId, quantity);
+            if (product.getStock() - quantity == 0) {
+                product.setStatus(ProductStatus.UNAVAILABLE);
+                productRepository.save(product);
+                logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
+            }
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         } else {
             productRepository.augmentStock(productId, quantity);
@@ -173,7 +219,6 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponseDto> getProductsBySeller(Long sellerId, Pageable pageable) {
         logsService.info("Fetching products for seller ID: " + sellerId);
 
-        // Verificar que el vendedor existe
         if (!userRepository.existsById(sellerId)) {
             logsService.error("Seller not found with ID: " + sellerId);
             throw new NotDataFoundException("Seller not found with ID: " + sellerId);
@@ -185,6 +230,35 @@ public class ProductServiceImpl implements ProductService {
             logsService.error("Error fetching products for seller: " + e.getMessage());
             throw new NotDataFoundException("Error fetching products for seller", e);
         }
+    }
+
+    @Override
+    public Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable) {
+        logsService.info("Searching products with filters");
+        log.info("dto: " + dto);
+        return productRepository.searchWithFilters(PaintingCategory.valueOf(dto.getCategory()), PaintingTechnique.valueOf(dto.getTechnique()), dto.getPriceMin(), dto.getPriceMax(), pageable);
+    }
+
+    @Override
+    public Page<ProductResponseDto> getByCategory(String category, Pageable pageable) {
+        if (category == null || category.trim().isEmpty()) {
+            log.error("Product category is required.");
+            logsService.error("Product category is required.");
+            throw new IllegalArgumentException("Product category is required.");
+        }
+        logsService.info("Fetching products by category: " + category);
+        return productRepository.findByCategory(PaintingCategory.valueOf(category), pageable);
+    }
+
+    @Override
+    public Page<ProductResponseDto> getByTechnique(String technique, Pageable pageable) {
+        if (technique == null || technique.trim().isEmpty()) {
+            log.error("Product category is required.");
+            logsService.error("Product category is required.");
+            throw new IllegalArgumentException("Product category is required.");
+        }
+        logsService.info("Fetching products by technique: " + technique);
+        return productRepository.findByTechnique(PaintingTechnique.valueOf(technique), pageable);
     }
 
     private ProductResponseDto convertToDto(Product product) {
@@ -203,24 +277,5 @@ public class ProductServiceImpl implements ProductService {
                 .category(product.getCategory().name())
                 .sellerId(product.getSeller().getId())
                 .build();
-    }
-
-    @Override
-    public Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable) {
-        logsService.info("Searching products with filters");
-        log.info("dto: " + dto);
-        return productRepository.searchWithFilters(PaintingCategory.valueOf(dto.getCategory()), PaintingTechnique.valueOf(dto.getTechnique()), dto.getPriceMin(), dto.getPriceMax(), pageable);
-    }
-
-    @Override
-    public Page<ProductResponseDto> getByCategory(String category, Pageable pageable) {
-        logsService.info("Fetching products by category: " + category);
-        return productRepository.findByCategory(PaintingCategory.valueOf(category), pageable);
-    }
-
-    @Override
-    public Page<ProductResponseDto> getByTechnique(String technique, Pageable pageable) {
-        logsService.info("Fetching products by technique: " + technique);
-        return productRepository.findByTechnique(PaintingTechnique.valueOf(technique), pageable);
     }
 }

@@ -7,8 +7,6 @@ import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface NotaVentaService {
     Page<NotaVentaResponseDto> getAllNotasVenta(Pageable pageable);
     NotaVentaResponseDto getNotaVentaById(Long id);
@@ -24,5 +22,5 @@ public interface NotaVentaService {
     NotaVentaResponseDto getActiveCartByUserId(Long userId);
     NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto);
     StereumPagaResponseDto getPaymentInfo(RequestPaymentDto request);
-    void updateOrderDetailStock(UpdateOrderDetailDto updateOrderDetailDto);
+    NotaVentaResponseDto updateOrderDetailStock(UpdateOrderDetailDto updateOrderDetailDto);
 }

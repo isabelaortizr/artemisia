@@ -214,9 +214,9 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "400", description = "Invalid input or validation error"),
             @ApiResponse(responseCode = "404", description = "Resource not found")
     })
-    @PutMapping("/order-detail/update-stock")
-    public ResponseEntity<Void> updateOrderDetailStock(@RequestBody UpdateOrderDetailDto updateOrderDetailDto) {
-        notaVentaService.updateOrderDetailStock(updateOrderDetailDto);
-        return ResponseEntity.ok().build();
+    @PutMapping("/order_detail/update_stock")
+    public ResponseEntity<NotaVentaResponseDto> updateOrderDetailStock(@RequestBody UpdateOrderDetailDto updateOrderDetailDto) {
+        NotaVentaResponseDto nv = notaVentaService.updateOrderDetailStock(updateOrderDetailDto);
+        return ResponseEntity.ok(nv);
     }
 }

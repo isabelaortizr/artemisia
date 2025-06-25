@@ -2,12 +2,12 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 async function createAddress({ direction, userId }) {
-    const token = localStorage.getItem('authToken'); // si tu API requiere auth
+    // const token = localStorage.getItem('authToken'); // si tu API requiere auth
     const res = await fetch(`${API_URL}/addresses`, {
         method: 'POST',
         headers: {
             'Content-Type':  'application/json',
-            'Authorization': `Bearer ${token}`
+            // 'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ direction, userId }),
     });

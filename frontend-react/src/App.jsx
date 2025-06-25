@@ -1,14 +1,41 @@
-// import Home from "./Home";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// function App() {
-//   return <Home />;
-// }
+import Header from './components/Header';
+import About from './components/About';
+import Login from './pages/Login';   // <- opcional si también quieres login
+import Register from './pages/Register';
+import Footer from './components/Footer';
+import ProductsLanding from './components/ProductsLanding';
+import Products from './pages/Products';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 
-// export default App;
 
-import LandingPage from "./LandingPage";
-function App() {
-  return <LandingPage />;
+const Home = () => (
+  <div className='w-full overflow-hidden bg-black'>
+    <Header />
+    <About />
+    <ProductsLanding/>
+    <Footer />
+  </div>
+);
 
-}
-export default LandingPage;
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+
+
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;

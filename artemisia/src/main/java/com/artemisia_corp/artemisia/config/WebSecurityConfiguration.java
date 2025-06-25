@@ -36,13 +36,9 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                         authorizationManagerRequestMatcherRegistry ->
                                 authorizationManagerRequestMatcherRegistry
                                         .requestMatchers(HttpMethod.POST, "/api/auth/token").permitAll()
-                                        .requestMatchers(
-                                                "/swagger-ui/**",
-                                                "/v3/api-docs/**",
-                                                "/swagger-resources/**",
-                                                "/swagger-ui.html",
-                                                "/webjars/**"
-                                        ).permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/addresses").permitAll()
+
                                         .anyRequest().authenticated()
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
@@ -68,4 +64,12 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/api/**")
+//                .allowedOrigins("http://localhost:5173")  // ajusta el puerto de Vite
+//                .allowedMethods("*")
+//                .allowCredentials(true);
+//    }
 }

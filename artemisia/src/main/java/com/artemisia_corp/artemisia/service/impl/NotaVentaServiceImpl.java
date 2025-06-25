@@ -383,7 +383,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             }
 
             return convertToDtoWithDetails(notaVenta);
-
         }
 
         logsService.info("No active cart found for user ID: " + userId + ", creating new one");
@@ -544,11 +543,17 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         orderDetailService.updateQuantityOrderDetail(new UpdateQuantityDetailDto(orderDetail.getId(), quantity));
 
-        NotaVenta nv = notaVentaRepository.getReferenceById(activeCart.getId());
+        double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(activeCart.getId());
+
+        if (activeCart.getTotalGlobal() != recalculatedTotal) {
+            logsService.info("Updating totalGlobal for active cart of user ID: " + userId);
+            activeCart.setTotalGlobal(recalculatedTotal);
+            notaVentaRepository.save(activeCart);
+        }
 
         log.info("La cantidad del producto con id {} en el carrito del usuario con id {} se ha actualizado a {}",
                 productId, userId, quantity);
-        return convertToDtoWithDetails(nv);
+        return convertToDtoWithDetails(activeCart);
     }
 
     private boolean isNotaVentaCompleted(Long notaVentaId) {

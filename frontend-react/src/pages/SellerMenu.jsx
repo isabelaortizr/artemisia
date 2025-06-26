@@ -37,7 +37,7 @@ const SellerMenu = () => {
                     Ver Catálogo de Arte
                 </Link>
                 <Link
-                    to="/my-works"
+                    to="/myworks"
                     className="block text-center bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 transition">
                     Ver Mis Obras
                 </Link>

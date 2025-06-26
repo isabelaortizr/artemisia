@@ -65,10 +65,10 @@ async function createProduct({
     return res.json(); // ProductResponseDto
 }
 
-async function getProductsBySeller(sellerId, page = 0, size = 10, sortBy = 'id', sortDir = 'ASC') {
+async function getProductsBySeller(sellerId, page = 0, size = 10,) {
     const token = localStorage.getItem('authToken');
     const res = await fetch(
-        `${API_URL}/products/seller/${sellerId}?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`,
+        `${API_URL}/products/seller/${sellerId}?page=${page}&size=${size}`,
         {
             headers: {
                 'Content-Type': 'application/json',
@@ -87,4 +87,21 @@ async function getProductsBySeller(sellerId, page = 0, size = 10, sortBy = 'id',
     };
 }
 
-export default { getProducts, createProduct };
+async function updateProduct(id, productDto) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/products/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(productDto),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error actualizando producto (${res.status})`);
+    }
+    return res.json(); // ProductResponseDto
+}
+
+export default { getProducts, createProduct, getProductsBySeller, updateProduct };

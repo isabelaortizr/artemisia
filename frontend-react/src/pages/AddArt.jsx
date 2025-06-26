@@ -61,7 +61,7 @@ const AddArt = () => {
 
     return (
         <div className="relative max-w-lg mx-auto p-6">
-            <Link to="/seller/menu" className="absolute top-6 left-6">
+            <Link to="/menu" className="absolute top-6 left-6">
                 <img src={backIcon} alt="Volver" className="w-8 h-8 hover:opacity-80 transition" />
             </Link>
 

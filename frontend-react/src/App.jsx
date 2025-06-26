@@ -32,7 +32,7 @@ function App() {
             <Route path="/profile"  element={<Profile />} />
             <Route path="/cart"     element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/my-works" element={<MyWorks />} />
+            <Route path="/myworks" element={<MyWorks />} />
 
         </Routes>
       </BrowserRouter>

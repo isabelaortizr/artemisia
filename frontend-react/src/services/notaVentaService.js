@@ -71,4 +71,23 @@ async function createTransaction({
     return res.json(); // StereumPagaResponseDto
 }
 
-export default { addToCart, getCart, createTransaction };
+async function updateOrderDetailStock({ userId, productId, quantity }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/order_detail/update_stock`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, productId, quantity })
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al actualizar carrito`);
+    }
+
+    return res.json(); // NotaVentaResponseDto
+}
+
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock };

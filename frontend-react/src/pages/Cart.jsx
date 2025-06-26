@@ -34,16 +34,21 @@ const Cart = () => {
     }, [navigate]);
 
     const handleDecrease = async (item) => {
+        // calculamos la nueva cantidad (0 elimina)
+        const newQty = item.quantity - 1;
         setLoading(true);
         try {
-            // Asume que tu servicio expone removeFromCart({ productId, quantity })
-            await notaVentaService.removeFromCart({
+            // Llamamos al endpoint PUT /order_detail/update_stock
+            const updatedCart = await notaVentaService.updateOrderDetailStock({
+                userId,
                 productId: item.productId,
-                quantity:  1
+                quantity:  newQty
             });
-            await fetchCart();
+            // refrescamos directamente con la respuesta
+            setCart(updatedCart);
         } catch (err) {
             setError(err.message || "Error al actualizar el carrito");
+        } finally {
             setLoading(false);
         }
     };

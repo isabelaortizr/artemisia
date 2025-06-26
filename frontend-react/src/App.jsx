@@ -1,36 +1,38 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// import Home from "./Home";
 
-import Header from './components/Header';
-import About from './components/About';
-import Login from './pages/Login';   // <- opcional si también quieres login
-import Register from './pages/Register';
-import Footer from './components/Footer';
-import ProductsLanding from './components/ProductsLanding';
-import Products from './pages/Products';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
+// function App() {
+//   return <Home />;
+// }
 
+// export default App;
 
-const Home = () => (
-  <div className='w-full overflow-hidden bg-black'>
-    <Header />
-    <About />
-    <ProductsLanding/>
-    <Footer />
-  </div>
-);
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingPage from "./LandingPage";
+import Login from "./pages/Login";
+import Register     from "./pages/Register";      // ← Nueva importación
+import Products    from './pages/Products';
+import SellerMenu  from './pages/SellerMenu';
+import AddArt      from './pages/AddArt.jsx';
+import Profile  from './pages/Profile';
+import Cart        from "./pages/Cart";
+import Checkout   from "./pages/Checkout";
+import MyWorks from './pages/MyWorks';
 
-const App = () => {
+function App() {
+  // return <LandingPage />;
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
+      <BrowserRouter>
+        <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/menu"      element={<SellerMenu />} />
+            <Route path="/add-art" element={<AddArt />} />
+            <Route path="/profile"  element={<Profile />} />
+            <Route path="/cart"     element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/myworks" element={<MyWorks />} />
 
 
       </Routes>

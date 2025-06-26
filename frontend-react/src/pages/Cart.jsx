@@ -88,7 +88,7 @@ const Cart = () => {
 
             <div className="mt-6 flex justify-end">
                 <button
-                    onClick={() => navigate('/checkout', { state: { orderId: cart.id } })}
+                    onClick={() => navigate('/checkout')}
                     className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
                     Finalizar compra
                 </button>

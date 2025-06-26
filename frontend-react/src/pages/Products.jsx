@@ -1,9 +1,12 @@
 // src/pages/Products.jsx
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import notaVentaService from '../services/notaVentaService';
-import productService    from '../services/productService';
-import cartIcon          from '../assets/cart-icon.png'; // ajusta la ruta si hace falta
+import productService   from '../services/productService';
+import cartIcon         from '../assets/cart-icon.png';
+import logoutIcon       from '../assets/logout-icon.png'; // tu icono de logout
+import profileIcon      from '../assets/profile-icon.png'; // tu icono de perfil
+import authService      from '../services/authService';
 
 const Products = () => {
     const [products, setProducts]     = useState([]);
@@ -12,8 +15,16 @@ const Products = () => {
     const [expanded, setExpanded]     = useState([]);
     const [page, setPage]             = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    const [toastMessage, setToastMessage] = useState('');
+    const navigate = useNavigate();
+
 
     useEffect(() => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+            navigate("/login");
+            return;
+        }
         setLoading(true);
         productService.getProducts(page, 9)
             .then(({ items, totalPages }) => {
@@ -24,22 +35,25 @@ const Products = () => {
             .finally(() => setLoading(false));
     }, [page]);
 
+    const handleLogout = () => {
+        authService.logout();
+        navigate('/login');
+    };
+
     const toggleExpand = (id) => {
         setExpanded(prev =>
-            prev.includes(id)
-                ? prev.filter(x => x !== id)
-                : [...prev, id]
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
     };
 
     const handleAddToCart = async (prod) => {
         try {
-            const updatedNota = await notaVentaService.addToCart({
+            await notaVentaService.addToCart({
                 productId: prod.productId,
                 quantity:  1
             });
-            console.log('Carrito actualizado:', updatedNota);
-            // aquí podrías actualizar un estado global de carrito o mostrar un toast...
+            setToastMessage(`"${prod.name}" añadido al carrito`);
+            setTimeout(() => setToastMessage(''), 3000);
         } catch (err) {
             console.error(err);
             alert(err.message);
@@ -51,7 +65,24 @@ const Products = () => {
 
     return (
         <div className="relative max-w-7xl mx-auto p-6">
-            {/* Botón de carrito en esquina superior derecha */}
+
+            {/* Botón logout */}
+            <button
+                onClick={handleLogout}
+                className="absolute top-6 left-6">
+                <img
+                    src={logoutIcon}
+                    alt="Cerrar sesión"
+                    className="w-10 h-10 hover:opacity-80 transition"
+                />
+            </button>
+
+            {/* Botón perfil */}
+            <Link to="/profile" className="absolute top-6 right-60">
+                <img src={profileIcon} alt="Mi Perfil" className="w-10 h-10 hover:opacity-80 transition" />
+            </Link>
+
+            {/* Botón carrito */}
             <Link to="/cart" className="absolute top-6 right-6">
                 <img
                     src={cartIcon}
@@ -59,6 +90,13 @@ const Products = () => {
                     className="w-10 h-10 hover:opacity-80 transition"
                 />
             </Link>
+
+            {/* Toast centradо abajo */}
+            {toastMessage && (
+                <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+                    {toastMessage}
+                </div>
+            )}
 
             <h2 className="text-3xl font-semibold mb-8 text-center">Catálogo de Productos</h2>
 
@@ -106,7 +144,7 @@ const Products = () => {
                 })}
             </div>
 
-            {/* Controles de paginación */}
+            {/* Paginación */}
             <div className="flex justify-center items-center space-x-4 mt-8">
                 <button
                     onClick={() => setPage(p => Math.max(p - 1, 0))}

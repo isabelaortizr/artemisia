@@ -71,7 +71,27 @@ public class JwtTokenProvider implements Serializable {
                 .parseClaimsJws(jwt)
                 .getBody();
         log.info("ID: {}", claims.getSubject());
+        return String.valueOf(claims.getSubject());
+    }
+
+    public String getIdFromToken(String token) {
+        String jwt = token.replace("Bearer ", "");
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(jwt)
+                .getBody();
+        log.info("ID: {}", claims.getId());
         return String.valueOf(claims.getId());
+    }
+
+    public String getRoleFromToken(String token) {
+        String jwt = token.replace("Bearer ", "");
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(jwt)
+                .getBody();
+        log.info("Role: {}", claims.get(USER_ROLE_CLAIM));
+        return String.valueOf(claims.get(USER_ROLE_CLAIM));
     }
 
     private String getUsername(String token) {

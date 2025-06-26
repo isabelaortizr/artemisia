@@ -15,5 +15,5 @@ public class RequestPaymentDto {
     private String network = "POLYGON";
     private String currency;
     @JsonProperty("charge_reason")
-    private String chargeReason;
+    private String chargeReason ="";
 }

@@ -61,7 +61,8 @@ public class AuthController {
             OKAuthDto  okAuthDto = new OKAuthDto();
             okAuthDto.setIdToken(token);
             okAuthDto.setUsername(user.getUsername());
-            okAuthDto.setId(jwtTokenProvider.getUserIdFromToken(token));
+            okAuthDto.setId(jwtTokenProvider.getIdFromToken(token));
+            okAuthDto.setRole(jwtTokenProvider.getRoleFromToken(token));
             return ok(okAuthDto);
         } catch (BadCredentialsException e) {
             log.error("Error al autentificar el usuario: {}", data.getUsername(), e);

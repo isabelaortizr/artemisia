@@ -12,11 +12,18 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const { token, user, userId } = await authService.login({ username, password });
+            const { token, user, userId, role  } = await authService.login({ username, password });
             localStorage.setItem('authToken', token);
             localStorage.setItem('username',  user);
             localStorage.setItem('userId',    String(userId));
-            navigate('/products');
+            localStorage.setItem('userRole',  role);
+
+            if (role === 'SELLER') {
+                navigate('/menu');
+            } else {
+                navigate('/products');
+            }
+
         } catch (err) {
             setError(err.message || 'Error al autenticar');
         }

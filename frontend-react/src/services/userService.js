@@ -16,4 +16,19 @@ async function createUser({ name, mail, password, role }) {
     return res.json(); // { id, name, mail, role, ... }
 }
 
-export default { createUser };
+async function getUserById(id) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/users/${id}`, {
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al obtener usuario`);
+    }
+    return res.json(); // { id, name, mail, role }
+}
+
+export default { createUser, getUserById };

@@ -211,4 +211,17 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
         return ResponseEntity.ok(productService.getByTechnique(technique, pageable));
     }
+
+    @GetMapping("/seller/{sellerId}/without-deleted")
+    public ResponseEntity<Page<ProductResponseDto>> getProductsBySellerWithoutDeleted(
+            @PathVariable Long sellerId,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size,
+            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "ASC") Sort.Direction sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        Page<ProductResponseDto> products = productService.getProductsBySellerWithoutDeleted(sellerId, pageable);
+        return ResponseEntity.ok(products);
+    }
+
 }

@@ -39,8 +39,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     void augmentStock(@Param("productId") Long productId, @Param("quantity") Integer quantity);
 
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p) " +
-            "FROM Product p WHERE (:category IS NULL OR :category = '' OR p.category = :category) " +
-            "AND (:technique IS NULL OR :technique = '' OR p.technique = :technique) " +
+            "FROM Product p WHERE " +
+            "(:category IS NULL OR p.category = :category) " +
+            "AND (:technique IS NULL OR p.technique = :technique) " +
             "AND (:priceMin IS NULL OR p.price >= :priceMin) " +
             "AND (:priceMax IS NULL OR p.price <= :priceMax) " +
             "AND p.status != 'DELETED'")
@@ -50,6 +51,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("priceMin") Double priceMin,
             @Param("priceMax") Double priceMax,
             Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.seller.id = :sellerId AND p.status IN ('AVAILABLE', 'UNAVAILABLE')")
+    Page<Product> findProductsBySellerWithoutDeleted(@Param("sellerId") Long sellerId, Pageable pageable);
 
     Page<ProductResponseDto> findBySeller_Id(Long sellerId, Pageable pageable);
 

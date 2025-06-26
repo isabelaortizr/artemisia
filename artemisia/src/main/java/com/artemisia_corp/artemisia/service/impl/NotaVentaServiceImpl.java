@@ -547,11 +547,11 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         orderDetailService.updateQuantityOrderDetail(new UpdateQuantityDetailDto(orderDetail.getId(), quantity));
 
-        double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(activeCart.getId());
+        Double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(activeCart.getId());
 
-        if (activeCart.getTotalGlobal() != recalculatedTotal) {
+        if (!Objects.equals(activeCart.getTotalGlobal(), recalculatedTotal)) {
             logsService.info("Updating totalGlobal for active cart of user ID: " + userId);
-            activeCart.setTotalGlobal(recalculatedTotal);
+            activeCart.setTotalGlobal(recalculatedTotal != null ? recalculatedTotal : 0.0);
             notaVentaRepository.save(activeCart);
         }
 

@@ -27,7 +27,12 @@ const MyWorks = () => {
         productService
             .getProductsBySeller(sellerId, page, 9)
             .then(({ items, totalPages }) => {
-                setWorks(items);
+                // normaliza cada item: si viene productId ponlo en id
+                const normalized = items.map(item => ({
+                    ...item,
+                    id: item.id ?? item.productId
+                }));
+                setWorks(normalized);
                 setTotal(totalPages);
             })
             .catch(err => setError(err.message))
@@ -84,7 +89,8 @@ const MyWorks = () => {
                     work={editingWork}
                     onClose={() => setEdit(null)}
                     onSave={(updated) => {
-                        setWorks(ws => ws.map(w => w.id === updated.id ? updated : w));
+                        const u = { ...updated, id: updated.id ?? updated.productId };
+                        setWorks(ws => ws.map(w => w.id===u.id ? u : w));
                         setEdit(null);
                     }}
                 />

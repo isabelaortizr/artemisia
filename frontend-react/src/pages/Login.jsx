@@ -18,6 +18,9 @@ const Login = () => {
             localStorage.setItem('userId',    String(userId));
             localStorage.setItem('userRole',  role);
 
+            console.log("🔐 Rol del usuario:", role);
+
+
             if (role === 'SELLER') {
                 navigate('/menu');
             } else {

@@ -18,7 +18,7 @@ export default function EditModal({ work, onClose, onSave }) {
         setLoading(true);
         setError('');
         try {
-            const updated = await productService.updateProduct(work.id, {
+            const updated = await productService.updateProduct(work.productId, {
                 sellerId: Number(localStorage.getItem('userId')),
                 ...form
             });

@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -37,12 +39,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getUserById(Long id) {
-        logsService.info("Fetching user with ID: " + id);
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("User ID must be greater than 0.");
+        }
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> {
                     logsService.error("User not found with ID: " + id);
-                    throw new NotDataFoundException("User not found");
+                    return new NotDataFoundException("User not found with ID: " + id);
                 });
+
         return convertToDto(user);
     }
 
@@ -53,151 +59,176 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto createUser(UserRequestDto userDto) {
+        if (userDto == null || userDto.getMail() == null || userDto.getMail().trim().isEmpty()) {
+            logsService.error("User mail is required.");
+            throw new IllegalArgumentException("Email is required.");
+        }
+        if (userDto.getName() == null || userDto.getName().trim().isEmpty()) {
+            logsService.error("User name is required.");
+            throw new IllegalArgumentException("Username is required.");
+        }
+        if (userDto.getPassword() == null || userDto.getPassword().trim().isEmpty()) {
+            logsService.error("User password is required.");
+            throw new IllegalArgumentException("Password is required.");
+        }
+        if (userDto.getRole() == null) {
+            logsService.error("User role is required.");
+            throw new IllegalArgumentException("Role is required.");
+        }
+
         if (userRepository.existsByMail(userDto.getMail())) {
-            logsService.error("Email already in use: " + userDto.getMail());
-            throw new NotDataFoundException("Email already in use");
+            logsService.error("Email is already in use: " + userDto.getMail());
+            throw new IllegalArgumentException("Email is already in use.");
+        }
+
+        if (userRepository.existsByName(userDto.getName())) {
+            logsService.error("Username is already in use: " + userDto.getName());
+            throw new IllegalArgumentException("Username is already in use.");
         }
 
         User user = User.builder()
                 .name(userDto.getName())
                 .mail(userDto.getMail())
                 .password(passwordEncoder.encode(userDto.getPassword()))
-                .role(UserRole.valueOf(userDto.getRole()))
-                .status(StateEntity.valueOf("ACTIVE"))
+                .role(UserRole.valueOf(userDto.getRole().trim().toUpperCase()))
+                .status(StateEntity.ACTIVE)
                 .build();
 
-      User savedUser = userRepository.save(user);
-        logsService.info("User created with ID: " + savedUser.getId());
+        User savedUser = userRepository.save(user);
         return convertToDto(savedUser);
     }
 
     @Override
     public UserResponseDto updateUser(Long id, UserRequestDto userDto) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> {
-                    logsService.error("User not found with ID: " + id);
-                    throw new NotDataFoundException("User not found");
-                });
-
-        if (!user.getMail().equals(userDto.getMail())) {
-            if (userRepository.existsByMail(userDto.getMail())) {
-                logsService.error("Email already in use: " + userDto.getMail());
-                throw new NotDataFoundException("Email already in use");
-            }
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("User ID must be greater than 0.");
+        }
+        if (userDto == null) {
+            throw new IllegalArgumentException("User data is required.");
         }
 
-        user.setName(userDto.getName());
-        user.setMail(userDto.getMail());
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotDataFoundException("User not found with ID: " + id));
 
-        if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
+        if (userDto.getMail() != null && !userDto.getMail().trim().isEmpty()) {
+            if (!userDto.getMail().equals(user.getMail()) && userRepository.existsByMail(userDto.getMail())) {
+                throw new IllegalArgumentException("Email is already in use.");
+            }
+            user.setMail(userDto.getMail());
+        }
+
+        if (userDto.getName() != null && !userDto.getName().trim().isEmpty()) {
+            user.setName(userDto.getName());
+        }
+
+        if (userDto.getPassword() != null && !userDto.getPassword().trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }
 
-        if (userDto.getRole() != null) {
-            user.setRole(UserRole.valueOf(userDto.getRole()));
-        }
-
         User updatedUser = userRepository.save(user);
-        logsService.info("User updated with ID: " + updatedUser.getId());
         return convertToDto(updatedUser);
     }
 
     @Override
     public void deleteUser(Long id, String token) {
-        String userNameFromToken = jwtTokenProvider.getUserIdFromToken(token);
-        Optional<User> userOptional = userRepository.findByName(userNameFromToken);
-        if (userOptional.isEmpty()) {
-            logsService.error("User not found with name: " + userNameFromToken);
-            throw new NotDataFoundException("User not found");
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("User ID must be greater than 0.");
         }
-        User user = userOptional.get();
-
-        if (!user.getId().equals(id)) {
-            logsService.error("Unauthorized delete attempt by user ID: " + userNameFromToken);
-            throw new NotDataFoundException("Unauthorized delete attempt");
+        if (token == null || token.trim().isEmpty()) {
+            throw new IllegalArgumentException("Authorization token is required.");
         }
 
-        if (!userRepository.existsById(id)) {
-            logsService.error("User not found with ID: " + id);
-            throw new NotDataFoundException("User not found");
+        String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        UserResponseDto userCheck = this.getUserById(id);
+        if (userIdFromToken.equals(userCheck.getId().toString())) {
+            logsService.info("User deleted successfully with ID: " + id);
+            throw new IllegalArgumentException("Invalid token or unauthorized action.");
         }
 
-        user.setStatus(StateEntity.valueOf("DELETED"));
+        User user = userRepository.findUserById(id);
+
+        user.setStatus(StateEntity.DELETED);
         user.setName(user.getName() + " DELETED");
         user.setMail(user.getMail() + " DELETED");
         userRepository.save(user);
-        logsService.info("User deleted with ID: " + id);
+        logsService.info("User deleted successfully with ID: " + id);
     }
 
     @Override
     public UserResponseDto getUserByEmail(String email) {
-        logsService.info("Fetching user by email: " + email);
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email is required.");
+        }
+
         User user = userRepository.findUserByMail(email)
-                .orElseThrow(() -> {
-                    logsService.error("User not found with email: " + email);
-                    throw new NotDataFoundException("User not found");
-                });
+                .orElseThrow(() -> new NotDataFoundException("User not found with email: " + email));
+
         return convertToDto(user);
     }
 
     @Override
     public Optional<User> getUserByName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            logsService.error("User name is required.");
+            throw new IllegalArgumentException("Username is required.");
+        }
         logsService.info("Fetching user by name: " + name);
         return userRepository.findByName(name);
     }
 
     @Override
     public UserResponseDto updateEmail(UserUpdateEmailDto emailDto) {
-        Long userId = emailDto.getUserId();
-        User user = userRepository.findById(userId)
+        if (emailDto == null || emailDto.getUserId() == null || emailDto.getUserId() <= 0) {
+            throw new IllegalArgumentException("Valid user ID is required.");
+        }
+        if (emailDto.getNewEmail() == null || emailDto.getNewEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("New email is required.");
+        }
+
+        User user = userRepository.findById(emailDto.getUserId())
                 .orElseThrow(() -> {
-                    logsService.error("User not found with ID: " + userId);
-                    throw new NotDataFoundException("User not found");
+                    logsService.error("User not found with ID: " + emailDto.getUserId());
+                    return new NotDataFoundException("User not found with ID: " + emailDto.getUserId());
                 });
 
         if (!passwordEncoder.matches(emailDto.getCurrentPassword(), user.getPassword())) {
-            logsService.error("Invalid current password for user ID: " + userId);
+            logsService.error("Invalid current password for user ID: " + emailDto.getUserId());
             throw new NotDataFoundException("Invalid current password");
         }
 
         if (userRepository.existsByMail(emailDto.getNewEmail())) {
-            logsService.error("Email already in use: " + emailDto.getNewEmail());
-            throw new NotDataFoundException("Email already in use");
+            logsService.error("Email is already in use: " + emailDto.getNewEmail());
+            throw new IllegalArgumentException("Email is already in use.");
         }
 
         user.setMail(emailDto.getNewEmail());
         User updatedUser = userRepository.save(user);
-        logsService.info("Email updated for user ID: " + userId);
+        logsService.info("Email updated for user ID: " + emailDto.getUserId() + " to: " + emailDto.getNewEmail());
         return convertToDto(updatedUser);
     }
 
     @Override
     public UserResponseDto updatePassword(UserUpdatePasswordDto passwordDto) {
-        Long userId = passwordDto.getUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    logsService.error("User not found with ID: " + userId);
-                    throw new NotDataFoundException("User not found");
-                });
+        if (passwordDto == null || passwordDto.getUserId() == null || passwordDto.getUserId() <= 0) {
+            throw new IllegalArgumentException("Valid user ID is required.");
+        }
+        if (passwordDto.getCurrentPassword() == null || passwordDto.getCurrentPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Old password is required.");
+        }
+        if ((passwordDto.getNewPassword() == null || passwordDto.getNewPassword().trim().isEmpty()) &&
+                !Objects.equals(passwordDto.getConfirmNewPassword(), passwordDto.getNewPassword())) {
+            throw new IllegalArgumentException("New password is required.");
+        }
+
+        User user = userRepository.findById(passwordDto.getUserId())
+                .orElseThrow(() -> new NotDataFoundException("User not found with ID: " + passwordDto.getUserId()));
 
         if (!passwordEncoder.matches(passwordDto.getCurrentPassword(), user.getPassword())) {
-            logsService.error("Invalid current password for user ID: " + userId);
-            throw new NotDataFoundException("Invalid current password");
-        }
-
-        if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmNewPassword())) {
-            logsService.error("New passwords don't match for user ID: " + userId);
-            throw new NotDataFoundException("New passwords don't match");
-        }
-
-        if (passwordEncoder.matches(passwordDto.getNewPassword(), user.getPassword())) {
-            logsService.error("New password must be different from current for user ID: " + userId);
-            throw new NotDataFoundException("New password must be different from current");
+            throw new IllegalArgumentException("Old password is incorrect.");
         }
 
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
         User updatedUser = userRepository.save(user);
-        logsService.info("Password updated for user ID: " + userId);
         return convertToDto(updatedUser);
     }
 

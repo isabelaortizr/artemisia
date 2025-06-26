@@ -3,6 +3,7 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateQuantityDetailDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +27,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/api/order-details")
 @Tag(name = "Order Detail Management", description = "Endpoints for managing order details")
+@Slf4j
 public class OrderDetailController {
 
     @Autowired
@@ -33,7 +36,8 @@ public class OrderDetailController {
     @Operation(summary = "Get all order details", description = "Returns paginated list of all order details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order details retrieved successfully",
-                    content = @Content(schema = @Schema(implementation = Page.class)))
+                    content = @Content(schema = @Schema(implementation = Page.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
     })
     @GetMapping
     public ResponseEntity<Page<OrderDetailResponseDto>> getAllOrderDetails(
@@ -42,7 +46,8 @@ public class OrderDetailController {
             @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        return ResponseEntity.ok(orderDetailService.getAllOrderDetails(pageable));
+        Page<OrderDetailResponseDto> response = orderDetailService.getAllOrderDetails(pageable); // Delegado al servicio.
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get order detail by ID", description = "Returns a single order detail by its ID")
@@ -53,7 +58,8 @@ public class OrderDetailController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<OrderDetailResponseDto> getOrderDetailById(@PathVariable Long id) {
-        return ResponseEntity.ok(orderDetailService.getOrderDetailById(id));
+        OrderDetailResponseDto response = orderDetailService.getOrderDetailById(id);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Create a new order detail", description = "Creates a new order detail")
@@ -65,7 +71,7 @@ public class OrderDetailController {
     @PostMapping
     public ResponseEntity<OrderDetailResponseDto> createOrderDetail(@RequestBody OrderDetailRequestDto orderDetailDto) {
         OrderDetailResponseDto response = orderDetailService.createOrderDetail(orderDetailDto, null, null);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Update an order detail", description = "Updates an existing order detail")
@@ -79,7 +85,8 @@ public class OrderDetailController {
     public ResponseEntity<OrderDetailResponseDto> updateOrderDetail(
             @PathVariable Long id,
             @RequestBody OrderDetailRequestDto orderDetailDto) {
-        return ResponseEntity.ok(orderDetailService.updateOrderDetail(id, orderDetailDto));
+        OrderDetailResponseDto response = orderDetailService.updateOrderDetail(id, orderDetailDto);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Update order detail stock", description = "Updates the quantity of an order detail")
@@ -89,7 +96,7 @@ public class OrderDetailController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PutMapping("update-stock/{id}")
-    public ResponseEntity<OrderDetailResponseDto> updateStockDetail(
+    public ResponseEntity<Void> updateStockDetail(
             @RequestBody UpdateQuantityDetailDto updateQuantityDetailDto) {
         orderDetailService.updateQuantityOrderDetail(updateQuantityDetailDto);
         return ResponseEntity.ok().build();

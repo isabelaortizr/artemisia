@@ -11,12 +11,10 @@ import lombok.Setter;
 @Setter
 public class UpdateQuantityDetailDto {
     private Long orderDetailId;
-    private Long productId;
     private Integer quantity;
 
-    public UpdateQuantityDetailDto(Long orderDetailId, Long productId, Integer quantity) {
+    public UpdateQuantityDetailDto(Long orderDetailId, Integer quantity) {
         this.orderDetailId = orderDetailId;
-        this.productId = productId;
         this.quantity = quantity;
     }
 }

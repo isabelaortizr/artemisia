@@ -85,7 +85,9 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
                 request.getServletPath().startsWith("/swagger-ui/") ||
                 request.getServletPath().startsWith("/v3/api-docs/") ||
                 request.getServletPath().startsWith("/swagger-resources/") ||
-                request.getServletPath().equals("/swagger-ui.html");
+                request.getServletPath().equals("/swagger-ui.html") ||
+                request.getServletPath().equals("/api/addresses") ||
+                request.getServletPath().equals("/api/users");
     }
 
 }

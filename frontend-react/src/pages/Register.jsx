@@ -99,7 +99,7 @@ const Register = () => {
         </div>
 
         {/* Address */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label htmlFor="direction" className="block text-sm mb-2">Address</label>
           <input
             id="direction"
@@ -110,7 +110,7 @@ const Register = () => {
             className="w-full px-4 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/50"
             required
           />
-        </div>
+        </div> */}
 
         {/* Role */}
         <div className="mb-6">

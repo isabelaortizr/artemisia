@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.controller;
 
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
+import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
@@ -20,8 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -173,6 +172,19 @@ public class NotaVentaController {
         return new ResponseEntity<>(notaVentaService.getActiveCartByUserId(userId), HttpStatus.OK);
     }
 
+    @Operation(summary = "Assign an address to a sale", description = "Assigns an address to an existing sales note")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Address assigned to sales note successfully"),
+            @ApiResponse(responseCode = "404", description = "Sales note or address not found")
+    })
+    @PutMapping("/set_address")
+    public ResponseEntity<Void> assignAddressToNotaVenta(
+            @RequestBody SetAddressDto setAddressDto) {
+
+        notaVentaService.assignAddressToNotaVenta(setAddressDto);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Create payment transaction", description = "Creates a payment transaction for a sales note")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Transaction created successfully",
@@ -182,12 +194,7 @@ public class NotaVentaController {
     })
     @PostMapping("/create_transaction")
     public ResponseEntity<StereumPagaResponseDto> conseguirTransaccion(@RequestBody RequestPaymentDto respuesta) {
-        try {
-            return ResponseEntity.ok(notaVentaService.getPaymentInfo(respuesta));
-        } catch (Exception e) {
-            log.error("Error al verificar la transacción: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok(notaVentaService.getPaymentInfo(respuesta));
     }
 
     @Operation(summary = "Verify payment transaction", description = "Verifies the status of a payment transaction")
@@ -198,12 +205,18 @@ public class NotaVentaController {
     })
     @PostMapping("/verify_transaction")
     public ResponseEntity<Void> verificarTransaccion(@RequestBody RespuestaVerificacionNotaVentaDto respuesta) {
-        try {
-            notaVentaService.obtenerRespuestaTransaccion(respuesta);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Error al verificar la transacción: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Update stock for OrderDetail", description = "Updates the stock quantity for a specific product in a user's active cart")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order detail stock updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or validation error"),
+            @ApiResponse(responseCode = "404", description = "Resource not found")
+    })
+    @PutMapping("/order_detail/update_stock")
+    public ResponseEntity<NotaVentaResponseDto> updateOrderDetailStock(@RequestBody UpdateOrderDetailDto updateOrderDetailDto) {
+        NotaVentaResponseDto nv = notaVentaService.updateOrderDetailStock(updateOrderDetailDto);
+        return ResponseEntity.ok(nv);
     }
 }

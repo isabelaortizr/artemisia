@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
                 .status(StateEntity.valueOf("ACTIVE"))
                 .build();
 
-        User savedUser = userRepository.save(user);
+      User savedUser = userRepository.save(user);
         logsService.info("User created with ID: " + savedUser.getId());
         return convertToDto(savedUser);
     }

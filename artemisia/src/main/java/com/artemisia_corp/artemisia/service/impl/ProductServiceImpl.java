@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -89,29 +90,40 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponseDto updateProduct(Long id, ProductRequestDto productDto) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Product not found with ID: " + id);
-                    logsService.error("Product not found with ID: " + id);
-                    return new NotDataFoundException("Product not found");
-                });
+                .orElseThrow(() -> new NotDataFoundException("Product with ID " + id + " not found."));
 
-        User seller = this.verifyProduct(productDto);
+        if (productDto.getName() != null && !productDto.getName().isBlank())
+            product.setName(productDto.getName());
 
-        product.setSeller(seller);
-        product.setName(productDto.getName());
-        product.setTechnique(PaintingTechnique.valueOf(productDto.getTechnique()));
-        product.setMaterials(productDto.getMaterials());
-        product.setDescription(productDto.getDescription());
-        product.setPrice(productDto.getPrice());
-        product.setStock(productDto.getStock());
-        product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
-        product.setImageUrl(productDto.getImage());
-        product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
+        if (productDto.getCategory() != null && isValidCategory(productDto.getCategory()))
+            product.setCategory(PaintingCategory.valueOf(productDto.getCategory()));
+
+        if (productDto.getTechnique() != null && isValidTechnique(productDto.getTechnique()))
+            product.setTechnique(PaintingTechnique.valueOf(productDto.getTechnique()));
+
+        if (productDto.getMaterials() != null && !productDto.getMaterials().isBlank())
+            product.setMaterials(productDto.getMaterials());
+
+        if (productDto.getDescription() != null && !productDto.getDescription().isBlank())
+            product.setDescription(productDto.getDescription());
+
+        if (productDto.getPrice() != null)
+            product.setPrice(productDto.getPrice());
+
+        if (productDto.getStock() != null)
+            product.setStock(productDto.getStock());
+
+        if (productDto.getStatus() != null && isValidStatus(productDto.getStatus()))
+            product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
+
+        if (productDto.getImage() != null && !productDto.getImage().isBlank())
+            product.setImageUrl(productDto.getImage());
 
         Product updatedProduct = productRepository.save(product);
-        logsService.info("Product updated with ID: " + updatedProduct.getId());
+
         return convertToDto(updatedProduct);
     }
 
@@ -233,10 +245,34 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable) {
-        logsService.info("Searching products with filters");
-        log.info("dto: " + dto);
-        return productRepository.searchWithFilters(PaintingCategory.valueOf(dto.getCategory()), PaintingTechnique.valueOf(dto.getTechnique()), dto.getPriceMin(), dto.getPriceMax(), pageable);
+        PaintingCategory category = null;
+        if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
+            if (isValidCategory(dto.getCategory())) {
+                category = PaintingCategory.valueOf(dto.getCategory());
+            } else {
+                throw new IllegalArgumentException("Invalid category provided: " + dto.getCategory());
+            }
+        }
+
+        PaintingTechnique technique = null;
+        if (dto.getTechnique() != null && !dto.getTechnique().isBlank()) {
+            if (isValidTechnique(dto.getTechnique())) {
+                technique = PaintingTechnique.valueOf(dto.getTechnique());
+            } else {
+                throw new IllegalArgumentException("Invalid technique provided: " + dto.getTechnique());
+            }
+        }
+
+        // Call repository method with validated inputs
+        return productRepository.searchWithFilters(
+                category,
+                technique,
+                dto.getPriceMin(),
+                dto.getPriceMax(),
+                pageable
+        );
     }
 
     @Override
@@ -261,6 +297,13 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByTechnique(PaintingTechnique.valueOf(technique), pageable);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable) {
+        Page<Product> products = productRepository.findProductsBySellerWithoutDeleted(sellerId, pageable);
+        return products.map(this::convertToDto);
+    }
+
     private ProductResponseDto convertToDto(Product product) {
         String image = imageService.getLatestImage(product.getId());
 
@@ -278,4 +321,26 @@ public class ProductServiceImpl implements ProductService {
                 .sellerId(product.getSeller().getId())
                 .build();
     }
+
+    private boolean isValidCategory(String category) {
+        return Arrays.stream(PaintingCategory.values())
+                .map(Enum::name)
+                .collect(Collectors.toSet())
+                .contains(category);
+    }
+
+    private boolean isValidTechnique(String technique) {
+        return Arrays.stream(PaintingTechnique.values())
+                .map(Enum::name)
+                .collect(Collectors.toSet())
+                .contains(technique);
+    }
+
+    private boolean isValidStatus(String status) {
+        return Arrays.stream(ProductStatus.values())
+                .map(Enum::name)
+                .collect(Collectors.toSet())
+                .contains(status);
+    }
+
 }

@@ -21,7 +21,7 @@ function Header() {
         Pieces
         </a>
         <Link to="/login" className="bg-white px-8 py-3 rounded text-black transition duration-300 hover:bg-black hover:text-white hover:scale-105">
-            Share art with Us
+            Get Started
           </Link>
         </div>
     </motion.div>

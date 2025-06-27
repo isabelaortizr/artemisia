@@ -16,6 +16,9 @@ import project_img_6 from './project_img_6.png'
 import profile_img_1 from './profile_img_1.png'
 import profile_img_2 from './profile_img_2.png'
 import profile_img_3 from './profile_img_3.png'
+import register_img from './register_img.png'
+import bg_image from './bg_image.png'
+import cart_icon from './cart_icon.png'
 
 export const assets = {
     logo,
@@ -31,6 +34,9 @@ export const assets = {
     project_img_4,
     left_arrow,
     right_arrow,
+    register_img,
+    bg_image,
+    cart_icon,
 }
 
 export const projectsData = [

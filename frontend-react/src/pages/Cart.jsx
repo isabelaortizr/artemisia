@@ -1,18 +1,30 @@
 // src/pages/Cart.jsx
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import notaVentaService from "../services/notaVentaService";
-import backIcon        from "../assets/back-icon.png";
-import Navbar          from '../components/Navbar';
-import { assets }      from "../assets/assets";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate }            from "react-router-dom";
+import notaVentaService                  from "../services/notaVentaService";
+import addressService                    from "../services/addressService";
+import backIcon                          from "../assets/back-icon.png";
+import Navbar                            from '../components/Navbar';
+import { assets }                        from "../assets/assets";
 
 const Cart = () => {
+    const navigate = useNavigate();
+    const userId   = Number(localStorage.getItem("userId"));
+
+    // carrito
     const [cart,    setCart]    = useState(null);
     const [loading, setLoading] = useState(true);
     const [error,   setError]   = useState(null);
-    const navigate = useNavigate();
-    const userId   = localStorage.getItem("userId");
 
+    // direcciones
+    const [addresses,       setAddresses]       = useState([]);
+    const [addrLoading,     setAddrLoading]     = useState(true);
+    const [selectedAddress, setSelectedAddress] = useState("");
+
+    // moneda
+    const [currency, setCurrency] = useState("BOB");
+
+    // fetch carrito
     const fetchCart = async () => {
         setLoading(true);
         try {
@@ -25,31 +37,69 @@ const Cart = () => {
         }
     };
 
+    // fetch direcciones
+    const fetchAddresses = async () => {
+        setAddrLoading(true);
+        try {
+            const res = await addressService.getAddressesByUser(userId);
+            const list = Array.isArray(res)
+                ? res
+                : Array.isArray(res.content)
+                    ? res.content
+                    : [];
+            setAddresses(list);
+            if (list.length > 0) {
+                setSelectedAddress(list[0].address_id ?? list[0].addressId);
+            }
+        } catch (err) {
+            setError(err.message || "Error al cargar direcciones");
+        } finally {
+            setAddrLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (!userId) {
             navigate("/login", { replace: true });
             return;
         }
         fetchCart();
+        fetchAddresses();
     }, [navigate]);
 
-    const handleDecrease = async (item) => {
-        // calculamos la nueva cantidad (0 elimina)
-        const newQty = item.quantity - 1;
+    // decrementa cantidad (0 elimina)
+    const handleDecrease = async item => {
         setLoading(true);
         try {
-            // Llamamos al endpoint PUT /order_detail/update_stock
-            const updatedCart = await notaVentaService.updateOrderDetailStock({
+            const updated = await notaVentaService.updateOrderDetailStock({
                 userId,
                 productId: item.productId,
-                quantity:  newQty
+                quantity:  item.quantity - 1
             });
-            // refrescamos directamente con la respuesta
-            setCart(updatedCart);
+            setCart(updated);
         } catch (err) {
             setError(err.message || "Error al actualizar el carrito");
         } finally {
             setLoading(false);
+        }
+    };
+
+    // checkout
+    const handleCheckout = async () => {
+        if (!selectedAddress) {
+            setError("Selecciona una dirección de envío");
+            return;
+        }
+        try {
+            const resp = await notaVentaService.createTransaction({
+                userId,
+                currency,
+                chargeReason: "Compra en Artemisia",
+                country:      "BO"
+            });
+            navigate("/checkout", { state: { transaction: resp, addressId: selectedAddress } });
+        } catch (err) {
+            setError(err.message || "Error al iniciar pago");
         }
     };
 
@@ -70,9 +120,7 @@ const Cart = () => {
             className="min-h-screen bg-cover bg-center relative"
             style={{ backgroundImage: `url(${assets.register_img})` }}
         >
-            {/* Overlay oscuro para contraste y blur */}
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
-
             <div className="relative z-10 max-w-4xl mx-auto p-6 pt-28">
                 <Navbar showSignUpButton={false} />
 
@@ -89,6 +137,43 @@ const Cart = () => {
                 ) : (
                     <div className="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-white/20 shadow-lg text-white">
                         <Header title="Tu Carrito" />
+
+                        {/* Dirección */}
+                        <div className="mb-6">
+                            <label className="block text-white mb-1">Dirección de envío</label>
+                            {addrLoading
+                                ? <p className="text-white">Cargando direcciones…</p>
+                                : (
+                                    <select
+                                        value={selectedAddress}
+                                        onChange={e => setSelectedAddress(e.target.value)}
+                                        className="w-60 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
+                                    >
+                                        {addresses.map(addr => (
+                                            <option key={addr.address_id} value={addr.address_id}>
+                                                {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )
+                            }
+                        </div>
+
+                        {/* Moneda */}
+                        <div className="mb-6">
+                            <label className="block text-white mb-1">Moneda</label>
+                            <select
+                                value={currency}
+                                onChange={e => setCurrency(e.target.value)}
+                                className="w-32 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
+                            >
+                                <option>BOB</option>
+                                <option>USDT</option>
+                                <option>USDC</option>
+                            </select>
+                        </div>
+
+                        {/* Items */}
                         <ul className="space-y-6">
                             {cart.detalles.map(item => (
                                 <li
@@ -106,24 +191,20 @@ const Cart = () => {
                                             onClick={() => handleDecrease(item)}
                                             disabled={loading || item.quantity <= 0}
                                             className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition"
-                                        >
-                                            −
-                                        </button>
+                                        >−</button>
                                     </div>
                                     <p className="font-bold text-lg">${item.total.toFixed(2)}</p>
                                 </li>
                             ))}
                         </ul>
 
-                        <div className="mt-8 flex justify-end">
+                        {/* Total + Checkout */}
+                        <div className="mt-8 flex justify-between items-center">
                             <p className="text-2xl font-bold text-white">
                                 Total: ${cart.totalGlobal.toFixed(2)}
                             </p>
-                        </div>
-
-                        <div className="mt-8 flex justify-end">
                             <button
-                                onClick={() => navigate('/checkout')}
+                                onClick={handleCheckout}
                                 className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"
                             >
                                 Finalizar compra

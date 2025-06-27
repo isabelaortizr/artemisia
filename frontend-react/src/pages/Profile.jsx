@@ -21,12 +21,12 @@ const Profile = () => {
 
     // — New Address Form —
     const [newAddr, setNewAddr] = useState({
-        recipientName:    '',
-        recipientSurname: '',
+        recipient_name:    '',
+        recipient_surname: '',
         country:          '',
         city:             '',
         street:           '',
-        houseNumber:      '',
+        house_number:      '',
         extra:            ''
     });
 
@@ -74,12 +74,12 @@ const Profile = () => {
             });
             // reset form + reload list
             setNewAddr({
-                recipientName:    '',
-                recipientSurname: '',
+                recipient_name:    '',
+                recipient_surname: '',
                 country:          '',
                 city:             '',
                 street:           '',
-                houseNumber:      '',
+                house_number:      '',
                 extra:            ''
             });
             fetchAddresses();
@@ -162,12 +162,12 @@ const Profile = () => {
                 <h3 className="text-xl font-semibold mb-4">Agregar Nueva Dirección</h3>
                 <form onSubmit={handleAddrSubmit} className="space-y-4">
                     {[
-                        { name: 'recipientName',    label: 'Nombre destinatario'    },
-                        { name: 'recipientSurname', label: 'Apellido destinatario'  },
+                        { name: 'recipient_name',    label: 'Nombre destinatario'    },
+                        { name: 'recipient_surname', label: 'Apellido destinatario'  },
                         { name: 'country',          label: 'País'                    },
                         { name: 'city',             label: 'Ciudad'                 },
                         { name: 'street',           label: 'Calle'                  },
-                        { name: 'houseNumber',      label: 'Número de casa'         },
+                        { name: 'house_number',      label: 'Número de casa'         },
                         { name: 'extra',            label: 'Información extra (opc.)'}
                     ].map(fld => (
                         <div key={fld.name}>

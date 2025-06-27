@@ -1,127 +1,150 @@
-// src/pages/Register.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import userService from '../services/userService';
 import addressService from '../services/addressService.js';
+import { assets } from '../assets/assets';
+import Navbar from '../components/Navbar';
 
 const Register = () => {
-    const [name, setName]         = useState('');
-    const [mail, setMail]         = useState('');
+    const [name, setName] = useState('');
+    const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole]         = useState('BUYER');
-    const [direction, setDirection] = useState(''); // ← NUEVO campo
-    const [error, setError]       = useState('');
-    const [success, setSuccess]   = useState('');
+    const [role, setRole] = useState('BUYER');
+    const [direction, setDirection] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
-
         try {
-            // 1) Creamos el usuario
             const user = await userService.createUser({ name, mail, password, role });
-            // user === { id, name, mail, role }
-
-            // 2) Creamos la dirección asociada
             await addressService.createAddress({
                 direction,
-                userId: user.id
+                userId: user.id,
             });
-
-            setSuccess('Usuario y dirección creados correctamente. Ya puedes iniciar sesión.');
+            setSuccess('User and address created successfully. You can now log in.');
             setTimeout(() => navigate('/login'), 1200);
-
         } catch (err) {
             console.error(err);
-            setError(err.message);
+            setError(err.message || 'Something went wrong.');
         }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="relative min-h-screen flex items-center justify-center bg-black px-4">
+            <Navbar showSignUpButton={false} />
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                style={{
+                    backgroundImage: `url(${assets.register_img})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'brightness(0.5)',
+                    zIndex: 0,
+                }}
+            />
+
             <form
                 onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm"
+                className="relative z-10 w-full max-w-md bg-zinc-900 bg-opacity-90 p-8 rounded-2xl shadow-xl border border-white/10 text-white"
             >
-                <h2 className="text-2xl text-black font-bold mb-6 text-center">Regístrate</h2>
+                <h2 className="text-3xl font-semibold text-center mb-6">Create an Account</h2>
 
-                {error   && <p className="text-red-500 text-sm mb-4">{error}</p>}
-                {success && <p className="text-green-600 text-sm mb-4">{success}</p>}
+                {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+                {success && <p className="text-green-500 text-sm mb-4 text-center">{success}</p>}
 
-                {/* Nombre */}
+                {/* Name */}
                 <div className="mb-4">
-                    <label htmlFor="name" className="block text-gray-700 mb-2">Nombre</label>
+                    <label htmlFor="name" className="block text-sm mb-2">Username</label>
                     <input
-                        id="name" type="text" value={name}
+                        id="name"
+                        type="text"
+                        value={name}
                         onChange={e => setName(e.target.value)}
-                        placeholder="Tu nombre"
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 text-black"
+                        placeholder="Your name"
+                        className="w-full px-4 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/50"
                         required
                     />
                 </div>
 
-                {/* Correo */}
+                {/* Email */}
                 <div className="mb-4">
-                    <label htmlFor="mail" className="block text-gray-700 mb-2">Correo</label>
+                    <label htmlFor="mail" className="block text-sm mb-2">Email</label>
                     <input
-                        id="mail" type="email" value={mail}
+                        id="mail"
+                        type="email"
+                        value={mail}
                         onChange={e => setMail(e.target.value)}
-                        placeholder="tu@correo.com"
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 text-black"
+                        placeholder="your@email.com"
+                        className="w-full px-4 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/50"
                         required
                     />
                 </div>
 
-                {/* Contraseña */}
+                {/* Password */}
                 <div className="mb-4">
-                    <label htmlFor="password" className="block text-gray-700 mb-2">Contraseña</label>
+                    <label htmlFor="password" className="block text-sm mb-2">Password</label>
                     <input
-                        id="password" type="password" value={password}
+                        id="password"
+                        type="password"
+                        value={password}
                         onChange={e => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 text-black"
+                        className="w-full px-4 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/50"
                         required
                     />
                 </div>
 
-                {/* Rol */}
-                <div className="mb-4">
-                    <label htmlFor="role" className="block text-gray-700 mb-2">Rol</label>
-                    <select
-                        id="role" value={role}
-                        onChange={e => setRole(e.target.value)}
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
-                    >
-                        <option value="BUYER">Comprador</option>
-                        <option value="SELLER">Vendedor</option>
-                    </select>
-                </div>
+                {/* Address */}
+                {/* <div className="mb-4">
+          <label htmlFor="direction" className="block text-sm mb-2">Address</label>
+          <input
+            id="direction"
+            type="text"
+            value={direction}
+            onChange={e => setDirection(e.target.value)}
+            placeholder="Your address"
+            className="w-full px-4 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/50"
+            required
+          />
+        </div> */}
 
-                {/* Dirección */}
+                {/* Role */}
                 <div className="mb-6">
-                    <label htmlFor="direction" className="block text-gray-700 mb-2">Dirección</label>
-                    <input
-                        id="direction" type="text" value={direction}
-                        onChange={e => setDirection(e.target.value)}
-                        placeholder="Tu dirección"
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400 text-black"
-                        required
-                    />
+                    <label htmlFor="role" className="block text-sm mb-2">
+                        I want to sign up as...
+                    </label>
+                    <div className="relative">
+                        <select
+                            id="role"
+                            value={role}
+                            onChange={e => setRole(e.target.value)}
+                            className="w-full appearance-none bg-black text-white border border-white/20 rounded-md px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-white"
+                        >
+                            <option value="BUYER">Buyer</option>
+                            <option value="SELLER">Seller</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white select-none">
+                            ▼
+                        </div>
+                    </div>
                 </div>
 
+                {/* Submit */}
                 <button
                     type="submit"
-                    className="w-full py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition"
+                    className="w-full py-3 bg-white text-black font-medium rounded-full hover:scale-105 transition duration-300"
                 >
-                    Crear cuenta
+                    Create Account
                 </button>
 
-                <p className="mt-4 text-center text-gray-600">
-                    ¿Ya tienes cuenta?{' '}
-                    <Link to="/login" className="text-indigo-600 hover:underline">
-                        Inicia sesión
+                <p className="mt-6 text-center text-white/70 text-sm">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-white underline hover:text-amber-300 transition">
+                        Login
                     </Link>
                 </p>
             </form>

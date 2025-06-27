@@ -6,10 +6,13 @@
 
 // export default App;
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LandingPage from "./LandingPage";
+import {BrowserRouter, Routes, Route, Router} from "react-router-dom";
+import Header from './components/Header';
+import About from './components/About';
+import Footer from './components/Footer';
+import ProductsLanding from './components/ProductsLanding';
 import Login from "./pages/Login";
-import Register     from "./pages/Register";      // ← Nueva importación
+import Register     from "./pages/Register";
 import Products    from './pages/Products';
 import SellerMenu  from './pages/SellerMenu';
 import AddArt      from './pages/AddArt.jsx';
@@ -18,12 +21,20 @@ import Cart        from "./pages/Cart";
 import Checkout   from "./pages/Checkout";
 import MyWorks from './pages/MyWorks';
 
-function App() {
-  // return <LandingPage />;
-  return (
+const Home = () => (
+    <div className='w-full overflow-hidden bg-black'>
+        <Header />
+        <About />
+        <ProductsLanding/>
+        <Footer />
+    </div>
+);
+
+const App = () => {
+    return (
       <BrowserRouter>
         <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/products" element={<Products />} />

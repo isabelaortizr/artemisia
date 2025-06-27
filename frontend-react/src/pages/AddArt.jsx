@@ -161,7 +161,7 @@ const AddArt = () => {
                 {/* Precio y Stock */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-gray-700">Precio (USD)</label>
+                        <label className="block text-gray-700">Precio (Bs.)</label>
                         <input
                             name="price"
                             type="number"
@@ -216,7 +216,7 @@ const AddArt = () => {
                     type="submit"
                     disabled={loading}
                     className={`w-full py-2 font-medium rounded transition ${
-                        loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                        loading ? 'bg-gray-400 cursor-not-allowed' :  'text-white bg-black hover:bg-gray-900 hover:text-white '
                     }`}
                 >
                     {loading ? 'Guardando...' : 'Crear Obra'}

@@ -34,9 +34,8 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/myworks" element={<MyWorks />} />
 
-
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 };
 

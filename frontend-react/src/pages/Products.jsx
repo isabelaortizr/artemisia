@@ -98,7 +98,6 @@ export default function Products() {
     </div>
 
 
-
         {loading ? (
           <div className="flex justify-center items-center h-60">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-white border-opacity-40"></div>
@@ -128,7 +127,11 @@ export default function Products() {
                   <p className="text-sm text-gray-600">{prod.technique}</p>
                 </div>
                 <div className="mt-4 flex justify-between items-center">
-                  <span className="text-md font-bold">${prod.price != null ? prod.price.toFixed(2) : '0.00'}</span>
+                          <span className="text-md font-bold">
+            {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' })
+              .format(prod.price ?? 0)
+              .replace('Bs', 'Bs.')}
+          </span>
                   <button
                     onClick={() => addToCart(prod)}
                     className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"

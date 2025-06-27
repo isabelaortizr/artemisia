@@ -1,17 +1,20 @@
-// import Navbar from "./components/d_Navbar";
-// import Hero from "./components/d_Hero";
-// import ProductGrid from "./components/d_ProductGrid";
-// import Footer from "./components/d_Footer";
+import Header from "./components/Header";
+import Navbar from "./components/Navbar";
+import ProductsLanding from "./components/ProductsLanding";
+import About from "./components/About";
+import Footer from "./components/Footer";
 
-// const LandingPage = () => {
-//   return (
-//     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
-//       <Navbar />
-//       <Hero />
-//       <ProductGrid />
-//       <Footer />
-//     </div>
-//   );
-// };
+const LandingPage = () => {
+  return (
+    <div className="min-h-screen bg-black flex flex-col">
+      <Navbar/>
+      <Header/>
+      <About/>
+      <ProductsLanding/>
+      <Footer/>
 
-// export default LandingPage;
+    </div>
+  );
+};
+
+export default LandingPage;

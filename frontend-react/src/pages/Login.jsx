@@ -12,19 +12,27 @@ const Login = () => {
   const [error, setError]       = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const { token, user, userId } = await authService.login({ username, password });
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('username', user);
-      localStorage.setItem('userId', String(userId));
-      navigate('/products');
-    } catch (err) {
-      setError(err.message || 'Error al autenticar');
-    }
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const { token, user, userId, role  } = await authService.login({ username, password });
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('username',  user);
+            localStorage.setItem('userId',    String(userId));
+            localStorage.setItem('userRole',  role);
+
+            console.log("🔐 Rol del usuario:", role);
+
+            if (role === 'SELLER') {
+                navigate('/menu');
+            } else {
+                navigate('/products');
+            }
+
+        } catch (err) {
+            setError(err.message || 'Error al autenticar');
+        }
+    };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black px-4">

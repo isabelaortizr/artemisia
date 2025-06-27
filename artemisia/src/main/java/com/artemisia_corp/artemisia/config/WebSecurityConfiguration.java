@@ -38,8 +38,6 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                                         .requestMatchers(HttpMethod.POST, "/api/auth/token").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/addresses").permitAll()
-
-=========
                                         .requestMatchers(
                                                 "/swagger-ui/**",
                                                 "/v3/api-docs/**",
@@ -47,7 +45,6 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                                                 "/swagger-ui.html",
                                                 "/webjars/**"
                                         ).permitAll()
->>>>>>>>> Temporary merge branch 2
                                         .anyRequest().authenticated()
                 )
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->

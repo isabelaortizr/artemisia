@@ -5,7 +5,6 @@ import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
-import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumRequestDto;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

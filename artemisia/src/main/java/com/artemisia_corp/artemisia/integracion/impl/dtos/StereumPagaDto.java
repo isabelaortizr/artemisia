@@ -13,7 +13,6 @@ import lombok.*;
 public class StereumPagaDto {
     private String country;
     private String amount;
-    private String network;
     private String currency;
     @JsonProperty("idempotency_key")
     private String idempotencyKey;

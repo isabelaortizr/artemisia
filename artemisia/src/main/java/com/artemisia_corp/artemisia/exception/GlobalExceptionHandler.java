@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -31,6 +32,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleNotDataFoundException(NotDataFoundException ex) {
         log.error("NotDataFoundException occurred: {}", ex.getMessage(), ex);
         return buildErrorResponse("Data Not Found", ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(OperationException.class)
+    public ResponseEntity<Map<String, Object>> handleOperationException(OperationException ex) {
+        log.error("OperationException occurred: {}", ex.getMessage(), ex);
+        return buildErrorResponse("Data Not Found", ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
+        log.error("ResponseStatusException occurred: {}", ex.getMessage(), ex);
+        return buildErrorResponse("Data Not Found", ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

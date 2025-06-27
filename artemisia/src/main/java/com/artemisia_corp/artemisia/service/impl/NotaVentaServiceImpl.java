@@ -509,7 +509,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return sterumPayService.crearCargoCobro(StereumPagaDto.builder()
                     .country(request.getCountry())
                     .amount(notaVenta.getTotalGlobal().toString())
-                    .network(request.getNetwork())
                     .currency(request.getCurrency())
                     .chargeReason(request.getChargeReason())
                     .build(),
@@ -547,11 +546,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         orderDetailService.updateQuantityOrderDetail(new UpdateQuantityDetailDto(orderDetail.getId(), quantity));
 
-        double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(activeCart.getId());
+        Double recalculatedTotal = orderDetailRepository.calculateTotalByNotaVenta(activeCart.getId());
 
-        if (activeCart.getTotalGlobal() != recalculatedTotal) {
+        if (!Objects.equals(activeCart.getTotalGlobal(), recalculatedTotal)) {
+            if (activeCart.getIdTransaccion() != null)
+                activeCart.setIdTransaccion(null);
+
             logsService.info("Updating totalGlobal for active cart of user ID: " + userId);
-            activeCart.setTotalGlobal(recalculatedTotal);
+            activeCart.setTotalGlobal(recalculatedTotal != null ? recalculatedTotal : 0.0);
             notaVentaRepository.save(activeCart);
         }
 

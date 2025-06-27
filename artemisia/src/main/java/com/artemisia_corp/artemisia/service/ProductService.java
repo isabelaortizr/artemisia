@@ -19,4 +19,5 @@ public interface ProductService {
     Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable);
     Page<ProductResponseDto> getByCategory(String category, Pageable pageable);
     Page<ProductResponseDto> getByTechnique(String technique, Pageable pageable);
+    Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable);
 }

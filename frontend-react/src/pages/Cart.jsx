@@ -67,6 +67,24 @@ const Cart = () => {
         fetchAddresses();
     }, [navigate]);
 
+    // cuando el usuario elige otra dirección:
+    const handleAddressChange = async e => {
+        const newAddr = e.target.value;
+        setSelectedAddress(newAddr);
+        setLoading(true);
+        try {
+            const updated = await notaVentaService.updateNotaVenta(cart.id, {
+                userId,
+                buyerAddress: Number(newAddr)
+            });
+            setCart(updated);
+        } catch (err) {
+            setError(err.message || "Error al guardar dirección");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // decrementa cantidad (0 elimina)
     const handleDecrease = async item => {
         setLoading(true);
@@ -146,7 +164,7 @@ const Cart = () => {
                                 : (
                                     <select
                                         value={selectedAddress}
-                                        onChange={e => setSelectedAddress(e.target.value)}
+                                            onChange={handleAddressChange}
                                         className="w-60 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
                                     >
                                         {addresses.map(addr => (

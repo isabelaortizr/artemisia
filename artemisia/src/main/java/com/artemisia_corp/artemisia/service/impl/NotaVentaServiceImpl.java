@@ -509,7 +509,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return sterumPayService.crearCargoCobro(StereumPagaDto.builder()
                     .country(request.getCountry())
                     .amount(notaVenta.getTotalGlobal().toString())
-                    .network(request.getNetwork())
+//                    .network(request.getNetwork())
                     .currency(request.getCurrency())
                     .chargeReason(request.getChargeReason())
                     .build(),

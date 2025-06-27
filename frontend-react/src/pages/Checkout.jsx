@@ -1,45 +1,18 @@
 // src/pages/Checkout.jsx
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import notaVentaService from '../services/notaVentaService';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import backIcon from '../assets/back-icon.png';
 
 const Checkout = () => {
-    const [paymentLink, setPaymentLink] = useState('');
-    const [loading, setLoading]         = useState(true);
-    const [error, setError]             = useState(null);
+    const { state } = useLocation();
     const navigate = useNavigate();
-    const didRequest = useRef(false);
+    const tx = state?.transaction;
 
-    useEffect(() => {
-        if (didRequest.current) return;
-        didRequest.current = true;
-
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            navigate('/login');
-            return;
-        }
-
-        notaVentaService
-            .createTransaction({
-                userId,
-                currency: 'BOB',
-                chargeReason: 'Compra en Artemisia',
-                network: 'BISA',
-                country: 'BO'
-            })
-            .then(data => {
-                // extraemos el enlace real de la respuesta
-                const { payment_link } = data;
-                setPaymentLink(payment_link);
-            })
-            .catch(err => setError(err.message))
-            .finally(() => setLoading(false));
-    }, [navigate]);
-
-    if (loading) return <p className="text-center mt-10">Preparando tu pago…</p>;
-    if (error)   return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
+    if (!tx) {
+        // si entraron directo, los mandamos al carrito
+        navigate('/cart', { replace: true });
+        return null;
+    }
+    const paymentLink = tx.payment_link;
 
     return (
         <div className="relative max-w-xl mx-auto p-6">

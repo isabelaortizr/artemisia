@@ -45,7 +45,7 @@ async function createTransaction({
                                      userId,
                                      currency = "BOB",
                                      chargeReason = "Compra en Artemisia",
-                                     network = "BISA",
+                                     // network = "BISA",
                                      country = "BO"
                                  }) {
     const token = localStorage.getItem('authToken');
@@ -59,7 +59,7 @@ async function createTransaction({
             user_id:     Number(userId),
             currency,
             charge_reason: chargeReason,
-            network,
+            // network,
             country
         })
     });
@@ -90,4 +90,22 @@ async function updateOrderDetailStock({ userId, productId, quantity }) {
     return res.json(); // NotaVentaResponseDto
 }
 
-export default { addToCart, getCart, createTransaction, updateOrderDetailStock };
+async function updateNotaVenta(id, { userId, buyerAddress }) {
+    const token = localStorage.getItem('authToken');
+    const body = { userId, buyerAddress };
+    const res = await fetch(`${API_URL}/notas-venta/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al actualizar nota`);
+    }
+    return res.json(); // NotaVentaResponseDto
+}
+
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock, updateNotaVenta };

@@ -36,11 +36,6 @@ public class AddressServiceImpl implements AddressService {
     public List<AddressResponseDto> getAllAddresses() {
         List<Address> addresses = addressRepository.findAll();
 
-        if (addresses.isEmpty()) {
-            logsService.error("No addresses found: There are no addresses in the system.");
-            throw new NotDataFoundException("No addresses found: There are no addresses in the system.");
-        }
-
         return addresses.stream()
                 .map(this::convertToDto)
                 .toList();
@@ -130,11 +125,6 @@ public class AddressServiceImpl implements AddressService {
 
         Page<Address> addressPage = addressRepository.findByUserAndStatus(user, AddressStatus.ACTIVE, pageable);
 
-        if (addressPage.isEmpty()) {
-            log.error("No addresses found: The user with ID " + userId + " does not have any addresses.");
-            logsService.error("No addresses found: The user with ID " + userId + " does not have any addresses.");
-            throw new NotDataFoundException("No addresses found: The user with ID " + userId + " does not have any addresses.");
-        }
 
         return addressPage.map(this::convertToDto);
     }

@@ -3,8 +3,11 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
+import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,19 +15,26 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+
+import static org.springframework.http.ResponseEntity.ok;
+
 @Slf4j
 @Controller
-@RequestMapping("/api/notas-venta")
+    @RequestMapping("/api/notas-venta")
 @Tag(name = "Sales Note Management", description = "Endpoints for managing sales notes")
 public class NotaVentaController {
 
@@ -205,6 +215,7 @@ public class NotaVentaController {
     })
     @PostMapping("/verify_transaction")
     public ResponseEntity<Void> verificarTransaccion(@RequestBody RespuestaVerificacionNotaVentaDto respuesta) {
+        notaVentaService.obtenerRespuestaTransaccion(respuesta);
         return ResponseEntity.ok().build();
     }
 
@@ -218,5 +229,58 @@ public class NotaVentaController {
     public ResponseEntity<NotaVentaResponseDto> updateOrderDetailStock(@RequestBody UpdateOrderDetailDto updateOrderDetailDto) {
         NotaVentaResponseDto nv = notaVentaService.updateOrderDetailStock(updateOrderDetailDto);
         return ResponseEntity.ok(nv);
+    }
+
+    @PostMapping(value = "/inbound", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
+    public ResponseEntity<String> outbound(
+            @RequestHeader("x-signature") String signature,
+            @RequestHeader("x-timestamp") long xTimestamp,
+            @RequestBody String body) {
+
+        var currentTime = System.currentTimeMillis() / 1000;
+        if (Math.abs(currentTime - xTimestamp) > 300) {
+            throw new OperationException("Firma inválida");
+        }
+
+        String apiKey = "API_KEY";
+        String hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256,
+                apiKey.getBytes(StandardCharsets.UTF_8))
+                .hmacHex(body.getBytes(StandardCharsets.UTF_8));
+        if (!signature.equals(hmac)) {
+            throw new OperationException("Error en la firma");
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        RespuestaVerificacionNotaVentaDto transaction;
+        try {
+            transaction = objectMapper.readValue(body, RespuestaVerificacionNotaVentaDto.class);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ResponseEntity.badRequest().body("Error en la firma");
+        }
+
+        if (transaction.getNotificationType().equals("test")) {
+            return ok().build();
+        }
+
+        if (!transaction.getNotificationType().equals("transaction")) {
+            throw new OperationException("No corresponde a este método la notificación");
+        }
+
+        try {
+            if (transaction.getId() == null) {
+                log.error("No se encontró el id de la transacción");
+                return ResponseEntity.badRequest().body("No se encontró el id de la transacción");
+            }
+            notaVentaService.obtenerRespuestaTransaccion(transaction);
+
+            return ok().build();
+        } catch (OperationException e) {
+            log.error("Se generó un error al recibir notificación de circle. Causa: {}", e.getMessage());
+            throw new OperationException("Se generó un error al recibir notificación de circle");
+        } catch (Exception e) {
+            log.error("Se generó un error al recibir la confirmación de circle", e);
+            throw new OperationException("Se generó un error al recibir la confirmación de circle");
+        }
     }
 }

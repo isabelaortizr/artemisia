@@ -28,6 +28,8 @@ public class SterumPayServiceImpl implements SterumPayService {
 
     @Value("${stereum-pay.url-base}")
     private String urlBase;
+    @Value("${artemisia.redirect-url}")
+    private String myUrlBase;
     @Value("${stereum-pay.username}")
     private String username;
     @Value("${stereum-pay.api-key}")

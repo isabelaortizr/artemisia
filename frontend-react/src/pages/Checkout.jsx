@@ -1,17 +1,23 @@
 // src/pages/Checkout.jsx
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import backIcon from '../assets/back-icon.png';
+import { useState }          from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import backIcon              from '../assets/back-icon.png';
 
-const Checkout = () => {
-    const { state } = useLocation();
-    const navigate = useNavigate();
-    const tx = state?.transaction;
+export default function Checkout() {
+    const { state }    = useLocation();
+    const tx           = state?.transaction;
+    const addressId    = state?.addressId;
 
-    if (!tx) {
-        // si entraron directo, los mandamos al carrito
-        navigate('/cart', { replace: true });
-        return null;
+    // Si no vienen los datos, redirigimos al carrito
+    if (!tx || !addressId) {
+        return (
+            <div className="max-w-md mx-auto p-6 text-center">
+                <p className="text-red-500">No se encontró la transacción. Volviendo al carrito…</p>
+                <Link to="/cart" className="text-indigo-600 hover:underline">Ir al Carrito</Link>
+            </div>
+        );
     }
+
     const paymentLink = tx.payment_link;
 
     return (
@@ -26,7 +32,6 @@ const Checkout = () => {
                 Escanea el QR o interactúa con la pantalla de pago embebida a continuación:
             </p>
 
-            {/* Iframe embebida */}
             <div className="flex justify-center mb-6">
                 <iframe
                     src={paymentLink}
@@ -38,7 +43,6 @@ const Checkout = () => {
                 />
             </div>
 
-            {/* Enlace externo de respaldo */}
             <p className="text-center">
                 Si por alguna razón no se carga bien aquí,{' '}
                 <a
@@ -52,6 +56,4 @@ const Checkout = () => {
             </p>
         </div>
     );
-};
-
-export default Checkout;
+}

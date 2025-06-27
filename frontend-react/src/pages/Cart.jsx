@@ -109,13 +109,20 @@ const Cart = () => {
             return;
         }
         try {
-            const resp = await notaVentaService.createTransaction({
+            // 1) creamos la transacción CON LA MONEDA que el usuario escogió
+            const tx = await notaVentaService.createTransaction({
                 userId,
-                currency,
+                currency,               // ¡ojo aquí!
                 chargeReason: "Compra en Artemisia",
                 country:      "BO"
             });
-            navigate("/checkout", { state: { transaction: resp, addressId: selectedAddress } });
+            // 2) navegamos a /checkout llevándonos la Tx en el state
+            navigate("/checkout", {
+                state: {
+                    transaction: tx,
+                    addressId:   selectedAddress
+                }
+            });
         } catch (err) {
             setError(err.message || "Error al iniciar pago");
         }

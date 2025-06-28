@@ -1,45 +1,24 @@
 // src/pages/Checkout.jsx
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import notaVentaService from '../services/notaVentaService';
-import backIcon from '../assets/back-icon.png';
+import { useState }          from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import backIcon              from '../assets/back-icon.png';
 
-const Checkout = () => {
-    const [paymentLink, setPaymentLink] = useState('');
-    const [loading, setLoading]         = useState(true);
-    const [error, setError]             = useState(null);
-    const navigate = useNavigate();
-    const didRequest = useRef(false);
+export default function Checkout() {
+    const { state }    = useLocation();
+    const tx           = state?.transaction;
+    const addressId    = state?.addressId;
 
-    useEffect(() => {
-        if (didRequest.current) return;
-        didRequest.current = true;
+    // Si no vienen los datos, redirigimos al carrito
+    if (!tx || !addressId) {
+        return (
+            <div className="max-w-md mx-auto p-6 text-center">
+                <p className="text-red-500">No se encontró la transacción. Volviendo al carrito…</p>
+                <Link to="/cart" className="text-indigo-600 hover:underline">Ir al Carrito</Link>
+            </div>
+        );
+    }
 
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            navigate('/login');
-            return;
-        }
-
-        notaVentaService
-            .createTransaction({
-                userId,
-                currency: 'BOB',
-                chargeReason: 'Compra en Artemisia',
-                network: 'BISA',
-                country: 'BO'
-            })
-            .then(data => {
-                // extraemos el enlace real de la respuesta
-                const { payment_link } = data;
-                setPaymentLink(payment_link);
-            })
-            .catch(err => setError(err.message))
-            .finally(() => setLoading(false));
-    }, [navigate]);
-
-    if (loading) return <p className="text-center mt-10">Preparando tu pago…</p>;
-    if (error)   return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
+    const paymentLink = tx.payment_link;
 
     return (
         <div className="relative max-w-xl mx-auto p-6">
@@ -53,7 +32,6 @@ const Checkout = () => {
                 Escanea el QR o interactúa con la pantalla de pago embebida a continuación:
             </p>
 
-            {/* Iframe embebida */}
             <div className="flex justify-center mb-6">
                 <iframe
                     src={paymentLink}
@@ -65,7 +43,6 @@ const Checkout = () => {
                 />
             </div>
 
-            {/* Enlace externo de respaldo */}
             <p className="text-center">
                 Si por alguna razón no se carga bien aquí,{' '}
                 <a
@@ -79,6 +56,4 @@ const Checkout = () => {
             </p>
         </div>
     );
-};
-
-export default Checkout;
+}

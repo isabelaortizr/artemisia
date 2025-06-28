@@ -1,41 +1,140 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import notaVentaService from "../services/notaVentaService";
-import backIcon from "../assets/back-icon.png";
-import Navbar from '../components/Navbar'; // asumiendo que usas Navbar
-import {assets} from "../assets/assets";
+// src/pages/Cart.jsx
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate }            from "react-router-dom";
+import notaVentaService                  from "../services/notaVentaService";
+import addressService                    from "../services/addressService";
+import backIcon                          from "../assets/back-icon.png";
+import Navbar                            from '../components/Navbar';
+import { assets }                        from "../assets/assets";
 
 const Cart = () => {
-    const [cart, setCart] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const userId   = Number(localStorage.getItem("userId"));
+
+    // carrito
+    const [cart,    setCart]    = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error,   setError]   = useState(null);
+
+    // direcciones
+    const [addresses,       setAddresses]       = useState([]);
+    const [addrLoading,     setAddrLoading]     = useState(true);
+    const [selectedAddress, setSelectedAddress] = useState("");
+
+    // moneda
+    const [currency, setCurrency] = useState("BOB");
+
+    // fetch carrito
+    const fetchCart = async () => {
+        setLoading(true);
+        try {
+            const data = await notaVentaService.getCart(userId);
+            setCart(data);
+        } catch (err) {
+            setError(err.message || "Error al cargar el carrito");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // fetch direcciones
+    const fetchAddresses = async () => {
+        setAddrLoading(true);
+        try {
+            const res = await addressService.getAddressesByUser(userId);
+            const list = Array.isArray(res)
+                ? res
+                : Array.isArray(res.content)
+                    ? res.content
+                    : [];
+            setAddresses(list);
+            if (list.length > 0) {
+                setSelectedAddress(list[0].address_id ?? list[0].addressId);
+            }
+        } catch (err) {
+            setError(err.message || "Error al cargar direcciones");
+        } finally {
+            setAddrLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const userId = localStorage.getItem("userId");
         if (!userId) {
-            navigate("/login");
+            navigate("/login", { replace: true });
             return;
         }
-
-        setLoading(true);
-        notaVentaService.getCart(userId)
-            .then(data => setCart(data))
-            .catch(err => setError(err.message || "Error al cargar el carrito"))
-            .finally(() => setLoading(false));
+        fetchCart();
+        fetchAddresses();
     }, [navigate]);
 
+    // cuando el usuario elige otra dirección:
+    const handleAddressChange = async e => {
+        const newAddr = e.target.value;
+        setSelectedAddress(newAddr);
+        setLoading(true);
+        try {
+            const updated = await notaVentaService.updateNotaVenta(cart.id, {
+                userId,
+                buyerAddress: Number(newAddr)
+            });
+            setCart(updated);
+        } catch (err) {
+            setError(err.message || "Error al guardar dirección");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // decrementa cantidad (0 elimina)
+    const handleDecrease = async item => {
+        setLoading(true);
+        try {
+            const updated = await notaVentaService.updateOrderDetailStock({
+                userId,
+                productId: item.productId,
+                quantity:  item.quantity - 1
+            });
+            setCart(updated);
+        } catch (err) {
+            setError(err.message || "Error al actualizar el carrito");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // checkout
+    const handleCheckout = async () => {
+        if (!selectedAddress) {
+            setError("Selecciona una dirección de envío");
+            return;
+        }
+        try {
+            // 1) creamos la transacción CON LA MONEDA que el usuario escogió
+            const tx = await notaVentaService.createTransaction({
+                userId,
+                currency,               // ¡ojo aquí!
+                chargeReason: "Compra en Artemisia",
+                country:      "BO"
+            });
+            // 2) navegamos a /checkout llevándonos la Tx en el state
+            navigate("/checkout", {
+                state: {
+                    transaction: tx,
+                    addressId:   selectedAddress
+                }
+            });
+        } catch (err) {
+            setError(err.message || "Error al iniciar pago");
+        }
+    };
+
     if (loading) return <p className="text-center mt-10 text-white">Cargando carrito...</p>;
-    if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+    if (error)   return <p className="text-center mt-10 text-red-500">{error}</p>;
 
     const Header = ({ title }) => (
         <div className="flex items-center mb-6">
             <Link to="/products" className="mr-4">
-                <img
-                    src={backIcon}
-                    alt="Volver"
-                    className="w-10 h-10 hover:opacity-80 transition"
-                />
+                <img src={backIcon} alt="Volver" className="w-10 h-10 hover:opacity-80 transition" />
             </Link>
             <h2 className="text-3xl font-bold text-white">{title}</h2>
         </div>
@@ -46,9 +145,7 @@ const Cart = () => {
             className="min-h-screen bg-cover bg-center relative"
             style={{ backgroundImage: `url(${assets.register_img})` }}
         >
-            {/* Overlay oscuro para contraste */}
-            <div className="absolute inset-0  bg-opacity-70 z-0"></div>
-
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
             <div className="relative z-10 max-w-4xl mx-auto p-6 pt-28">
                 <Navbar showSignUpButton={false} />
 
@@ -66,6 +163,42 @@ const Cart = () => {
                     <div className="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-white/20 shadow-lg text-white">
                         <Header title="Tu Carrito" />
 
+                        {/* Dirección */}
+                        <div className="mb-6">
+                            <label className="block text-white mb-1">Dirección de envío</label>
+                            {addrLoading
+                                ? <p className="text-white">Cargando direcciones…</p>
+                                : (
+                                    <select
+                                        value={selectedAddress}
+                                            onChange={handleAddressChange}
+                                        className="w-60 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
+                                    >
+                                        {addresses.map(addr => (
+                                            <option key={addr.address_id} value={addr.address_id}>
+                                                {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )
+                            }
+                        </div>
+
+                        {/* Moneda */}
+                        <div className="mb-6">
+                            <label className="block text-white mb-1">Moneda</label>
+                            <select
+                                value={currency}
+                                onChange={e => setCurrency(e.target.value)}
+                                className="w-32 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
+                            >
+                                <option>BOB</option>
+                                <option>USDT</option>
+                                <option>USDC</option>
+                            </select>
+                        </div>
+
+                        {/* Items */}
                         <ul className="space-y-6">
                             {cart.detalles.map(item => (
                                 <li
@@ -74,22 +207,29 @@ const Cart = () => {
                                 >
                                     <div>
                                         <p className="font-semibold text-lg">{item.productName}</p>
-                                        <p className="text-gray-300 mt-1 text-sm">Cantidad: {item.quantity}</p>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <p className="text-gray-300 mr-2 text-sm">
+                                            Cantidad: {item.quantity}
+                                        </p>
+                                        <button
+                                            onClick={() => handleDecrease(item)}
+                                            disabled={loading || item.quantity <= 0}
+                                            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition"
+                                        >−</button>
                                     </div>
                                     <p className="font-bold text-lg">${item.total.toFixed(2)}</p>
                                 </li>
                             ))}
                         </ul>
 
-                        <div className="mt-8 flex justify-end">
+                        {/* Total + Checkout */}
+                        <div className="mt-8 flex justify-between items-center">
                             <p className="text-2xl font-bold text-white">
                                 Total: ${cart.totalGlobal.toFixed(2)}
                             </p>
-                        </div>
-
-                        <div className="mt-8 flex justify-end">
                             <button
-                                onClick={() => navigate('/checkout')}
+                                onClick={handleCheckout}
                                 className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"
                             >
                                 Finalizar compra

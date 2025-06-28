@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.SterumPayServiceImpl;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.*;
@@ -39,12 +40,11 @@ public class SterumPayController {
         }
     }
 
-    @PostMapping("/conversion-bob/{nota_venta_id}")
-    public ResponseEntity<CurrencyConversionResponseDto> conversionBob(
-            @PathVariable("userId") Long userId,
-            @RequestBody CurrencyConversionDto conversionDto) {
+    @PostMapping("/conversion_moneda")
+    public ResponseEntity<NotaVentaResponseDto> conversionBob(
+            @RequestBody ConversionDto conversionDto) {
         try {
-            CurrencyConversionResponseDto response = sterumPayService.conversionBob(conversionDto, userId);
+            NotaVentaResponseDto response = sterumPayService.conversionBob(conversionDto);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error al realizar la conversion de bob.", e);

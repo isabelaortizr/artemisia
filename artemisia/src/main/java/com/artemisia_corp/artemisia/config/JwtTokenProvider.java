@@ -59,7 +59,7 @@ public class JwtTokenProvider implements Serializable {
                 .signWith(SignatureAlgorithm.HS256, secretKeyByte)
                 .compact();
 
-        log.info("User id: {}. Token: {}", user.getId(), token);
+        //log.info("User id: {}. Token: {}", user.getId(), token);
 
         return token;
     }

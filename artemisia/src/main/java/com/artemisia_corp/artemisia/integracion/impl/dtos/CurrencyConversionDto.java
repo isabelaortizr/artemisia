@@ -11,8 +11,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CurrencyConversionDto {
-    private String country;
+    private String country = "BO";
     private String sourceCurrency;
     private String targetCurrency;
     private Double amount;
+
+    public CurrencyConversionDto(String sourceCurrency, String targetCurrency, Double amount) {
+        this.sourceCurrency = sourceCurrency;
+        this.targetCurrency = targetCurrency;
+        this.amount = amount;
+    }
 }

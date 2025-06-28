@@ -2,10 +2,18 @@ package com.artemisia_corp.artemisia.integracion.impl;
 
 import com.artemisia_corp.artemisia.crypto.CryptoRSA;
 import com.artemisia_corp.artemisia.entity.NotaVenta;
+import com.artemisia_corp.artemisia.entity.OrderDetail;
+import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
+import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.*;
+import com.artemisia_corp.artemisia.repository.NotaVentaRepository;
+import com.artemisia_corp.artemisia.repository.OrderDetailRepository;
+import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
+import com.artemisia_corp.artemisia.service.OrderDetailService;
 import com.artemisia_corp.artemisia.utils.JWTUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -47,6 +56,17 @@ public class SterumPayServiceImpl implements SterumPayService {
     @Autowired
     @Lazy
     private NotaVentaService notaVentaService;
+    @Autowired
+    @Lazy
+    private OrderDetailService orderDetailService;
+    @Autowired
+    @Lazy
+    private NotaVentaRepository notaVentaRepository;
+    @Autowired
+    @Lazy
+    private OrderDetailRepository orderDetailRepository;
+    @Autowired
+    private LogsService logsService;
 
     @Override
     public StereumAuthResponse obtenerTokenAutenticacion() {
@@ -114,10 +134,10 @@ public class SterumPayServiceImpl implements SterumPayService {
         return body;
     }
 
-
     @Override
     public EstadoResponseDto obtenerEstadoCobro(String id_transaccion) {
-        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L))
+            obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<EstadoResponseDto> response;
 
@@ -138,14 +158,68 @@ public class SterumPayServiceImpl implements SterumPayService {
     }
 
     @Override
-    public CurrencyConversionResponseDto conversionBob (CurrencyConversionDto conversionEntity, Long userId) {
-        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
+    public NotaVentaResponseDto conversionBob(ConversionDto conversionDto) {
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L))
+            obtenerTokenAutenticacion();
+
+        boolean isBob = false;
+        NotaVentaResponseDto cartDto = notaVentaService.getActiveCartByUserId(conversionDto.getUserId());
+        NotaVenta cart = notaVentaRepository.findById(cartDto.getId())
+                .orElseThrow(() -> {
+                    log.error("Error al obtener la carta de nota venta");
+                    logsService.error("Error al obtener la carta de nota venta");
+                    return new NotDataFoundException("Cart not found");
+                });
+        List<OrderDetailResponseDto> orderDetails = orderDetailService.getOrderDetailsByNotaVenta(cart.getId());
+
+        CurrencyConversionResponseDto conversion;
+        if (conversionDto.getTargetCurrency().contains("BOB")) {
+            isBob = true;
+            conversion = convertAmount(
+                    new CurrencyConversionDto(
+                            "BOB",
+                            conversionDto.getOriginCurrency(),
+                            1.0
+                    ));
+        } else {
+            conversion = convertAmount(
+                    new CurrencyConversionDto(
+                            conversionDto.getOriginCurrency(),
+                            conversionDto.getTargetCurrency(),
+                            cart.getTotalGlobal()
+                    ));
+        }
+
+        for (OrderDetailResponseDto detailDto : orderDetails) {
+            OrderDetail detail = orderDetailRepository.findById(detailDto.getId())
+                    .orElseThrow(() -> {
+                        log.error("Error al obtener la carta de nota venta");
+                        logsService.error("Error al obtener la carta de nota venta");
+                        return new NotDataFoundException("Order detail not found");
+                    });
+
+            double convertedTotal = detail.getTotal();
+            if (isBob)
+                convertedTotal = detailDto.getTotal() * conversion.getExchange_rate();
+            else
+                convertedTotal = detailDto.getTotal() / conversion.getExchange_rate();
+
+            detail.setTotal(convertedTotal);
+            orderDetailRepository.save(detail);
+        }
+
+        if (isBob)
+            cart.setTotalGlobal(cart.getTotalGlobal() * conversion.getExchange_rate());
+        else
+            cart.setTotalGlobal(cart.getTotalGlobal() / conversion.getExchange_rate());
+        notaVentaRepository.save(cart);
+
+        return notaVentaService.getNotaVentaById(cart.getId());
+    }
+
+    private CurrencyConversionResponseDto convertAmount(CurrencyConversionDto conversionEntity) {
         RestClient restClient = create();
         ResponseEntity<CurrencyConversionResponseDto> response;
-
-        Double total = notaVentaService.getActiveCartByUserId(userId).getTotalGlobal();
-
-        conversionEntity.setAmount(total);
 
         try {
             response = restClient.get()
@@ -157,12 +231,12 @@ public class SterumPayServiceImpl implements SterumPayService {
                     .header("Accept", MediaType.APPLICATION_JSON_VALUE)
                     .retrieve()
                     .toEntity(CurrencyConversionResponseDto.class);
-        } catch (Exception e) {
-            log.error("Error converting to BOB", e);
-            throw new OperationException("Failed to convert currency to BOB");
-        }
 
-        return response.getBody();
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error converting amount", e);
+            throw new OperationException("Failed to convert currency");
+        }
     }
 
     @Override

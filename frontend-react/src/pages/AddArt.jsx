@@ -50,7 +50,7 @@ const AddArt = () => {
                 image:       form.image
             });
             setSuccess('¡Obra creada con éxito!');
-            setTimeout(() => navigate('/myworks'), 2000);
+            // setTimeout(() => navigate('/myworks'), 2000);
         } catch (err) {
             setError(err.message);
         } finally {

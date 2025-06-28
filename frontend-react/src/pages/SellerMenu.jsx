@@ -69,9 +69,9 @@ const SellerMenu = () => {
           </button>
         </div>
 
-        {/* Contenido estilo glass */}
-        <div className="relative z-10 w-full max-w-6xl mx-auto p-6">
-          <div className="bg-black/10 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/20">
+        {/* Contenido estilo glass igual que Login */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto">
+          <div className="bg-zinc-900 bg-opacity-90 p-8 rounded-2xl shadow-xl border border-white/10">
             {activeSection === 'add' && <AddArt embedded dark />}
             {activeSection === 'myworks' && <MyWorks embedded dark />}
             {activeSection === 'catalog' && (

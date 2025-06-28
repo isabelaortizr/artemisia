@@ -31,14 +31,22 @@ export default function EditModal({ work, onClose, onSave }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* fondo desenfocado y oscuro sutil */}
+            <div
+                className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+                onClick={onClose}
+            />
+
+            {/* modal flotante */}
             <form
                 onSubmit={handleSubmit}
-                className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-auto space-y-4 text-gray-800"
+                className="relative z-10 bg-white text-black p-6 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-auto space-y-4"
             >
                 <h3 className="text-xl font-bold mb-2 text-center">
                     Editar “{work.name}”
                 </h3>
+
                 {error && <p className="text-red-500 text-sm">{error}</p>}
 
                 {/* Nombre */}
@@ -178,7 +186,7 @@ export default function EditModal({ work, onClose, onSave }) {
                         type="submit"
                         disabled={loading}
                         className={`px-4 py-2 rounded text-white ${
-                            loading ? 'bg-gray-400' : 'bg-black hover:bg-gray-800 '
+                            loading ? 'bg-gray-400' : 'bg-black hover:bg-gray-800'
                         }`}
                     >
                         {loading ? 'Guardando…' : 'Guardar Cambios'}

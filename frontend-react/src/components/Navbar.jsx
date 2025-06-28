@@ -29,7 +29,7 @@ function Navbar({ showSignUpButton = true }) {
           <li><a href="#Header" className="hover:text-gray-400">Home</a></li>
           <li><a href="#About" className="hover:text-gray-400">About</a></li>
           <li><a href="#ProductsLanding" className="hover:text-gray-400">Products</a></li>
-          <li><a href="#Profile" className="hover:text-gray-400">My Profile</a></li>
+          <li><Link to="/profile" className="hover:text-gray-400">My Profile</Link></li>
         </ul>
 
         {showSignUpButton && (
@@ -66,7 +66,7 @@ function Navbar({ showSignUpButton = true }) {
           <a href="#Header" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Home</a>
           <a href="#About" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">About</a>
           <a href="#ProductsLanding" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Products</a>
-          <a href="#Profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">My Profile</a>
+          <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">My Profile</Link>
         </ul>
       </div>
     </div>

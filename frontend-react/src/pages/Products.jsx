@@ -61,20 +61,14 @@ export default function Products() {
         style={{ backgroundImage: "url('/header_img.png')" }} 
       >
         <div className="absolute inset-0  bg-opacity-40" />
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          viewport={{ once: true }}
-          className="relative z-10 px-6 md:px-16"
-        >
+        <div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
             Our Available Pieces
           </h1>
           <p className="text-md sm:text-lg max-w-2xl mx-auto text-gray-200">
             Explore unique artworks crafted by talented creators — find your next inspiration.
           </p>
-        </motion.div>
+        </div>
       </section>
 
       {toast && (

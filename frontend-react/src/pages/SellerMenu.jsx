@@ -39,7 +39,7 @@ const SellerMenu = () => {
           </button>
         </div>
 
-        <h1 className="text-4xl font-bold text-center mb-10">Menú del Vendedor</h1>
+        <h1 className="text-4xl font-bold text-center mb-10">Seller Menu</h1>
 
         {/* Botones */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-5xl mx-auto mb-10">
@@ -49,7 +49,7 @@ const SellerMenu = () => {
               activeSection === 'add' ? 'bg-white text-black' : 'bg-black hover:bg-white hover:text-black'
             }`}
           >
-            Agregar Arte
+            Add your piece
           </button>
           <button
             onClick={() => setActiveSection('myworks')}
@@ -57,7 +57,7 @@ const SellerMenu = () => {
               activeSection === 'myworks' ? 'bg-white text-black' : 'bg-black hover:bg-white hover:text-black'
             }`}
           >
-            Ver Mis Obras
+            Check my pieces
           </button>
           <button
             onClick={() => setActiveSection('catalog')}
@@ -65,7 +65,7 @@ const SellerMenu = () => {
               activeSection === 'catalog' ? 'bg-white text-black' : 'bg-black hover:bg-white hover:text-black'
             }`}
           >
-            Ver Catálogo
+            See catalogue
           </button>
         </div>
 

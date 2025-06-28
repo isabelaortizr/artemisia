@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import productService from '../services/productService';
-import backIcon       from '../assets/back-icon.png';
 import toastIcon      from '../assets/toast-icon.png';
 
 const AddArt = () => {
@@ -61,9 +60,6 @@ const AddArt = () => {
 
     return (
         <div className="relative max-w-lg mx-auto p-6">
-            <Link to="/menu" className="absolute top-6 left-6">
-                <img src={backIcon} alt="Volver" className="w-8 h-8 hover:opacity-80 transition" />
-            </Link>
 
             <h2 className="text-2xl font-bold mb-6 text-center">Agregar Nueva Obra</h2>
 

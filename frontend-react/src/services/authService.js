@@ -26,7 +26,8 @@ async function login({ username, password }) {
     return {
         token:   body.id_token,
         user:    body.username,
-        userId:  body.user_id
+        userId:  body.user_id,
+        role:    body.user_role    // <–– extrae el role
     };
 }
 
@@ -34,6 +35,7 @@ function logout() {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userId");
     localStorage.removeItem("username");
+    localStorage.removeItem("userRole");
 }
 
 export default { login, logout };

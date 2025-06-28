@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import userService from '../services/userService';
-import addressService from '../services/addressService.js';
 import { assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
 
@@ -10,7 +9,6 @@ const Register = () => {
   const [mail, setMail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('BUYER');
-  const [direction, setDirection] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
@@ -20,11 +18,7 @@ const Register = () => {
     setError('');
     setSuccess('');
     try {
-      const user = await userService.createUser({ name, mail, password, role });
-      await addressService.createAddress({
-        direction,
-        userId: user.id,
-      });
+      await userService.createUser({ name, mail, password, role });
       setSuccess('User and address created successfully. You can now log in.');
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
@@ -128,7 +122,6 @@ const Register = () => {
               <option value="SELLER">Seller</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white select-none">
-              ▼
             </div>
           </div>
         </div>

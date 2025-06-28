@@ -10,10 +10,12 @@ export default function WorkCard({ work, onEdit }) {
                  alt={work.name}
                  className="w-full h-48 object-cover rounded-lg" />
             <h3 className="mt-4 font-semibold text-lg">{work.name}</h3>
-            <p className="text-gray-500 mt-1">${work.price.toFixed(2)}</p>
+            <p className="text-white font-bold mt-1">
+            {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(work.price)}
+            </p>
 
             {expanded && (
-                <div className="mt-4 space-y-2 text-gray-700 text-sm">
+                <div className="mt-4 space-y-2 text-white text-sm">
                     <p><strong>Técnica:</strong> {work.technique}</p>
                     <p><strong>Categoría:</strong> {work.category}</p>
                     <p><strong>Materiales:</strong> {work.materials}</p>
@@ -26,13 +28,13 @@ export default function WorkCard({ work, onEdit }) {
             <div className="mt-auto flex justify-between items-center pt-4">
                 <button
                     onClick={() => setExpanded(e => !e)}
-                    className="text-indigo-600 hover:underline"
+                    className="text-white hover:underline"
                 >
                     {expanded ? 'Ver menos ▲' : 'Ver detalle ▼'}
                 </button>
                 <button
                     onClick={onEdit}
-                    className="text-green-600 hover:underline"
+                    className="text-white bg-black py-2 px-4 rounded-full hover:underline"
                 >Editar</button>
             </div>
         </div>

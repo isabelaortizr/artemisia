@@ -45,10 +45,9 @@ const App = () => {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/myworks" element={<MyWorks />} />
 
-        </Routes>
-      </BrowserRouter>
+      </Routes>
+    </BrowserRouter>
   );
-  // <Route path="/products" element={<Products />} />
-  // {/* Rutas protegidas con un <PrivateRoute> si quieres */}
-}
+};
+
 export default App;

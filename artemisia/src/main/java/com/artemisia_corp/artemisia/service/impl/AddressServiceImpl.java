@@ -125,7 +125,6 @@ public class AddressServiceImpl implements AddressService {
 
         Page<Address> addressPage = addressRepository.findByUserAndStatus(user, AddressStatus.ACTIVE, pageable);
 
-
         return addressPage.map(this::convertToDto);
     }
 

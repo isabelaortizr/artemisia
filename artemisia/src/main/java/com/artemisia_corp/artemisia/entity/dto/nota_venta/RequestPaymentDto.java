@@ -12,7 +12,6 @@ public class RequestPaymentDto {
     private String country = "BO";
     @JsonProperty("user_id")
     private Long userId;
-//    private String network = "POLYGON";
     private String currency;
     @JsonProperty("charge_reason")
     private String chargeReason ="";

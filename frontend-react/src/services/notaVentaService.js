@@ -107,4 +107,19 @@ async function assignAddressToNotaVenta({ userId, addressId }) {
     // No devuelve body
 }
 
-export default { addToCart, getCart, createTransaction, updateOrderDetailStock, assignAddressToNotaVenta };
+async function verifyTransaction(userId) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/notas-venta/verify_transaction/${userId}`,
+        {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al verificar`);
+    }
+    return res.json(); // { estado: "...", notaVentaId: 123 }
+}
+
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock, assignAddressToNotaVenta, verifyTransaction };

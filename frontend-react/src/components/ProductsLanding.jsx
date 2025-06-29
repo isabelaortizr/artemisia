@@ -1,3 +1,4 @@
+// frontend-react/src/components/ProductsLanding.jsx
 import React, { useEffect, useState } from 'react';
 import { assets, projectsData } from '../assets/assets';
 

@@ -72,10 +72,14 @@ export default function Products() {
       </section>
 
       {toast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-xl animate-bounce">
-          {toast}
-        </div>
-      )}
+  <div
+    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow-xl animate-bounce
+      ${toast.toLowerCase().includes('error') ? 'bg-red-600' : 'bg-green-600'} text-white`}
+  >
+    {toast}
+  </div>
+)}
+
 
     <main className="flex-1 px-6 sm:px-10 pt-12 pb-12">
       <div className="mb-8 flex items-center justify-between">

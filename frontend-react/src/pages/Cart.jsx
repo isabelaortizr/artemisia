@@ -19,6 +19,7 @@ export default function Cart() {
     const [addrLoading,     setAddrLoading]   = useState(true);
     const [selectedAddress, setSelectedAddress] = useState("");
     const [currency,        setCurrency]      = useState("BOB");
+    const [checkoutData,    setCheckoutData]  = useState(null);
 
     // 1) carga inicial del carrito
     const fetchCart = async () => {
@@ -55,44 +56,53 @@ export default function Cart() {
 
     // 3) montaje inicial
     useEffect(() => {
-        if (!userId) return navigate("/login", { replace: true });
+        if (!userId) {
+            navigate("/login", { replace: true });
+            return;
+        }
         fetchCart();
         fetchAddresses();
     }, [navigate]);
 
-    // 4) asigno automáticamente la primera dirección al carrito
+    // 4) asignar automáticamente la primera dirección (solo al cargar)
     useEffect(() => {
-        if (!loading && !addrLoading && cart && addresses.length > 0) {
-            const defaultAddr = addresses[0].address_id ?? addresses[0].addressId;
-            if (Number(cart.buyerAddress) !== Number(defaultAddr)) {
-                notaVentaService
-                    .assignAddressToNotaVenta({ userId, addressId: defaultAddr })
-                    .then(() => fetchCart())
-                    .catch(e => setError(e.message || "Error al sincronizar dirección"));
-            }
+        if (
+            !loading &&
+            !addrLoading &&
+            cart &&
+            addresses.length > 0 &&
+            Number(cart.buyerAddress) !== Number(selectedAddress)
+        ) {
+            // asigno la dirección por defecto sin tocar estadoVenta
+            notaVentaService
+                .assignAddressToNotaVenta({ userId, addressId: selectedAddress })
+                .then(fetchCart)
+                .catch(e => setError(e.message || "Error al sincronizar dirección"));
         }
-    }, [loading, addrLoading, cart, addresses, userId]);
+    }, [loading, addrLoading, cart, addresses, selectedAddress, userId]);
 
-    // 5) cuando el usuario elige otra dirección
-    const handleAddressChange = async e => {
-        const newAddr = Number(e.target.value);
+    // 5) el usuario elige otra dirección
+    const handleAddressChange = async (newAddr) => {
         setSelectedAddress(newAddr);
+        setLoading(true);
         try {
             await notaVentaService.assignAddressToNotaVenta({ userId, addressId: newAddr });
             await fetchCart();
         } catch (err) {
             setError(err.message || "Error al guardar dirección");
+        } finally {
+            setLoading(false);
         }
     };
 
     // 6) disminuir cantidad de un item
-    const handleDecrease = async item => {
+    const handleDecrease = async (item) => {
         setLoading(true);
         try {
             const updated = await notaVentaService.updateOrderDetailStock({
                 userId,
                 productId: item.productId,
-                quantity:  item.quantity - 1
+                quantity: item.quantity - 1
             });
             setCart(updated);
         } catch (err) {
@@ -115,9 +125,7 @@ export default function Cart() {
                 chargeReason: "Compra en Artemisia",
                 country:      "BO"
             });
-            navigate("/checkout", {
-                state: { transaction: tx, addressId: selectedAddress }
-            });
+            setCheckoutData({ transaction: tx, addressId: selectedAddress });
         } catch (err) {
             setError(err.message || "Error al iniciar pago");
         }
@@ -141,7 +149,7 @@ export default function Cart() {
             className="min-h-screen bg-cover bg-center relative"
             style={{ backgroundImage: `url(${assets.register_img})` }}
         >
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
             <div className="relative z-10 max-w-4xl mx-auto p-6 pt-28">
                 <Navbar showSignUpButton={false} />
 
@@ -156,44 +164,54 @@ export default function Cart() {
                         </button>
                     </div>
                 ) : (
-                    <div className="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-white/20 shadow-lg text-white">
+                    <div className="bg-zinc-900 bg-opacity-90 rounded-xl p-8 border border-white/10 shadow-xl text-white">
                         <Header title="Tu Carrito" />
 
                         {/* Dirección */}
                         <div className="mb-6">
-                            <label className="block text-white mb-1">Dirección de envío</label>
+                            <label className="block text-white mb-2">Dirección de envío</label>
                             {addrLoading ? (
                                 <p className="text-white">Cargando direcciones…</p>
                             ) : (
-                                <select
-                                    value={selectedAddress}
-                                    onChange={handleAddressChange}
-                                    className="w-60 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
-                                >
-                                    {addresses.map(addr => (
-                                        <option
-                                            key={addr.address_id ?? addr.addressId}
-                                            value={addr.address_id ?? addr.addressId}
-                                        >
-                                            {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex flex-wrap gap-2">
+                                    {addresses.map(addr => {
+                                        const id = addr.address_id ?? addr.addressId;
+                                        return (
+                                            <button
+                                                key={id}
+                                                onClick={() => handleAddressChange(id)}
+                                                className={`px-4 py-2 rounded-xl border text-sm transition ${
+                                                    Number(selectedAddress) === Number(id)
+                                                        ? "bg-white text-black border-white"
+                                                        : "bg-black bg-opacity-40 border-white/20 text-white hover:bg-white/10"
+                                                }`}
+                                            >
+                                                {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             )}
                         </div>
 
                         {/* Moneda */}
                         <div className="mb-6">
-                            <label className="block text-white mb-1">Moneda</label>
-                            <select
-                                value={currency}
-                                onChange={e => setCurrency(e.target.value)}
-                                className="w-32 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
-                            >
-                                <option>BOB</option>
-                                <option>USDT</option>
-                                <option>USDC</option>
-                            </select>
+                            <label className="block text-white mb-2">Moneda</label>
+                            <div className="flex gap-2">
+                                {["BOB", "USDT", "USDC"].map(c => (
+                                    <button
+                                        key={c}
+                                        onClick={() => setCurrency(c)}
+                                        className={`px-4 py-2 rounded-xl border text-sm transition ${
+                                            currency === c
+                                                ? "bg-white text-black border-white"
+                                                : "bg-black bg-opacity-40 border-white/20 text-white hover:bg-white/10"
+                                        }`}
+                                    >
+                                        {c}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Items */}
@@ -203,18 +221,18 @@ export default function Cart() {
                                     key={item.id}
                                     className="flex justify-between items-center border border-white/10 rounded-lg p-4"
                                 >
-                                    <p className="font-semibold text-lg">{item.productName}</p>
-                                    <div className="flex items-center">
-                                        <p className="text-gray-300 mr-2 text-sm">
-                                            Cantidad: {item.quantity}
-                                        </p>
+                                    <p className="font-semibold text-lg w-1/3 truncate">{item.productName}</p>
+                                    <div className="w-1/3 flex justify-center items-center gap-2">
+                                        <span className="text-sm text-gray-300">Cantidad: {item.quantity}</span>
                                         <button
                                             onClick={() => handleDecrease(item)}
                                             disabled={loading || item.quantity <= 0}
                                             className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition"
                                         >−</button>
                                     </div>
-                                    <p className="font-bold text-lg">${item.total.toFixed(2)}</p>
+                                    <p className="font-bold text-lg w-1/3 text-right">
+                                        ${item.total.toFixed(2)}
+                                    </p>
                                 </li>
                             ))}
                         </ul>
@@ -231,6 +249,43 @@ export default function Cart() {
                                 Finalizar compra
                             </button>
                         </div>
+
+                        {/* Modal de checkout */}
+                        {checkoutData && (
+                            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+                                <div className="bg-white text-black max-w-3xl w-full mx-4 rounded-2xl p-6 relative shadow-xl">
+                                    <button
+                                        className="absolute top-4 right-4 text-black text-xl hover:text-red-600"
+                                        onClick={() => setCheckoutData(null)}
+                                    >×</button>
+                                    <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
+                                    <p className="mb-4 text-center">
+                                        Escanea el QR o interactúa con la pantalla de pago embebida:
+                                    </p>
+                                    <div className="flex justify-center mb-4">
+                                        <iframe
+                                            src={checkoutData.transaction.payment_link}
+                                            title="Stereum Pay"
+                                            allow="clipboard-read; clipboard-write"
+                                            allowFullScreen
+                                            loading="lazy"
+                                            className="w-full max-w-2xl h-[600px] border rounded-lg shadow"
+                                        />
+                                    </div>
+                                    <p className="text-center text-sm">
+                                        Si no carga,{" "}
+                                        <a
+                                            href={checkoutData.transaction.payment_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-indigo-600 underline"
+                                        >
+                                            haz clic aquí
+                                        </a>.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

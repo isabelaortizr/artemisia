@@ -21,6 +21,11 @@ export default function Cart() {
     const [currency,        setCurrency]      = useState("BOB");
     const [checkoutData,    setCheckoutData]  = useState(null);
 
+    // Estados para verificar la transacción
+    const [verifyLoading, setVerifyLoading] = useState(false);
+    const [verifyResult,  setVerifyResult]  = useState(null);
+    const [verifyError,   setVerifyError]   = useState(null);
+
     // 1) carga inicial del carrito
     const fetchCart = async () => {
         setLoading(true);
@@ -128,6 +133,20 @@ export default function Cart() {
             setCheckoutData({ transaction: tx, addressId: selectedAddress });
         } catch (err) {
             setError(err.message || "Error al iniciar pago");
+        }
+    };
+
+    // ——— NUEVO: función para verificar el pago ———
+    const handleVerify = async () => {
+        setVerifyLoading(true);
+        setVerifyError(null);
+        try {
+            const res = await notaVentaService.verifyTransaction(userId);
+            setVerifyResult(res);
+        } catch (err) {
+            setVerifyError(err.message || "Error al verificar");
+        } finally {
+            setVerifyLoading(false);
         }
     };
 
@@ -252,16 +271,29 @@ export default function Cart() {
 
                         {/* Modal de checkout */}
                         {checkoutData && (
-                            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
-                                <div className="bg-white text-black max-w-3xl w-full mx-4 rounded-2xl p-6 relative shadow-xl">
+                            <div
+                                className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50
+                     flex items-center justify-center p-4 overflow-y-auto"
+                            >
+                                <div
+                                    className="bg-white text-black max-w-3xl w-full mx-auto rounded-2xl
+                       p-6 relative shadow-xl
+                       max-h-[calc(100vh-4rem)] overflow-y-auto"
+                                >
+                                    {/* Botón Cerrar */}
                                     <button
-                                        className="absolute top-4 right-4 text-black text-xl hover:text-red-600"
-                                        onClick={() => setCheckoutData(null)}
-                                    >×</button>
+                                        className="absolute top-4 right-4 text-black text-2xl hover:text-red-600"
+                                        onClick={() => {
+                                            setCheckoutData(null);
+                                            setVerifyResult(null);
+                                            setVerifyError(null);
+                                        }}
+                                    >
+                                        ×
+                                    </button>
+
                                     <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
-                                    <p className="mb-4 text-center">
-                                        Escanea el QR o interactúa con la pantalla de pago embebida:
-                                    </p>
+
                                     <div className="flex justify-center mb-4">
                                         <iframe
                                             src={checkoutData.transaction.payment_link}
@@ -269,11 +301,11 @@ export default function Cart() {
                                             allow="clipboard-read; clipboard-write"
                                             allowFullScreen
                                             loading="lazy"
-                                            className="w-full max-w-2xl h-[600px] border rounded-lg shadow"
+                                            className="w-full h-[500px] border rounded-lg shadow"
                                         />
                                     </div>
-                                    <p className="text-center text-sm">
-                                        Si no carga,{" "}
+                                    <p className="text-center mb-6 text-sm">
+                                        Si no carga,{' '}
                                         <a
                                             href={checkoutData.transaction.payment_link}
                                             target="_blank"
@@ -283,6 +315,29 @@ export default function Cart() {
                                             haz clic aquí
                                         </a>.
                                     </p>
+
+                                    {/* ——— Botón Verificar pago ——— */}
+                                    <div className="text-center mb-6">
+                                        <button
+                                            onClick={handleVerify}
+                                            disabled={verifyLoading}
+                                            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700
+                           text-white rounded-full transition disabled:opacity-50"
+                                        >
+                                            {verifyLoading ? "Verificando…" : "Verificar pago"}
+                                        </button>
+
+                                        {verifyResult && (
+                                            <div className="mt-4 space-y-1">
+                                                <p>Estado: <strong>{verifyResult.estado}</strong></p>
+                                                <p>NotaVenta ID: <strong>{verifyResult.notaVentaId}</strong></p>
+                                            </div>
+                                        )}
+
+                                        {verifyError && (
+                                            <p className="mt-4 text-red-500">Error: {verifyError}</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}

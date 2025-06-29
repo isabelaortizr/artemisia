@@ -217,9 +217,9 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/verify_transaction/{userId}")
-    public ResponseEntity<Void> verificarTransaccion(@PathVariable Long userId) {
-        notaVentaService.obtenerEstadoTransaccion(userId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<EstdoNotaVentaResponseDto> verificarTransaccion(@PathVariable Long userId) {
+        EstdoNotaVentaResponseDto estado = notaVentaService.obtenerEstadoTransaccion(userId);
+        return ResponseEntity.ok(estado);
     }
 
     @Operation(summary = "Update stock for OrderDetail", description = "Updates the stock quantity for a specific product in a user's active cart")

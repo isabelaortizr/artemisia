@@ -489,7 +489,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             OrderDetail detail = existingDetail.get();
             int newQuantity = detail.getQuantity() + addToCartDto.getQuantity();
 
-            if (newQuantity > product.getStock()) {
+            if (addToCartDto.getQuantity() > product.getStock()) {
                 log.error("Not enough stock for product ID: " + product.getId() + ", quantity: " + newQuantity + ", stock: " + product.getStock());
                 logsService.error("Not enough stock for product ID: " + product.getId());
                 throw new NotDataFoundException("Not enough stock available");
@@ -561,6 +561,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         Long userId = updateOrderDetailDto.getUserId();
         Long productId = updateOrderDetailDto.getProductId();
         int quantity = updateOrderDetailDto.getQuantity();
+
+        log.info("Actualizando details de stock: " + quantity + " del producto con id " + productId + " del usuario con id " + userId);
 
         User user = userRepository.findById(userId).orElseThrow(() -> {
             log.error("Usuario con id " + userId + " no encontrado.");

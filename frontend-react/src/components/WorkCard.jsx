@@ -4,11 +4,18 @@ import React, { useState } from 'react';
 export default function WorkCard({ work, onEdit }) {
     const [expanded, setExpanded] = useState(false);
 
+    // Si la API te devuelve work.image como base64 (sin prefijo),
+    // lo convertimos en un data URI para que el <img> lo entienda:
+        const imageSrc = work.image
+            ? `data:image/jpeg;base64,${work.image}`
+            : 'https://via.placeholder.com/300x200';
+
     return (
         <div className="border rounded-xl p-4 shadow-md flex flex-col hover:shadow-lg">
-            <img src={work.image || 'https://via.placeholder.com/300x200'}
-                 alt={work.name}
-                 className="w-full h-48 object-cover rounded-lg" />
+            <img
+                src={imageSrc}
+                alt={work.name}
+                className="w-full h-48 object-cover rounded-lg" />
             <h3 className="mt-4 font-semibold text-lg">{work.name}</h3>
             <p className="text-white font-bold mt-1">
             {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(work.price)}

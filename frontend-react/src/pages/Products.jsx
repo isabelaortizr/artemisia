@@ -117,9 +117,13 @@ export default function Products() {
               >
                 <div className="overflow-hidden rounded-xl">
                   <img
-                    src={prod.imageUrl || 'https://via.placeholder.com/400x400'}
-                    alt={prod.name}
-                    className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
+                      src={
+                        prod.image
+                            ? `data:image/jpeg;base64,${prod.image}`
+                            : 'https://via.placeholder.com/400x400'
+                      }
+                      alt={prod.name}
+                      className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
                   />
                 </div>
                 <div className="mt-4 flex-grow">

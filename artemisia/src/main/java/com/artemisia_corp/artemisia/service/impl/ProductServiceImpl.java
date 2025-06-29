@@ -236,12 +236,24 @@ public class ProductServiceImpl implements ProductService {
             throw new NotDataFoundException("Seller not found with ID: " + sellerId);
         }
 
-        try {
-            return productRepository.findBySeller_Id(sellerId, pageable);
-        } catch (Exception e) {
-            logsService.error("Error fetching products for seller: " + e.getMessage());
-            throw new NotDataFoundException("Error fetching products for seller", e);
+        Page<ProductResponseDto> products = productRepository.findBySeller_Id(sellerId, pageable);
+
+        // **inyección del base64** de la última imagen en cada DTO
+        for (ProductResponseDto product : products.getContent()) {
+            String image = imageService.getLatestImage(product.getProductId());
+            if (image != null && !image.isBlank()) {
+                product.setImage(image);
+            }
         }
+        return products;
+
+
+//        try {
+//            return productRepository.findBySeller_Id(sellerId, pageable);
+//        } catch (Exception e) {
+//            logsService.error("Error fetching products for seller: " + e.getMessage());
+//            throw new NotDataFoundException("Error fetching products for seller", e);
+//        }
     }
 
     @Override

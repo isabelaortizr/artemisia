@@ -7,24 +7,20 @@ import backIcon                          from "../assets/back-icon.png";
 import Navbar                            from '../components/Navbar';
 import { assets }                        from "../assets/assets";
 
-const Cart = () => {
+export default function Cart() {
     const navigate = useNavigate();
     const userId   = Number(localStorage.getItem("userId"));
 
-    // carrito
-    const [cart,    setCart]    = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error,   setError]   = useState(null);
-
-    // direcciones
-    const [addresses,       setAddresses]       = useState([]);
-    const [addrLoading,     setAddrLoading]     = useState(true);
+    // estados
+    const [cart,            setCart]          = useState(null);
+    const [loading,         setLoading]       = useState(true);
+    const [error,           setError]         = useState(null);
+    const [addresses,       setAddresses]     = useState([]);
+    const [addrLoading,     setAddrLoading]   = useState(true);
     const [selectedAddress, setSelectedAddress] = useState("");
+    const [currency,        setCurrency]      = useState("BOB");
 
-    // moneda
-    const [currency, setCurrency] = useState("BOB");
-
-    // fetch carrito
+    // 1) carga inicial del carrito
     const fetchCart = async () => {
         setLoading(true);
         try {
@@ -37,19 +33,18 @@ const Cart = () => {
         }
     };
 
-    // fetch direcciones
+    // 2) carga inicial de direcciones
     const fetchAddresses = async () => {
         setAddrLoading(true);
         try {
-            const res = await addressService.getAddressesByUser(userId);
-            const list = Array.isArray(res)
-                ? res
-                : Array.isArray(res.content)
-                    ? res.content
+            const res  = await addressService.getAddressesByUser(userId);
+            const list = Array.isArray(res) ? res
+                : Array.isArray(res.content) ? res.content
                     : [];
             setAddresses(list);
             if (list.length > 0) {
-                setSelectedAddress(list[0].address_id ?? list[0].addressId);
+                const firstAddr = list[0].address_id ?? list[0].addressId;
+                setSelectedAddress(firstAddr);
             }
         } catch (err) {
             setError(err.message || "Error al cargar direcciones");
@@ -58,34 +53,39 @@ const Cart = () => {
         }
     };
 
+    // 3) montaje inicial
     useEffect(() => {
-        if (!userId) {
-            navigate("/login", { replace: true });
-            return;
-        }
+        if (!userId) return navigate("/login", { replace: true });
         fetchCart();
         fetchAddresses();
     }, [navigate]);
 
-    // cuando el usuario elige otra dirección:
+    // 4) asigno automáticamente la primera dirección al carrito
+    useEffect(() => {
+        if (!loading && !addrLoading && cart && addresses.length > 0) {
+            const defaultAddr = addresses[0].address_id ?? addresses[0].addressId;
+            if (Number(cart.buyerAddress) !== Number(defaultAddr)) {
+                notaVentaService
+                    .assignAddressToNotaVenta({ userId, addressId: defaultAddr })
+                    .then(() => fetchCart())
+                    .catch(e => setError(e.message || "Error al sincronizar dirección"));
+            }
+        }
+    }, [loading, addrLoading, cart, addresses, userId]);
+
+    // 5) cuando el usuario elige otra dirección
     const handleAddressChange = async e => {
-        const newAddr = e.target.value;
+        const newAddr = Number(e.target.value);
         setSelectedAddress(newAddr);
-        setLoading(true);
         try {
-            const updated = await notaVentaService.updateNotaVenta(cart.id, {
-                userId,
-                buyerAddress: Number(newAddr)
-            });
-            setCart(updated);
+            await notaVentaService.assignAddressToNotaVenta({ userId, addressId: newAddr });
+            await fetchCart();
         } catch (err) {
             setError(err.message || "Error al guardar dirección");
-        } finally {
-            setLoading(false);
         }
     };
 
-    // decrementa cantidad (0 elimina)
+    // 6) disminuir cantidad de un item
     const handleDecrease = async item => {
         setLoading(true);
         try {
@@ -102,33 +102,29 @@ const Cart = () => {
         }
     };
 
-    // checkout
+    // 7) checkout
     const handleCheckout = async () => {
         if (!selectedAddress) {
             setError("Selecciona una dirección de envío");
             return;
         }
         try {
-            // 1) creamos la transacción CON LA MONEDA que el usuario escogió
             const tx = await notaVentaService.createTransaction({
                 userId,
-                currency,               // ¡ojo aquí!
+                currency,
                 chargeReason: "Compra en Artemisia",
                 country:      "BO"
             });
-            // 2) navegamos a /checkout llevándonos la Tx en el state
             navigate("/checkout", {
-                state: {
-                    transaction: tx,
-                    addressId:   selectedAddress
-                }
+                state: { transaction: tx, addressId: selectedAddress }
             });
         } catch (err) {
             setError(err.message || "Error al iniciar pago");
         }
     };
 
-    if (loading) return <p className="text-center mt-10 text-white">Cargando carrito...</p>;
+    // loaders / errores
+    if (loading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
     if (error)   return <p className="text-center mt-10 text-red-500">{error}</p>;
 
     const Header = ({ title }) => (
@@ -145,7 +141,7 @@ const Cart = () => {
             className="min-h-screen bg-cover bg-center relative"
             style={{ backgroundImage: `url(${assets.register_img})` }}
         >
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
             <div className="relative z-10 max-w-4xl mx-auto p-6 pt-28">
                 <Navbar showSignUpButton={false} />
 
@@ -166,22 +162,24 @@ const Cart = () => {
                         {/* Dirección */}
                         <div className="mb-6">
                             <label className="block text-white mb-1">Dirección de envío</label>
-                            {addrLoading
-                                ? <p className="text-white">Cargando direcciones…</p>
-                                : (
-                                    <select
-                                        value={selectedAddress}
-                                            onChange={handleAddressChange}
-                                        className="w-60 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
-                                    >
-                                        {addresses.map(addr => (
-                                            <option key={addr.address_id} value={addr.address_id}>
-                                                {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )
-                            }
+                            {addrLoading ? (
+                                <p className="text-white">Cargando direcciones…</p>
+                            ) : (
+                                <select
+                                    value={selectedAddress}
+                                    onChange={handleAddressChange}
+                                    className="w-60 bg-black bg-opacity-30 border border-white/40 rounded p-2 text-white"
+                                >
+                                    {addresses.map(addr => (
+                                        <option
+                                            key={addr.address_id ?? addr.addressId}
+                                            value={addr.address_id ?? addr.addressId}
+                                        >
+                                            {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
 
                         {/* Moneda */}
@@ -205,9 +203,7 @@ const Cart = () => {
                                     key={item.id}
                                     className="flex justify-between items-center border border-white/10 rounded-lg p-4"
                                 >
-                                    <div>
-                                        <p className="font-semibold text-lg">{item.productName}</p>
-                                    </div>
+                                    <p className="font-semibold text-lg">{item.productName}</p>
                                     <div className="flex items-center">
                                         <p className="text-gray-300 mr-2 text-sm">
                                             Cantidad: {item.quantity}
@@ -240,6 +236,4 @@ const Cart = () => {
             </div>
         </div>
     );
-};
-
-export default Cart;
+}

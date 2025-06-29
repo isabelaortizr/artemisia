@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import { paintingTechniques, paintingCategories } from '../constants/painting';
 import productService from '../services/productService';
+import imageService   from '../services/imageService';  // ← importamos el service de imágenes
 
 export default function EditModal({ work, onClose, onSave }) {
     const [form, setForm]       = useState({ ...work });
+    const [fileData, setFileData] = useState({ fileName: '', base64Image: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError]     = useState('');
 
@@ -13,15 +15,46 @@ export default function EditModal({ work, onClose, onSave }) {
         setForm(f => ({ ...f, [name]: value }));
     };
 
+    const handleFileChange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            setFileData({ fileName: file.name, base64Image: base64 });
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSubmit = async e => {
         e.preventDefault();
         setLoading(true);
         setError('');
         try {
+            // 1) Actualizamos datos del producto
             const updated = await productService.updateProduct(work.productId, {
                 sellerId: Number(localStorage.getItem('userId')),
-                ...form
+                name:        form.name,
+                technique:   form.technique,
+                category:    form.category,
+                materials:   form.materials,
+                description: form.description,
+                price:       parseFloat(form.price),
+                stock:       parseInt(form.stock, 10),
+                status:      form.status
             });
+
+            // 2) Si el usuario seleccionó una nueva imagen, la subimos
+            if (fileData.base64Image) {
+                await imageService.uploadImage({
+                    productId:   work.productId,
+                    fileName:    fileData.fileName,
+                    base64Image: fileData.base64Image
+                });
+                // opcional: podrías refrescar updated.image con el nuevo Base64
+                updated.image = fileData.base64Image;
+            }
+
             onSave(updated);
         } catch (err) {
             setError(err.message);
@@ -41,20 +74,19 @@ export default function EditModal({ work, onClose, onSave }) {
                 </h3>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
 
-                {/* Nombre */}
+                {/* — Nombre — */}
                 <div>
                     <label className="block text-gray-700">Nombre</label>
                     <input
                         name="name"
                         value={form.name}
                         onChange={handleChange}
-                        placeholder="Nombre de la obra"
                         required
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black placeholder-gray-400"
+                        className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     />
                 </div>
 
-                {/* Técnica */}
+                {/* — Técnica — */}
                 <div>
                     <label className="block text-gray-700">Técnica</label>
                     <select
@@ -62,7 +94,7 @@ export default function EditModal({ work, onClose, onSave }) {
                         value={form.technique}
                         onChange={handleChange}
                         required
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
+                        className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     >
                         {paintingTechniques.map(t => (
                             <option key={t} value={t}>{t}</option>
@@ -70,7 +102,7 @@ export default function EditModal({ work, onClose, onSave }) {
                     </select>
                 </div>
 
-                {/* Categoría */}
+                {/* — Categoría — */}
                 <div>
                     <label className="block text-gray-700">Categoría</label>
                     <select
@@ -78,7 +110,7 @@ export default function EditModal({ work, onClose, onSave }) {
                         value={form.category}
                         onChange={handleChange}
                         required
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
+                        className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     >
                         {paintingCategories.map(c => (
                             <option key={c} value={c}>{c}</option>
@@ -86,19 +118,18 @@ export default function EditModal({ work, onClose, onSave }) {
                     </select>
                 </div>
 
-                {/* Materiales */}
+                {/* — Materiales — */}
                 <div>
                     <label className="block text-gray-700">Materiales</label>
                     <input
                         name="materials"
                         value={form.materials}
                         onChange={handleChange}
-                        placeholder="Papel, Lienzo…"
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black placeholder-gray-400"
+                        className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     />
                 </div>
 
-                {/* Descripción */}
+                {/* — Descripción — */}
                 <div>
                     <label className="block text-gray-700">Descripción</label>
                     <textarea
@@ -106,12 +137,11 @@ export default function EditModal({ work, onClose, onSave }) {
                         value={form.description}
                         onChange={handleChange}
                         rows={3}
-                        placeholder="Añade detalles…"
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black placeholder-gray-400"
+                        className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     />
                 </div>
 
-                {/* Precio y Stock */}
+                {/* — Precio y Stock — */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-gray-700">Precio (USD)</label>
@@ -122,7 +152,7 @@ export default function EditModal({ work, onClose, onSave }) {
                             value={form.price}
                             onChange={handleChange}
                             required
-                            className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black placeholder-gray-400"
+                            className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                         />
                     </div>
                     <div>
@@ -133,38 +163,42 @@ export default function EditModal({ work, onClose, onSave }) {
                             value={form.stock}
                             onChange={handleChange}
                             required
-                            className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black placeholder-gray-400"
+                            className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                         />
                     </div>
                 </div>
 
-                {/* Estado */}
+                {/* — Estado — */}
                 <div>
                     <label className="block text-gray-700">Estado</label>
                     <select
                         name="status"
                         value={form.status}
                         onChange={handleChange}
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
+                        className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     >
                         <option value="AVAILABLE">Disponible</option>
                         <option value="UNAVAILABLE">No disponible</option>
                     </select>
                 </div>
 
-                {/* URL Imagen */}
+                {/* — Imagen: botón de file upload — */}
                 <div>
-                    <label className="block text-gray-700">URL de la Imagen</label>
+                    <label className="block text-gray-700 mb-1">Imagen de la Obra</label>
                     <input
-                        name="image"
-                        value={form.image}
-                        onChange={handleChange}
-                        placeholder="https://miimagen.jpg"
-                        className="w-full mt-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black placeholder-gray-400"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="w-full mt-1 border-2 border-dashed border-gray-300 p-2 rounded cursor-pointer"
                     />
+                    {fileData.fileName && (
+                        <p className="mt-1 text-sm text-gray-600">
+                            Seleccionado: {fileData.fileName}
+                        </p>
+                    )}
                 </div>
 
-                {/* Botones */}
+                {/* — Botones — */}
                 <div className="flex justify-end space-x-2 mt-4">
                     <button
                         type="button"

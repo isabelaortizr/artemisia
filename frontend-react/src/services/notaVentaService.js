@@ -90,22 +90,21 @@ async function updateOrderDetailStock({ userId, productId, quantity }) {
     return res.json(); // NotaVentaResponseDto
 }
 
-async function updateNotaVenta(id, { userId, buyerAddress }) {
+async function assignAddressToNotaVenta({ userId, addressId }) {
     const token = localStorage.getItem('authToken');
-    const body = { userId, buyerAddress };
-    const res = await fetch(`${API_URL}/notas-venta/${id}`, {
+    const res = await fetch(`${API_URL}/notas-venta/set_address`, {
         method: 'PUT',
         headers: {
             'Content-Type':  'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ userId, addressId })
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `Error ${res.status} al actualizar nota`);
+        throw new Error(err.message || `Error ${res.status} al asignar dirección`);
     }
-    return res.json(); // NotaVentaResponseDto
+    // No devuelve body
 }
 
-export default { addToCart, getCart, createTransaction, updateOrderDetailStock, updateNotaVenta };
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock, assignAddressToNotaVenta };

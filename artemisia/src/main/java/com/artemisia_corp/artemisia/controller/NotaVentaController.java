@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,8 @@ public class NotaVentaController {
 
     @Autowired
     private NotaVentaService notaVentaService;
+    @Value("${stereum-pay.api-key}")
+    private String apiKey;
 
     @Operation(summary = "Get all sales notes", description = "Returns paginated list of all sales notes")
     @ApiResponses(value = {
@@ -213,10 +216,10 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "400", description = "Invalid input"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/verify_transaction")
-    public ResponseEntity<Void> verificarTransaccion(@RequestBody RespuestaVerificacionNotaVentaDto respuesta) {
-        notaVentaService.obtenerRespuestaTransaccion(respuesta);
-        return ResponseEntity.ok().build();
+    @GetMapping("/verify_transaction/{userId}")
+    public ResponseEntity<EstdoNotaVentaResponseDto> verificarTransaccion(@PathVariable Long userId) {
+        EstdoNotaVentaResponseDto estado = notaVentaService.obtenerEstadoTransaccion(userId);
+        return ResponseEntity.ok(estado);
     }
 
     @Operation(summary = "Update stock for OrderDetail", description = "Updates the stock quantity for a specific product in a user's active cart")
@@ -237,49 +240,65 @@ public class NotaVentaController {
             @RequestHeader("x-timestamp") long xTimestamp,
             @RequestBody String body) {
 
+        log.info("Received inbound request with headers - x-signature: {}, x-timestamp: {}", signature, xTimestamp);
+        log.info("Request body received: {}", body);
+
         var currentTime = System.currentTimeMillis() / 1000;
-        if (Math.abs(currentTime - xTimestamp) > 300) {
+        if (Math.abs(currentTime - xTimestamp) < 300) {
+            log.warn("Timestamp validation failed. Current time: {}, received timestamp: {}, difference: {} seconds",
+                    currentTime, xTimestamp, Math.abs(currentTime - xTimestamp));
             throw new OperationException("Firma inválida");
         }
 
-        String apiKey = "API_KEY";
         String hmac = new HmacUtils(HmacAlgorithms.HMAC_SHA_256,
                 apiKey.getBytes(StandardCharsets.UTF_8))
                 .hmacHex(body.getBytes(StandardCharsets.UTF_8));
+
+        log.info("Calculated HMAC: {}", hmac);
+
         if (!signature.equals(hmac)) {
+            log.error("Signature validation failed. Expected: {}, Actual: {}", hmac, signature);
             throw new OperationException("Error en la firma");
         }
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         RespuestaVerificacionNotaVentaDto transaction;
         try {
             transaction = objectMapper.readValue(body, RespuestaVerificacionNotaVentaDto.class);
-        }catch (Exception e){
-            log.error(e.getMessage());
+            log.info("Successfully parsed request body to RespuestaVerificacionNotaVentaDto: {}", transaction);
+        } catch (Exception e) {
+            log.error("Failed to parse request body. Error: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Error en la firma");
         }
 
         if (transaction.getNotificationType().equals("test")) {
+            log.info("Received test notification");
             return ok().build();
         }
 
         if (!transaction.getNotificationType().equals("transaction")) {
+            log.warn("Invalid notification type received: {}", transaction.getNotificationType());
             throw new OperationException("No corresponde a este método la notificación");
         }
 
         try {
             if (transaction.getId() == null) {
-                log.error("No se encontró el id de la transacción");
+                log.error("Transaction ID is null in the received notification");
                 return ResponseEntity.badRequest().body("No se encontró el id de la transacción");
             }
+
+            log.info("Processing transaction notification for ID: {}", transaction.getId());
             notaVentaService.obtenerRespuestaTransaccion(transaction);
 
             return ok().build();
         } catch (OperationException e) {
-            log.error("Se generó un error al recibir notificación de circle. Causa: {}", e.getMessage());
+            log.error("OperationException while processing Circle notification for transaction {}. Cause: {}",
+                    transaction != null ? transaction.getId() : "null", e.getMessage(), e);
             throw new OperationException("Se generó un error al recibir notificación de circle");
         } catch (Exception e) {
-            log.error("Se generó un error al recibir la confirmación de circle", e);
+            log.error("Unexpected error while processing Circle confirmation for transaction {}",
+                    transaction != null ? transaction.getId() : "null", e);
             throw new OperationException("Se generó un error al recibir la confirmación de circle");
         }
     }

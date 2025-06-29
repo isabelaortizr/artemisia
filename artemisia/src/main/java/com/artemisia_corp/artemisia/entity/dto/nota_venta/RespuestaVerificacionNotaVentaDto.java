@@ -8,6 +8,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString
 public class RespuestaVerificacionNotaVentaDto {
     @JsonProperty("notification_type")
     private String notificationType;

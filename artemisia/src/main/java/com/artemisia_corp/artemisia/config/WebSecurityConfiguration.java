@@ -38,6 +38,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                                         .requestMatchers(HttpMethod.POST, "/api/auth/token").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                                         .requestMatchers(HttpMethod.POST, "/api/addresses").permitAll()
+                                        .requestMatchers(HttpMethod.POST, "/api/notas-venta/inbound").permitAll()
                                         .requestMatchers(
                                                 "/swagger-ui/**",
                                                 "/v3/api-docs/**",

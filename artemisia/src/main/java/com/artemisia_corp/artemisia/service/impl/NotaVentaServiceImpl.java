@@ -331,28 +331,43 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
-    public void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta){
-        NotaVenta notaVenta = notaVentaRepository.findNotaVentaByIdTransaccion(respuesta.getId());
+    public void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta) {
+        TransaccionDto transaccionDto = respuesta.getTransaction();
+        log.info("Obtain respuesta transaccion: " + transaccionDto);
+
+        NotaVenta notaVenta = notaVentaRepository.findNotaVentaByIdTransaccion(transaccionDto.getId());
+        if (notaVenta == null) {
+            log.error("No NotaVenta found for transaction ID: {}", respuesta.getTransaction().getId());
+            throw new RuntimeException("No NotaVenta found for transaction ID: " + respuesta.getTransaction().getId());
+        }
 
         logsService.info("Obtaining transaction status for ID: " + notaVenta.getId());
+        log.info("Fetching transaction status from sterumPayService for transaction ID: {}", transaccionDto.getId());
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
 
+        log.info("Retrieved transaction status: {}", estado != null ? estado.getStatus() : "null");
+
         NotaVentaResponseDto notaVentaResponseDto = this.getActiveCartByUserId(notaVenta.getBuyer().getId());
+        log.info("Retrieved active cart for user ID: {}", notaVenta.getBuyer().getId());
 
         if (notaVentaResponseDto.getIdTransaccion() == null ||
-                !notaVentaResponseDto.getIdTransaccion().equals(respuesta.getId())){
-            log.error("Transaction ID does not match the cart");
+                !notaVentaResponseDto.getIdTransaccion().equals(transaccionDto.getId())) {
+            log.error("Transaction ID mismatch. Cart transaction ID: {}, Notification transaction ID: {}",
+                    notaVentaResponseDto.getIdTransaccion(), transaccionDto.getId());
             logsService.error("Transaction ID does not match the cart");
             throw new RuntimeException("Transaction ID does not match the cart");
         }
 
         if ("PAGADO".equals(estado.getStatus())) {
+            log.info("Transaction marked as PAGADO for ID: {}", transaccionDto.getId());
             logsService.info("Transaction completed successfully for ID: " + notaVenta.getId());
             completeNotaVenta(notaVenta.getBuyer().getId());
         } else if ("CANCELADA".equals(estado.getStatus())) {
+            log.info("Transaction marked as CANCELADA for ID: {}", transaccionDto.getId());
             logsService.info("Transaction canceled for ID: " + notaVenta.getId());
             deleteNotaVenta(notaVenta.getBuyer().getId());
         } else {
+            log.warn("Transaction not finalized for ID: {} with status: {}", transaccionDto.getId(), estado.getStatus());
             logsService.warning("Transaction has not been finalized for ID: " + notaVenta.getId() + " with status: " + estado.getStatus());
         }
     }
@@ -375,6 +390,31 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         notaVenta.setBuyerAddress(address);
 
         notaVentaRepository.save(notaVenta);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EstdoNotaVentaResponseDto obtenerEstadoTransaccion(Long userId) {
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId)
+                .orElseThrow(() -> {
+                    log.error("NotaVenta not found with User ID: " + userId + " " +
+                            "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
+                    logsService.error("NotaVenta not found with ID: " + userId + " " +
+                            "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
+                    return new EntityNotFoundException("NotaVenta not found with ID: " + userId);
+                });
+
+        if (notaVenta.getIdTransaccion() == null || notaVenta.getEstadoVenta() == VentaEstado.PAYED) {
+            log.error("Transaction ID not found for NotaVenta with ID: " + notaVenta.getId() + " " +
+                    "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
+            logsService.error("Transaction ID not found for NotaVenta with ID: " + notaVenta.getId() + " " +
+                    "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
+            throw new EntityNotFoundException("Transaction ID not found for NotaVenta with ID: " + notaVenta.getId());
+        }
+
+        EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
+
+        return new EstdoNotaVentaResponseDto(estado.getStatus(), notaVenta.getId());
     }
 
     @Override

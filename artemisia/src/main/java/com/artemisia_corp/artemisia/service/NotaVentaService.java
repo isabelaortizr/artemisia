@@ -20,6 +20,7 @@ public interface NotaVentaService {
     void ingresarIdTransaccion(String idTransaccion, Long notaVentaId);
     void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta);
     void assignAddressToNotaVenta(SetAddressDto setAddressDto);
+    EstdoNotaVentaResponseDto obtenerEstadoTransaccion(Long userId);
     NotaVentaResponseDto getActiveCartByUserId(Long userId);
     NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto);
     StereumPagaResponseDto getPaymentInfo(RequestPaymentDto request);

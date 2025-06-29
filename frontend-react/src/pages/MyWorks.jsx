@@ -47,9 +47,6 @@ const MyWorks = () => {
 
     return (
         <div className="relative max-w-7xl mx-auto p-6">
-            <Link to="/menu" className="absolute top-6 left-6">
-                <img src={backIcon} alt="Volver" className="w-8 h-8" />
-            </Link>
 
             <h2 className="text-3xl font-semibold mb-8 text-center">Mis Obras</h2>
 

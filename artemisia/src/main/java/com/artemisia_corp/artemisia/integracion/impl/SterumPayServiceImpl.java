@@ -107,7 +107,8 @@ public class SterumPayServiceImpl implements SterumPayService {
         RestClient restClient = create();
         ResponseEntity<StereumPagaResponseDto> response;
 
-        chargeDto.setIdempotencyKey(this.getUUID());
+        String uuid = getUUID();
+        chargeDto.setIdempotencyKey(uuid);
         chargeDto.setCallback(this.urlBase);
 
         log.info("ChargeDto: {}", chargeDto);
@@ -150,8 +151,8 @@ public class SterumPayServiceImpl implements SterumPayService {
                     .retrieve()
                     .toEntity(EstadoResponseDto.class);
         } catch (Exception e) {
-            log.error("Error converting to BOB", e);
-            throw new OperationException("Failed to convert currency to BOB");
+            log.error("Error mientras se consultaba el estado del cobro", e);
+            throw new OperationException("Error consulting transaction status.");
         }
 
         return response.getBody();

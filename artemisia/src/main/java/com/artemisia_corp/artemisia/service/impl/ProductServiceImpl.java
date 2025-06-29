@@ -195,23 +195,21 @@ public class ProductServiceImpl implements ProductService {
                 logsService.error("Insufficient stock for product ID: " + productId);
                 throw new NotDataFoundException("Insufficient stock");
             }
-            productRepository.reduceStock(productId, quantity);
+            product.setStock(product.getStock() - quantity);
             if (product.getStock() - quantity == 0) {
-                product.setStatus(ProductStatus.UNAVAILABLE);
-                productRepository.save(product);
                 logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
             }
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         } else {
-            productRepository.augmentStock(productId, quantity);
+            product.setStock(product.getStock() + quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         }
 
         if (product.getStock() - quantity == 0) {
             product.setStatus(ProductStatus.UNAVAILABLE);
-            productRepository.save(product);
             logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
         }
+        productRepository.save(product);
     }
 
     @Override

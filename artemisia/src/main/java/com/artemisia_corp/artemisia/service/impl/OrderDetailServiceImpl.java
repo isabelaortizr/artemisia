@@ -146,6 +146,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         if (updateDetailDto.getQuantity() == null || updateDetailDto.getQuantity() < 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0.");
         } else if (updateDetailDto.getQuantity() == 0) {
+            productService.manageStock(new ManageProductDto(orderDetail.getProduct().getId(),
+                    orderDetail.getQuantity(), false));
             this.deleteOrderDetail(orderDetail.getId());
             return;
         }

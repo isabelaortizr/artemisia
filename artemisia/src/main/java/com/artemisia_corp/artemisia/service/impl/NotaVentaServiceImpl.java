@@ -489,7 +489,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             OrderDetail detail = existingDetail.get();
             int newQuantity = detail.getQuantity() + addToCartDto.getQuantity();
 
-            if (addToCartDto.getQuantity() > product.getStock()) {
+            if (newQuantity > product.getStock()) {
                 log.error("Not enough stock for product ID: " + product.getId() + ", quantity: " + newQuantity + ", stock: " + product.getStock());
                 logsService.error("Not enough stock for product ID: " + product.getId());
                 throw new NotDataFoundException("Not enough stock available");

@@ -209,6 +209,13 @@ export default function Cart() {
     }
   };
 
+  const currencySymbols = {
+  BOB: 'Bs.',
+  USDT: 'USDT',
+  USDC: 'USDC',
+};
+
+
   if (initialLoading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
@@ -308,14 +315,16 @@ export default function Cart() {
                     </button>
                   </div>
                   <p className="font-bold text-lg w-1/3 text-right">
-                    ${item.total.toFixed(2)}
+                    {currencySymbols[currency]} {item.total.toFixed(2)}
                   </p>
                 </li>
               ))}
             </ul>
 
             <div className="mt-8 flex justify-between items-center">
-              <p className="text-2xl font-bold">Total: ${cart.totalGlobal.toFixed(2)}</p>
+<p className="text-2xl font-bold">
+  Total: {currencySymbols[currency]} {cart.totalGlobal.toFixed(2)}
+</p>
               <button
                 onClick={handleCheckout}
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"

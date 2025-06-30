@@ -42,6 +42,19 @@ const AddArt = ({ embedded, dark }) => {
     const handleSubmit = async e => {
         e.preventDefault();
         setError(''); setSuccess('');
+
+        // Validaciones extra por si el navegador no las impide
+        const priceNum = parseFloat(form.price);
+        const stockNum = parseInt(form.stock, 10);
+        if (isNaN(priceNum) || priceNum < 0) {
+            setError('El precio no puede ser negativo.');
+            return;
+        }
+        if (isNaN(stockNum) || stockNum < 0) {
+            setError('El stock no puede ser negativo.');
+            return;
+        }
+
         if (!sellerId) {
             setError('Debes iniciar sesión como vendedor');
             return;
@@ -182,6 +195,7 @@ const AddArt = ({ embedded, dark }) => {
                             name="price"
                             type="number"
                             step="0.01"
+                            min="0"
                             value={form.price}
                             onChange={handleChange}
                             required
@@ -193,6 +207,7 @@ const AddArt = ({ embedded, dark }) => {
                         <input
                             name="stock"
                             type="number"
+                            min="0"
                             value={form.stock}
                             onChange={handleChange}
                             required

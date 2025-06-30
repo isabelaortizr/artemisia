@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import notaVentaService from "../services/notaVentaService";
 import addressService from "../services/addressService";
-import backIcon from "../assets/back-icon.png";
+// import backIcon from "../assets/back-icon.png";
 import Navbar from "../components/Navbar";
 import { assets } from "../assets/assets";
 
@@ -23,6 +23,11 @@ export default function Cart() {
   const [verifyResult, setVerifyResult] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
 
+  const [conversionError, setConversionError] = useState(null);
+
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [actionLoading, setActionLoading]   = useState(false);
+
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [newAddr, setNewAddr] = useState({
     recipient_name: "",
@@ -35,14 +40,16 @@ export default function Cart() {
   });
 
   const fetchCart = async () => {
-    setLoading(true);
+    setInitialLoading(true);
+    setLoading(true); // <— arrancamos loader “operacional”
     try {
       const data = await notaVentaService.getCart(userId);
       setCart(data);
     } catch (err) {
       setError(err.message || "Error al cargar el carrito");
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setLoading(false); // <— ¡aquí dejamos que loading pase a false!
     }
   };
 
@@ -94,7 +101,7 @@ export default function Cart() {
       await notaVentaService.assignAddressToNotaVenta({ userId, addressId: newAddr });
       await fetchCart();
     } catch (err) {
-      setError(err.message || "Error trying to save address");
+      setError(err.message || "Error al guardar dirección");
     } finally {
       setLoading(false);
     }
@@ -110,7 +117,7 @@ export default function Cart() {
       });
       setCart(updated);
     } catch (err) {
-      setError(err.message || "Error triying to update cart");
+      setError(err.message || "Error al actualizar el carrito");
     } finally {
       setLoading(false);
     }
@@ -118,7 +125,7 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (!selectedAddress) {
-      setError("Select an address");
+      setError("Selecciona una dirección de envío");
       return;
     }
     try {
@@ -130,7 +137,7 @@ export default function Cart() {
       });
       setCheckoutData({ transaction: tx, addressId: selectedAddress });
     } catch (err) {
-      setError(err.message || "Error trying to pay");
+      setError(err.message || "Error al iniciar pago");
     }
   };
 
@@ -138,14 +145,17 @@ export default function Cart() {
     setVerifyLoading(true);
     setVerifyError(null);
     try {
+      console.log("hola:", userId)
       const res = await notaVentaService.verifyTransaction(userId);
-      setVerifyResult(res);
-
-      if (verifyResult.estado === "PAGADO") {
-        navigate("/orderReceipt");
+      console.log("hola:", userId)
+      // si ya está pagado, redirigimos al recibo
+      if (res.estado === "PAGADO") {
+        navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
+        return;
       }
+      setVerifyResult(res);
     } catch (err) {
-      setVerifyError(err.message || "Error verifying payment");
+      setVerifyError(err.message || "Error al verificar");
     } finally {
       setVerifyLoading(false);
     }
@@ -155,6 +165,29 @@ export default function Cart() {
     const { name, value } = e.target;
     setNewAddr((prev) => ({ ...prev, [name]: value }));
   };
+
+  // nuevo: cuando el usuario elige moneda
+   const handleCurrencyChange = async (newCurrency) => {
+     if (newCurrency === currency) return;
+     setActionLoading(true);
+     setConversionError(null);              // limpiamos posibles errores previos
+
+     try {
+       // pedimos al backend que reconvierta el carrito
+       const updated = await notaVentaService.convertCurrency({
+         userId,
+         originCurrency: currency,
+         targetCurrency: newCurrency
+      });
+      setCart(updated);
+      setCurrency(newCurrency);
+      } catch (err) {
+       // capturamos sólo el error de conversión
+       setConversionError("No se pudo convertir la moneda. Por favor vuelve a intentarlo.");
+      } finally {
+       setActionLoading(false);
+      }
+   };
 
   const submitNewAddress = async (e) => {
     e.preventDefault();
@@ -176,7 +209,14 @@ export default function Cart() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-white">Loading cart...</p>;
+  const currencySymbols = {
+  BOB: 'Bs.',
+  USDT: 'USDT',
+  USDC: 'USDC',
+};
+
+
+  if (initialLoading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
@@ -190,20 +230,20 @@ export default function Cart() {
             {/* <Link to="/products" className="mr-4 inline-block">
               <img src={backIcon} alt="Volver" className="w-10 h-10 hover:opacity-80 transition inline" />
             </Link> */}
-            <h2 className="text-3xl font-bold text-white">Your cart is empty</h2>
+            <h2 className="text-3xl font-bold text-white">Tu carrito está vacío</h2>
             <button
               onClick={() => navigate("/products")}
               className="mt-6 bg-white text-black hover:bg-black hover:text-white font-semibold px-6 py-3 rounded-full transition"
             >
-              Back to catalogue
+              Volver al catálogo
             </button>
           </div>
         ) : (
           <div className="bg-zinc-900 bg-opacity-90 rounded-xl p-8 border border-white/10 shadow-xl text-white">
             <div className="mb-6">
-              <label className="block text-white mb-2">Delivery Address</label>
+              <label className="block text-white mb-2">Dirección de envío</label>
               {addrLoading ? (
-                <p className="text-white">Loading adresses...</p>
+                <p className="text-white">Cargando direcciones…</p>
               ) : addresses.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {addresses.map((addr) => {
@@ -235,12 +275,12 @@ export default function Cart() {
 
             {/* Moneda */}
             <div className="mb-6">
-              <label className="block text-white mb-2">Currency</label>
+              <label className="block text-white mb-2">Moneda</label>
               <div className="flex gap-2">
                 {["BOB", "USDT", "USDC"].map((c) => (
                   <button
                     key={c}
-                    onClick={() => setCurrency(c)}
+                    onClick={() => handleCurrencyChange(c)}
                     className={`px-4 py-2 rounded-xl border text-sm transition ${
                       currency === c
                         ? "bg-white text-black border-white"
@@ -251,6 +291,9 @@ export default function Cart() {
                   </button>
                 ))}
               </div>
+              {conversionError && (
+                  <p className="mt-2 text-red-400">{conversionError}</p>
+              )}
             </div>
 
             {/* Productos */}
@@ -262,7 +305,7 @@ export default function Cart() {
                 >
                   <p className="font-semibold text-lg w-1/3 truncate">{item.productName}</p>
                   <div className="w-1/3 flex justify-center items-center gap-2">
-                    <span className="text-sm text-gray-300">Quantity: {item.quantity}</span>
+                    <span className="text-sm text-gray-300">Cantidad: {item.quantity}</span>
                     <button
                       onClick={() => handleDecrease(item)}
                       disabled={loading || item.quantity <= 0}
@@ -272,19 +315,21 @@ export default function Cart() {
                     </button>
                   </div>
                   <p className="font-bold text-lg w-1/3 text-right">
-                    ${item.total.toFixed(2)}
+                    {currencySymbols[currency]} {item.total.toFixed(2)}
                   </p>
                 </li>
               ))}
             </ul>
 
             <div className="mt-8 flex justify-between items-center">
-              <p className="text-2xl font-bold">Total: ${cart.totalGlobal.toFixed(2)}</p>
+<p className="text-2xl font-bold">
+  Total: {currencySymbols[currency]} {cart.totalGlobal.toFixed(2)}
+</p>
               <button
                 onClick={handleCheckout}
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"
               >
-                Go to Checkout
+                Finalizar compra
               </button>
             </div>
 

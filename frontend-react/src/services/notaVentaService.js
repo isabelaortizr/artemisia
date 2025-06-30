@@ -122,4 +122,66 @@ async function verifyTransaction(userId) {
     return res.json(); // { estado: "...", notaVentaId: 123 }
 }
 
-export default { addToCart, getCart, createTransaction, updateOrderDetailStock, assignAddressToNotaVenta, verifyTransaction };
+
+// ➜ nuevo método:
+async function getNotaVentaById(id) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/${id}`, {
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} buscando nota ${id}`);
+    }
+    return res.json();
+}
+
+/*
+async function getVentasByEstado(estado, page = 0, size = 10) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/notas-venta/estado/${estado}?page=${page}&size=${size}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} cargando órdenes`);
+    }
+    return res.json(); // { content: NotaVentaResponseDto[], totalPages, ... }
+}*/
+
+async function convertCurrency({ userId, originCurrency, targetCurrency }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/stereum-pay/conversion_moneda`, {
+        method: 'POST',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, originCurrency, targetCurrency })
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al convertir moneda`);
+    }
+    return res.json(); // devuelve NotaVentaResponseDto con totales e importes ya convertidos
+}
+
+async function getHistory(userId, page = 0, size = 10) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/notas-venta/historial-usuario/${userId}?page=${page}&size=${size}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} cargando historial`);
+    }
+    return res.json(); // devuelve { content: NotaVentaResponseDto[], totalPages… }
+}
+
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock,
+    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, convertCurrency, getHistory };

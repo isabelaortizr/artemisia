@@ -37,12 +37,12 @@ export default function WorkCard({ work, onEdit }) {
                     onClick={() => setExpanded(e => !e)}
                     className="text-white hover:underline"
                 >
-                    {expanded ? 'Ver menos ▲' : 'Ver detalle ▼'}
+                    {expanded ? 'See less ▲' : 'See details ▼'}
                 </button>
                 <button
                     onClick={onEdit}
                     className="text-white bg-black py-2 px-4 rounded-full hover:underline"
-                >Editar</button>
+                >Edit</button>
             </div>
         </div>
     );

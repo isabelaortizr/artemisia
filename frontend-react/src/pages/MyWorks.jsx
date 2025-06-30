@@ -51,10 +51,10 @@ const MyWorks = () => {
                 <img src={backIcon} alt="Volver" className="w-8 h-8" />
             </Link>
 
-            <h2 className="text-3xl font-semibold mb-8 text-center">Mis Obras</h2>
+            <h2 className="text-3xl font-semibold mb-8 text-center">My pieces</h2>
 
             {works.length === 0
-                ? <p className="text-center text-white">No tienes obras aún.</p>
+                ? <p className="text-center text-white">You dont have pieces yet</p>
                 : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {works.map(w => (
@@ -69,13 +69,13 @@ const MyWorks = () => {
                     <button onClick={() => setPage(p => Math.max(p-1,0))}
                             disabled={page===0}
                             className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50">
-                        Anterior
+                        Previous
                     </button>
                     <span>Página {page+1} de {totalPages}</span>
                     <button onClick={() => setPage(p => Math.min(p+1, totalPages-1))}
                             disabled={page+1 >= totalPages}
                             className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50">
-                        Siguiente
+                        Next
                     </button>
                 </div>
             )}

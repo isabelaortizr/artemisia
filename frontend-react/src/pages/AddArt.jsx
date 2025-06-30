@@ -83,7 +83,7 @@ const AddArt = ({ embedded, dark }) => {
                 });
             }
 
-            setSuccess('¡Obra creada con éxito!');
+            setSuccess('¡Piece created successfully!');
             // setTimeout(() => navigate('/myworks'), 2000);
         } catch (err) {
             setError(err.message);
@@ -94,7 +94,7 @@ const AddArt = ({ embedded, dark }) => {
 
     return (
         <div className={`relative max-w-lg mx-auto p-6 ${embedded ? '' : ''}`}>
-            <h2 className="text-2xl font-bold mb-6 text-center">Agregar Nueva Obra</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Add new piece</h2>
 
             {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
             {success && (
@@ -106,7 +106,7 @@ const AddArt = ({ embedded, dark }) => {
             <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow text-black">
                 {/* Nombre */}
                 <div>
-                    <label className="block text-gray-700">Nombre de la Obra</label>
+                    <label className="block text-gray-700">Piece Name</label>
                     <input
                         name="name"
                         value={form.name}
@@ -118,7 +118,7 @@ const AddArt = ({ embedded, dark }) => {
 
                 {/* Técnica */}
                 <div>
-                    <label className="block text-gray-700">Técnica</label>
+                    <label className="block text-gray-700">Technique</label>
                     <select
                         name="technique"
                         value={form.technique}
@@ -126,7 +126,7 @@ const AddArt = ({ embedded, dark }) => {
                         required
                         className="w-full mt-1 px-3 py-2 border rounded"
                     >
-                        <option value="">Selecciona una técnica</option>
+                        <option value="">Select a technique</option>
                         <option value="Óleo">Óleo</option>
                         <option value="Acrílico">Acrílico</option>
                         <option value="Acuarela">Acuarela</option>
@@ -142,7 +142,7 @@ const AddArt = ({ embedded, dark }) => {
 
                 {/* Categoría */}
                 <div>
-                    <label className="block text-gray-700">Categoría</label>
+                    <label className="block text-gray-700">Category</label>
                     <select
                         name="category"
                         value={form.category}
@@ -150,7 +150,7 @@ const AddArt = ({ embedded, dark }) => {
                         required
                         className="w-full mt-1 px-3 py-2 border rounded"
                     >
-                        <option value="">Selecciona una categoría</option>
+                        <option value="">Select a category</option>
                         <option value="Realista">Realista</option>
                         <option value="Abstracta">Abstracta</option>
                         <option value="Expresionista">Expresionista</option>
@@ -166,7 +166,7 @@ const AddArt = ({ embedded, dark }) => {
 
                 {/* Materiales */}
                 <div>
-                    <label className="block text-gray-700">Materiales</label>
+                    <label className="block text-gray-700">Materials</label>
                     <input
                         name="materials"
                         value={form.materials}
@@ -177,7 +177,7 @@ const AddArt = ({ embedded, dark }) => {
 
                 {/* Descripción */}
                 <div>
-                    <label className="block text-gray-700">Descripción</label>
+                    <label className="block text-gray-700">Description</label>
                     <textarea
                         name="description"
                         value={form.description}
@@ -190,7 +190,7 @@ const AddArt = ({ embedded, dark }) => {
                 {/* Precio y Stock */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-gray-700">Precio (Bs.)</label>
+                        <label className="block text-gray-700">Price (Bs.)</label>
                         <input
                             name="price"
                             type="number"
@@ -218,21 +218,21 @@ const AddArt = ({ embedded, dark }) => {
 
                 {/* Estado */}
                 <div>
-                    <label className="block text-gray-700">Estado</label>
+                    <label className="block text-gray-700">Status</label>
                     <select
                         name="status"
                         value={form.status}
                         onChange={handleChange}
                         className="w-full mt-1 px-3 py-2 border rounded"
                     >
-                        <option value="AVAILABLE">Disponible</option>
-                        <option value="UNAVAILABLE">No disponible</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="UNAVAILABLE">Unavailable</option>
                     </select>
                 </div>
 
                 {/* Imagen */}
                 <div>
-                    <label className="block text-gray-700 mb-1">Imagen de la Obra</label>
+                    <label className="block text-gray-700 mb-1">Picture</label>
                     <input
                         type="file"
                         accept="image/*"
@@ -242,7 +242,7 @@ const AddArt = ({ embedded, dark }) => {
                     />
                     {fileData.fileName && (
                         <p className="mt-1 text-sm text-gray-600">
-                            Seleccionado: <span className="font-medium">{fileData.fileName}</span>
+                            Selecting: <span className="font-medium">{fileData.fileName}</span>
                         </p>
                     )}
                 </div>
@@ -258,7 +258,7 @@ const AddArt = ({ embedded, dark }) => {
                             : 'bg-black text-white hover:bg-gray-900'
                     }`}
                 >
-                    {loading ? 'Guardando...' : 'Crear Obra'}
+                    {loading ? 'Saving...' : 'Create Piece'}
                 </button>
             </form>
         </div>

@@ -84,7 +84,7 @@ export default function EditModal({ work, onClose, onSave }) {
 
                 {/* — Nombre — */}
                 <div>
-                    <label className="block text-gray-700">Nombre</label>
+                    <label className="block text-gray-700">Name</label>
                     <input
                         name="name"
                         value={form.name}
@@ -96,7 +96,7 @@ export default function EditModal({ work, onClose, onSave }) {
 
                 {/* — Técnica — */}
                 <div>
-                    <label className="block text-gray-700">Técnica</label>
+                    <label className="block text-gray-700">Technique</label>
                     <select
                         name="technique"
                         value={form.technique}
@@ -112,7 +112,7 @@ export default function EditModal({ work, onClose, onSave }) {
 
                 {/* — Categoría — */}
                 <div>
-                    <label className="block text-gray-700">Categoría</label>
+                    <label className="block text-gray-700">Categorys</label>
                     <select
                         name="category"
                         value={form.category}
@@ -128,7 +128,7 @@ export default function EditModal({ work, onClose, onSave }) {
 
                 {/* — Materiales — */}
                 <div>
-                    <label className="block text-gray-700">Materiales</label>
+                    <label className="block text-gray-700">Materials</label>
                     <input
                         name="materials"
                         value={form.materials}
@@ -139,7 +139,7 @@ export default function EditModal({ work, onClose, onSave }) {
 
                 {/* — Descripción — */}
                 <div>
-                    <label className="block text-gray-700">Descripción</label>
+                    <label className="block text-gray-700">Description</label>
                     <textarea
                         name="description"
                         value={form.description}
@@ -152,7 +152,7 @@ export default function EditModal({ work, onClose, onSave }) {
                 {/* — Precio y Stock — */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-gray-700">Precio (USD)</label>
+                        <label className="block text-gray-700">Price (Bs.)</label>
                         <input
                             name="price"
                             type="number"
@@ -178,21 +178,21 @@ export default function EditModal({ work, onClose, onSave }) {
 
                 {/* — Estado — */}
                 <div>
-                    <label className="block text-gray-700">Estado</label>
+                    <label className="block text-gray-700">Status</label>
                     <select
                         name="status"
                         value={form.status}
                         onChange={handleChange}
                         className="w-full mt-1 px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 text-black"
                     >
-                        <option value="AVAILABLE">Disponible</option>
-                        <option value="UNAVAILABLE">No disponible</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="UNAVAILABLE">Unavaible</option>
                     </select>
                 </div>
 
                 {/* — Imagen: botón de file upload — */}
                 <div>
-                    <label className="block text-gray-700 mb-1">Imagen de la Obra</label>
+                    <label className="block text-gray-700 mb-1">Picture</label>
                     <input
                         type="file"
                         accept="image/*"
@@ -214,7 +214,7 @@ export default function EditModal({ work, onClose, onSave }) {
                         disabled={loading}
                         className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
                     >
-                        Cancelar
+                        Cancel
                     </button>
                     <button
                         type="submit"
@@ -223,7 +223,7 @@ export default function EditModal({ work, onClose, onSave }) {
                             loading ? 'bg-gray-400' : 'bg-black hover:bg-gray-800'
                         }`}
                     >
-                        {loading ? 'Guardando…' : 'Guardar Cambios'}
+                        {loading ? 'Saving...' : 'Save changes'}
                     </button>
                 </div>
             </form>

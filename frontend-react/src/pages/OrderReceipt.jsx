@@ -41,6 +41,14 @@ export default function OrderReceipt() {
   const dateStr = new Date(receipt.date)
       .toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
+  const currencySymbols = {
+  BOB: 'Bs.',
+  USDT: 'USDT',
+  USDC: 'USDC',
+};
+
+const currencySymbol = currencySymbols[receipt.currency] || '$';
+
   return (
       <div
           className="min-h-screen bg-cover bg-center relative"
@@ -71,7 +79,9 @@ export default function OrderReceipt() {
               </div>
               <div className="flex justify-between border-b border-white/10 pb-2">
                 <span className="text-gray-400">Total:</span>
-                <span className="font-bold text-lg">{receipt.totalGlobal.toFixed(2)}</span>
+                <span className="font-bold text-lg">
+                  {currencySymbol} {receipt.totalGlobal.toFixed(2)}
+                </span>
               </div>
             </div>
 
@@ -84,7 +94,7 @@ export default function OrderReceipt() {
                   <span className="text-gray-300">
                     {item.productName} × {item.quantity}
                   </span>
-                      <span>${item.total.toFixed(2)}</span>
+                  <span>{currencySymbol} {item.total.toFixed(2)}</span>
                     </li>
                 ))}
               </ul>

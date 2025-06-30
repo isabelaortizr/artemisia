@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import notaVentaService from "../services/notaVentaService";
 import addressService from "../services/addressService";
-import backIcon from "../assets/back-icon.png";
+// import backIcon from "../assets/back-icon.png";
 import Navbar from "../components/Navbar";
 import { assets } from "../assets/assets";
 
@@ -23,6 +23,11 @@ export default function Cart() {
   const [verifyResult, setVerifyResult] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
 
+  const [conversionError, setConversionError] = useState(null);
+
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [actionLoading, setActionLoading]   = useState(false);
+
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [newAddr, setNewAddr] = useState({
     recipient_name: "",
@@ -35,14 +40,16 @@ export default function Cart() {
   });
 
   const fetchCart = async () => {
-    setLoading(true);
+    setInitialLoading(true);
+    setLoading(true); // <— arrancamos loader “operacional”
     try {
       const data = await notaVentaService.getCart(userId);
       setCart(data);
     } catch (err) {
       setError(err.message || "Error al cargar el carrito");
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setLoading(false); // <— ¡aquí dejamos que loading pase a false!
     }
   };
 
@@ -138,7 +145,9 @@ export default function Cart() {
     setVerifyLoading(true);
     setVerifyError(null);
     try {
+      console.log("hola:", userId)
       const res = await notaVentaService.verifyTransaction(userId);
+      console.log("hola:", userId)
       // si ya está pagado, redirigimos al recibo
       if (res.estado === "PAGADO") {
         navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
@@ -156,6 +165,29 @@ export default function Cart() {
     const { name, value } = e.target;
     setNewAddr((prev) => ({ ...prev, [name]: value }));
   };
+
+  // nuevo: cuando el usuario elige moneda
+   const handleCurrencyChange = async (newCurrency) => {
+     if (newCurrency === currency) return;
+     setActionLoading(true);
+     setConversionError(null);              // limpiamos posibles errores previos
+
+     try {
+       // pedimos al backend que reconvierta el carrito
+       const updated = await notaVentaService.convertCurrency({
+         userId,
+         originCurrency: currency,
+         targetCurrency: newCurrency
+      });
+      setCart(updated);
+      setCurrency(newCurrency);
+      } catch (err) {
+       // capturamos sólo el error de conversión
+       setConversionError("No se pudo convertir la moneda. Por favor vuelve a intentarlo.");
+      } finally {
+       setActionLoading(false);
+      }
+   };
 
   const submitNewAddress = async (e) => {
     e.preventDefault();
@@ -177,7 +209,7 @@ export default function Cart() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
+  if (initialLoading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
@@ -241,7 +273,7 @@ export default function Cart() {
                 {["BOB", "USDT", "USDC"].map((c) => (
                   <button
                     key={c}
-                    onClick={() => setCurrency(c)}
+                    onClick={() => handleCurrencyChange(c)}
                     className={`px-4 py-2 rounded-xl border text-sm transition ${
                       currency === c
                         ? "bg-white text-black border-white"
@@ -252,6 +284,9 @@ export default function Cart() {
                   </button>
                 ))}
               </div>
+              {conversionError && (
+                  <p className="mt-2 text-red-400">{conversionError}</p>
+              )}
             </div>
 
             {/* Productos */}

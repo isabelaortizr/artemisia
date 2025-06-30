@@ -152,5 +152,22 @@ async function getVentasByEstado(estado, page = 0, size = 10) {
     return res.json(); // { content: NotaVentaResponseDto[], totalPages, ... }
 }
 
+async function convertCurrency({ userId, originCurrency, targetCurrency }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/stereum-pay/conversion_moneda`, {
+        method: 'POST',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, originCurrency, targetCurrency })
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al convertir moneda`);
+    }
+    return res.json(); // devuelve NotaVentaResponseDto con totales e importes ya convertidos
+}
+
 export default { addToCart, getCart, createTransaction, updateOrderDetailStock,
-    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, getVentasByEstado };
+    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, getVentasByEstado, convertCurrency };

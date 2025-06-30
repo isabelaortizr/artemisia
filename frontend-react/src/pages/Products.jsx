@@ -88,7 +88,7 @@ export default function Products() {
   onClick={() => setShowFilters(true)}
   className="text-sm text-white font-bold cursor-pointer hover:underline transition"
 >
-  Filtered Search
+  {/* Filtered Search */}
 </span>
 
 

@@ -122,4 +122,35 @@ async function verifyTransaction(userId) {
     return res.json(); // { estado: "...", notaVentaId: 123 }
 }
 
-export default { addToCart, getCart, createTransaction, updateOrderDetailStock, assignAddressToNotaVenta, verifyTransaction };
+
+// ➜ nuevo método:
+async function getNotaVentaById(id) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/${id}`, {
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} buscando nota ${id}`);
+    }
+    return res.json();
+}
+
+async function getVentasByEstado(estado, page = 0, size = 10) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/notas-venta/estado/${estado}?page=${page}&size=${size}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} cargando órdenes`);
+    }
+    return res.json(); // { content: NotaVentaResponseDto[], totalPages, ... }
+}
+
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock,
+    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, getVentasByEstado };

@@ -139,6 +139,11 @@ export default function Cart() {
     setVerifyError(null);
     try {
       const res = await notaVentaService.verifyTransaction(userId);
+      // si ya está pagado, redirigimos al recibo
+      if (res.estado === "PAGADO") {
+        navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
+        return;
+      }
       setVerifyResult(res);
     } catch (err) {
       setVerifyError(err.message || "Error al verificar");

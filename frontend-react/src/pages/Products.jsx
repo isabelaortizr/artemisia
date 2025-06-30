@@ -15,8 +15,11 @@ export default function Products() {
   const [toast, setToast] = useState('');
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+
 
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -42,10 +45,10 @@ export default function Products() {
   const addToCart = async (product) => {
     try {
       await notaVentaService.addToCart({ productId: product.productId, quantity: 1 });
-      setToast(`"${product.name}" añadido al carrito`);
+      setToast(`"${product.name}" added to cart`);
       setTimeout(() => setToast(''), 3000);
     } catch (e) {
-      setToast("Error al añadir al carrito");
+      setToast("Error : Could not add to card");
       setTimeout(() => setToast(''), 3000);
     }
   };
@@ -53,7 +56,6 @@ export default function Products() {
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
       <Navbar showSignUpButton={false} />
-      <FilterSidebar onApply={setFilters} />
 
       {/* Hero visual */}
       <section
@@ -79,11 +81,18 @@ export default function Products() {
       )}
 
       <main className="flex-1 px-6 sm:px-10 pt-12 pb-12">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex-1" />
-          <h2 className="text-3xl sm:text-4xl font-medium text-center flex-1">Call it Art...</h2>
-          <div className="flex-1 flex justify-end">
-            <Link to="/cart">
+      <div className="mb-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+           <span
+  onClick={() => setShowFilters(true)}
+  className="text-sm text-white font-bold cursor-pointer hover:underline transition"
+>
+  Filtered Search
+</span>
+
+
+            <h2 className="text-3xl sm:text-4xl font-medium text-center flex-1">Call it Art...</h2>
+            <Link to="/cart" className="flex justify-end w-10">
               <img src={cartIcon} alt="Carrito" className="w-10 h-10 hover:scale-110 transition" />
             </Link>
           </div>
@@ -138,7 +147,7 @@ export default function Products() {
                       onClick={() => addToCart(prod)}
                       className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"
                     >
-                      Añadir
+                      Add to Cart
                     </button>
                   </div>
 
@@ -171,20 +180,30 @@ export default function Products() {
             onClick={() => setPage(p => Math.max(p - 1, 0))}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Anterior
+            Previous
           </button>
           <span className="text-sm">
-            Página {page + 1} de {totalPages}
+            Page {page + 1} de {totalPages}
           </span>
           <button
             disabled={page + 1 >= totalPages}
             onClick={() => setPage(p => Math.min(p + 1, totalPages - 1))}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Siguiente
+            Next
           </button>
         </div>
       </main>
+      {/* Sidebar de filtros deslizante */}
+      <FilterSidebar
+  visible={showFilters}
+  onClose={() => setShowFilters(false)}
+  onApply={(newFilters) => {
+    setFilters(newFilters);
+    setShowFilters(false);
+  }}
+/>
+
 
       <Footer />
     </div>

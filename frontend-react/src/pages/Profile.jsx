@@ -81,7 +81,7 @@ const Profile = () => {
     }
   };
 
-  if (uLoading) return <p className="text-center mt-10 text-white">Cargando perfil…</p>;
+  if (uLoading) return <p className="text-center mt-10 text-white">Loading profile</p>;
   if (uError) return <p className="text-center mt-10 text-red-500">Error: {uError}</p>;
 
   return (
@@ -94,31 +94,31 @@ const Profile = () => {
         </Link> */}
 
         <div className="max-w-3xl mx-auto mt-12">
-          <h2 className="text-3xl font-bold text-center mb-8">Mi Perfil</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">My Profile</h2>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-6 mb-12">
             <div>
-              <p className="text-gray-300 text-sm">Nombre</p>
+              <p className="text-gray-300 text-sm">Name</p>
               <p className="text-lg font-semibold">{user.name}</p>
             </div>
             <div>
-              <p className="text-gray-300 text-sm">Correo</p>
+              <p className="text-gray-300 text-sm">Mail</p>
               <p className="text-lg font-semibold">{user.mail}</p>
             </div>
             <div>
-              <p className="text-gray-300 text-sm">Rol</p>
+              <p className="text-gray-300 text-sm">Role</p>
               <p className="text-lg font-semibold">{user.role}</p>
             </div>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-6 mb-12">
-            <h3 className="text-2xl font-semibold mb-4">Mis Direcciones</h3>
+            <h3 className="text-2xl font-semibold mb-4">My Addresses</h3>
             {aLoading ? (
-              <p className="text-white">Cargando direcciones…</p>
+              <p className="text-white">Loadinf addresses</p>
             ) : aError ? (
               <p className="text-red-500">{aError}</p>
             ) : addresses.length === 0 ? (
-              <p className="text-gray-400">No tienes direcciones guardadas.</p>
+              <p className="text-gray-400">You don't have any address saved</p>
             ) : (
               <ul className="space-y-4">
                 {addresses.map(addr => (
@@ -134,16 +134,16 @@ const Profile = () => {
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-            <h3 className="text-2xl font-semibold mb-4">Agregar Nueva Dirección</h3>
+            <h3 className="text-2xl font-semibold mb-4">Add new address</h3>
             <form onSubmit={handleAddrSubmit} className="space-y-4">
               {[
-                { name: 'recipient_name', label: 'Nombre destinatario' },
-                { name: 'recipient_surname', label: 'Apellido destinatario' },
-                { name: 'country', label: 'País' },
-                { name: 'city', label: 'Ciudad' },
-                { name: 'street', label: 'Calle' },
-                { name: 'house_number', label: 'Número de casa' },
-                { name: 'extra', label: 'Información extra (opc.)' }
+                { name: 'recipient_name', label: 'Name ' },
+                { name: 'recipient_surname', label: 'Lasname ' },
+                { name: 'country', label: 'Country' },
+                { name: 'city', label: 'City' },
+                { name: 'street', label: 'Street' },
+                { name: 'house_number', label: 'House Numbber' },
+                { name: 'extra', label: 'Extra indications (opt.)' }
               ].map(fld => (
                 <div key={fld.name}>
                   <label className="block text-sm text-gray-300 mb-1">{fld.label}</label>
@@ -171,7 +171,7 @@ const Profile = () => {
                 type="submit"
                 className="w-full py-2 bg-white text-black rounded-xl hover:bg-gray-200 transition font-semibold"
               >
-                Guardar Dirección
+                Save new address
               </button>
             </form>
           </div>

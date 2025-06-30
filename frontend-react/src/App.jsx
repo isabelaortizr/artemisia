@@ -15,6 +15,7 @@ import Checkout      from "./pages/Checkout";
 import MyWorks       from "./pages/MyWorks";
 import OrderReceipt  from "./pages/OrderReceipt";
 import OrderHistory  from "./pages/OrderHistory";
+import ProductsLanding from "./components/ProductsLanding";
 
 const App = () => {
   return (

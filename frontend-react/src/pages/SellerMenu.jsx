@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import AddArt from './AddArt';
 import MyWorks from './MyWorks';
 import { assets } from '../assets/assets';
@@ -74,9 +74,7 @@ const SellerMenu = () => {
           {activeSection === 'add' && <AddArt embedded dark />}
           {activeSection === 'myworks' && <MyWorks embedded dark />}
           {activeSection === 'catalog' && (
-            <div className="text-center text-gray-300 text-lg py-10">
-              (integrar catálogo pronto...)
-            </div>
+            navigate('/products')
           )}
         </div>
       </div>

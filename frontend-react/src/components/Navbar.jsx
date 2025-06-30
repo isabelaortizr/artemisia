@@ -5,6 +5,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 function Navbar({ showSignUpButton = true }) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -12,7 +13,9 @@ function Navbar({ showSignUpButton = true }) {
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
+    const role = localStorage.getItem('userRole');
     setIsLoggedIn(!!userId);
+    setUserRole(role);
   }, []);
 
   useEffect(() => {
@@ -24,16 +27,12 @@ function Navbar({ showSignUpButton = true }) {
 
   const handleProductsClick = () => {
     const userId = localStorage.getItem('userId');
-    if (userId) {
-      navigate('/products'); // Usuario logeado
+    if (!isLanding) {
+      navigate('/products');
     } else {
-      if (location.pathname === '/') {
-        const el = document.getElementById('ProductsLanding');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        navigate('/', { state: { scrollTo: 'ProductsLanding' } });
+      const el = document.getElementById('ProductsLanding');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
       }
     }
   };
@@ -45,6 +44,7 @@ function Navbar({ showSignUpButton = true }) {
           <img src={assets.logo} alt="Logo" className="h-10 cursor-pointer" />
         </Link>
 
+        {/* Desktop menu */}
         <ul className="hidden md:flex gap-8 text-sm font-medium text-white">
           {isLanding && (
             <>
@@ -55,15 +55,24 @@ function Navbar({ showSignUpButton = true }) {
           <li>
             <button onClick={handleProductsClick} className="hover:text-gray-400">Products</button>
           </li>
-          <li>
-            <Link to="/profile" className="hover:text-gray-400">My Profile</Link>
-          </li>
-          {isLoggedIn && !isLanding && (
-  <li>
-    <Link to="/orderHistory" className="hover:text-gray-400">Order History</Link>
-  </li>
-)}
 
+          {isLoggedIn && !isLanding && (
+            <li>
+              <Link to="/profile" className="hover:text-gray-400">My Profile</Link>
+            </li>
+          )}
+
+          {isLoggedIn && !isLanding && (
+            <li>
+              <Link to="/orderHistory" className="hover:text-gray-400">Order History</Link>
+            </li>
+          )}
+
+          {!isLanding && userRole === 'SELLER' && (
+            <li>
+              <Link to="/menu" className="hover:text-gray-400">Seller Menu</Link>
+            </li>
+          )}
         </ul>
 
         {showSignUpButton && (
@@ -82,7 +91,7 @@ function Navbar({ showSignUpButton = true }) {
         />
       </div>
 
-      {/* Menú móvil */}
+      {/* Mobile menu */}
       <div
         className={`md:hidden fixed top-0 right-0 h-full w-3/4 max-w-xs bg-white z-50 transform transition-transform duration-300 ${
           showMobileMenu ? 'translate-x-0' : 'translate-x-full'
@@ -113,13 +122,24 @@ function Navbar({ showSignUpButton = true }) {
           >
             Products
           </button>
-          <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">My Profile</Link>
-          {isLoggedIn && !isLanding && (
-  <Link to="/orderHistory" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
-    Order History
-  </Link>
-)}
 
+          {isLoggedIn && !isLanding && (
+            <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              My Profile
+            </Link>
+          )}
+
+          {isLoggedIn && !isLanding && (
+            <Link to="/orderHistory" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              Order History
+            </Link>
+          )}
+
+          {!isLanding && userRole === 'SELLER' && (
+            <Link to="/menu" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              Seller Menu
+            </Link>
+          )}
         </ul>
       </div>
     </div>

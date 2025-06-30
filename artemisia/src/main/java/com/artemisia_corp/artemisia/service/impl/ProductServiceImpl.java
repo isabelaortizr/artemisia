@@ -148,6 +148,13 @@ public class ProductServiceImpl implements ProductService {
             logsService.error("Product category is required.");
             throw new IllegalArgumentException("Product category is required.");
         }
+
+        if (productDto.getStock() == null || productDto.getStock() <= 0) {
+            log.error("Product stock is required.");
+            logsService.error("Product stock is required.");
+            throw new IllegalArgumentException("Product stock is required.");
+        }
+
         if (productDto.getPrice() == null || productDto.getPrice() <= 0) {
             log.error("Product price must be greater than 0.");
             logsService.error("Product price must be greater than 0.");

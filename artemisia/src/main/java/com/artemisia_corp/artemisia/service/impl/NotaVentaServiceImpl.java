@@ -9,7 +9,6 @@ import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateQuantityDetailDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.*;
-import com.artemisia_corp.artemisia.exception.IncompleteAddressException;
 import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.EstadoResponseDto;
@@ -19,7 +18,6 @@ import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -259,11 +257,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             return;
         }
 
-        if (isNotaVentaCompleted(id)) {
-            notaVenta.setEstadoVenta(VentaEstado.PAYED);
-            notaVentaRepository.save(notaVenta);
-            logsService.info("Sale note completed with ID: " + id);
-        } else throw new RuntimeException("Compra no fue completada");
+        notaVenta.setEstadoVenta(VentaEstado.PAYED);
+        notaVentaRepository.save(notaVenta);
+        logsService.info("Sale note completed with ID: " + id);
     }
 
     @Override
@@ -395,7 +391,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     @Override
     @Transactional(readOnly = true)
     public EstdoNotaVentaResponseDto obtenerEstadoTransaccion(Long userId) {
-        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId)
+        NotaVenta notaVenta = notaVentaRepository.findLatestUsedUserCart(userId)
                 .orElseThrow(() -> {
                     log.error("NotaVenta not found with User ID: " + userId + " " +
                             "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
@@ -404,14 +400,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     return new EntityNotFoundException("NotaVenta not found with ID: " + userId);
                 });
 
-        if (notaVenta.getIdTransaccion() == null || notaVenta.getEstadoVenta() == VentaEstado.PAYED) {
-            log.error("Transaction ID not found for NotaVenta with ID: " + notaVenta.getId() + " " +
-                    "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
-            logsService.error("Transaction ID not found for NotaVenta with ID: " + notaVenta.getId() + " " +
-                    "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
-            throw new EntityNotFoundException("Transaction ID not found for NotaVenta with ID: " + notaVenta.getId());
-        }
-
+        log.info("Transaction ID: {}", notaVenta.getIdTransaccion());
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
 
         return new EstdoNotaVentaResponseDto(estado.getStatus(), notaVenta.getId());

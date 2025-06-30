@@ -44,7 +44,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "AND (:technique IS NULL OR p.technique = :technique) " +
             "AND (:priceMin IS NULL OR p.price >= :priceMin) " +
             "AND (:priceMax IS NULL OR p.price <= :priceMax) " +
-            "AND p.status != 'DELETED'")
+            "AND p.status = 'AVAILABLE'")
     Page<ProductResponseDto> searchWithFilters(
             @Param("category") PaintingCategory category,
             @Param("technique") PaintingTechnique technique,

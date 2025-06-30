@@ -45,10 +45,10 @@ export default function Products() {
   const addToCart = async (product) => {
     try {
       await notaVentaService.addToCart({ productId: product.productId, quantity: 1 });
-      setToast(`"${product.name}" añadido al carrito`);
+      setToast(`"${product.name}" added to cart`);
       setTimeout(() => setToast(''), 3000);
     } catch (e) {
-      setToast("Error al añadir al carrito");
+      setToast("Error : Could not add to card");
       setTimeout(() => setToast(''), 3000);
     }
   };
@@ -147,7 +147,7 @@ export default function Products() {
                       onClick={() => addToCart(prod)}
                       className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"
                     >
-                      Añadir
+                      Add to Cart
                     </button>
                   </div>
 
@@ -180,17 +180,17 @@ export default function Products() {
             onClick={() => setPage(p => Math.max(p - 1, 0))}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Anterior
+            Previous
           </button>
           <span className="text-sm">
-            Página {page + 1} de {totalPages}
+            Page {page + 1} de {totalPages}
           </span>
           <button
             disabled={page + 1 >= totalPages}
             onClick={() => setPage(p => Math.min(p + 1, totalPages - 1))}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Siguiente
+            Next
           </button>
         </div>
       </main>

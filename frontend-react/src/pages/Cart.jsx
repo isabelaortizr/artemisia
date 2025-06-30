@@ -94,7 +94,7 @@ export default function Cart() {
       await notaVentaService.assignAddressToNotaVenta({ userId, addressId: newAddr });
       await fetchCart();
     } catch (err) {
-      setError(err.message || "Error al guardar dirección");
+      setError(err.message || "Error trying to save address");
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ export default function Cart() {
       });
       setCart(updated);
     } catch (err) {
-      setError(err.message || "Error al actualizar el carrito");
+      setError(err.message || "Error triying to update cart");
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (!selectedAddress) {
-      setError("Selecciona una dirección de envío");
+      setError("Select an address");
       return;
     }
     try {
@@ -130,7 +130,7 @@ export default function Cart() {
       });
       setCheckoutData({ transaction: tx, addressId: selectedAddress });
     } catch (err) {
-      setError(err.message || "Error al iniciar pago");
+      setError(err.message || "Error trying to pay");
     }
   };
 
@@ -145,7 +145,7 @@ export default function Cart() {
         navigate("/orderReceipt");
       }
     } catch (err) {
-      setVerifyError(err.message || "Error al verificar");
+      setVerifyError(err.message || "Error verifying payment");
     } finally {
       setVerifyLoading(false);
     }
@@ -176,7 +176,7 @@ export default function Cart() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
+  if (loading) return <p className="text-center mt-10 text-white">Loading cart...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
@@ -190,20 +190,20 @@ export default function Cart() {
             {/* <Link to="/products" className="mr-4 inline-block">
               <img src={backIcon} alt="Volver" className="w-10 h-10 hover:opacity-80 transition inline" />
             </Link> */}
-            <h2 className="text-3xl font-bold text-white">Tu carrito está vacío</h2>
+            <h2 className="text-3xl font-bold text-white">Your cart is empty</h2>
             <button
               onClick={() => navigate("/products")}
               className="mt-6 bg-white text-black hover:bg-black hover:text-white font-semibold px-6 py-3 rounded-full transition"
             >
-              Volver al catálogo
+              Back to catalogue
             </button>
           </div>
         ) : (
           <div className="bg-zinc-900 bg-opacity-90 rounded-xl p-8 border border-white/10 shadow-xl text-white">
             <div className="mb-6">
-              <label className="block text-white mb-2">Dirección de envío</label>
+              <label className="block text-white mb-2">Delivery Address</label>
               {addrLoading ? (
-                <p className="text-white">Cargando direcciones…</p>
+                <p className="text-white">Loading adresses...</p>
               ) : addresses.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {addresses.map((addr) => {
@@ -235,7 +235,7 @@ export default function Cart() {
 
             {/* Moneda */}
             <div className="mb-6">
-              <label className="block text-white mb-2">Moneda</label>
+              <label className="block text-white mb-2">Currency</label>
               <div className="flex gap-2">
                 {["BOB", "USDT", "USDC"].map((c) => (
                   <button
@@ -262,7 +262,7 @@ export default function Cart() {
                 >
                   <p className="font-semibold text-lg w-1/3 truncate">{item.productName}</p>
                   <div className="w-1/3 flex justify-center items-center gap-2">
-                    <span className="text-sm text-gray-300">Cantidad: {item.quantity}</span>
+                    <span className="text-sm text-gray-300">Quantity: {item.quantity}</span>
                     <button
                       onClick={() => handleDecrease(item)}
                       disabled={loading || item.quantity <= 0}
@@ -284,7 +284,7 @@ export default function Cart() {
                 onClick={handleCheckout}
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"
               >
-                Finalizar compra
+                Go to Checkout
               </button>
             </div>
 

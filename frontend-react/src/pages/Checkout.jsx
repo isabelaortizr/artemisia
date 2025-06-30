@@ -59,7 +59,7 @@ export default function Checkout() {
           <img src={backIcon} alt="Volver" className="w-10 h-10 hover:opacity-80 transition" />
         </Link>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">Confirm your order</h2>
         <p className="mb-6 text-center">
           Escanea el QR o interactúa con la pantalla de pago embebida a continuación:
         </p>
@@ -94,7 +94,7 @@ export default function Checkout() {
             disabled={verifyLoading}
             className="px-6 py-2 bg-black text-white hover:bg-gray-900 rounded-full transition disabled:opacity-50"
           >
-            {verifyLoading ? 'Verificando…' : 'Verificar pago'}
+            {verifyLoading ? 'Verifying...' : 'Verify payment'}
           </button>
 
           {verifyResult && (

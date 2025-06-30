@@ -15,8 +15,11 @@ export default function Products() {
   const [toast, setToast] = useState('');
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+
 
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -53,7 +56,6 @@ export default function Products() {
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
       <Navbar showSignUpButton={false} />
-      <FilterSidebar onApply={setFilters} />
 
       {/* Hero visual */}
       <section
@@ -79,11 +81,18 @@ export default function Products() {
       )}
 
       <main className="flex-1 px-6 sm:px-10 pt-12 pb-12">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex-1" />
-          <h2 className="text-3xl sm:text-4xl font-medium text-center flex-1">Call it Art...</h2>
-          <div className="flex-1 flex justify-end">
-            <Link to="/cart">
+      <div className="mb-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+           <span
+  onClick={() => setShowFilters(true)}
+  className="text-sm text-white font-bold cursor-pointer hover:underline transition"
+>
+  Filtered Search
+</span>
+
+
+            <h2 className="text-3xl sm:text-4xl font-medium text-center flex-1">Call it Art...</h2>
+            <Link to="/cart" className="flex justify-end w-10">
               <img src={cartIcon} alt="Carrito" className="w-10 h-10 hover:scale-110 transition" />
             </Link>
           </div>
@@ -185,6 +194,16 @@ export default function Products() {
           </button>
         </div>
       </main>
+      {/* Sidebar de filtros deslizante */}
+      <FilterSidebar
+  visible={showFilters}
+  onClose={() => setShowFilters(false)}
+  onApply={(newFilters) => {
+    setFilters(newFilters);
+    setShowFilters(false);
+  }}
+/>
+
 
       <Footer />
     </div>

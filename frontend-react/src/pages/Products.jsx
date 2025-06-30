@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import FilterSidebar from '../components/FilterSideBar';
@@ -15,6 +14,7 @@ export default function Products() {
   const [filters, setFilters] = useState({});
   const [toast, setToast] = useState('');
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -52,19 +52,17 @@ export default function Products() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
-<Navbar showSignUpButton={false} />
-<FilterSidebar onApply={setFilters} />
+      <Navbar showSignUpButton={false} />
+      <FilterSidebar onApply={setFilters} />
 
       {/* Hero visual */}
       <section
         className="h-[60vh] bg-cover bg-center flex items-center justify-center text-center text-white relative"
-        style={{ backgroundImage: "url('/header_img.png')" }} 
+        style={{ backgroundImage: "url('/header_img.png')" }}
       >
-        <div className="absolute inset-0  bg-opacity-40" />
+        <div className="absolute inset-0 bg-opacity-40" />
         <div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
-            Our Available Pieces
-          </h1>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">Our Available Pieces</h1>
           <p className="text-md sm:text-lg max-w-2xl mx-auto text-gray-200">
             Explore unique artworks crafted by talented creators — find your next inspiration.
           </p>
@@ -72,29 +70,24 @@ export default function Products() {
       </section>
 
       {toast && (
-  <div
-    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow-xl animate-bounce
-      ${toast.toLowerCase().includes('error') ? 'bg-red-600' : 'bg-green-600'} text-white`}
-  >
-    {toast}
-  </div>
-)}
+        <div
+          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow-xl animate-bounce
+            ${toast.toLowerCase().includes('error') ? 'bg-red-600' : 'bg-green-600'} text-white`}
+        >
+          {toast}
+        </div>
+      )}
 
-
-    <main className="flex-1 px-6 sm:px-10 pt-12 pb-12">
-      <div className="mb-8 flex items-center justify-between">
-       <div className="flex-1" />
-        <h2 className="text-3xl sm:text-4xl font-medium text-center flex-1">
-        Call it Art...
-        </h2>
-      
-      <div className="flex-1 flex justify-end">
-        <Link to="/cart">
-          <img src={cartIcon} alt="Carrito" className="w-10 h-10 hover:scale-110 transition" />
-        </Link>
-      </div>
-    </div>
-
+      <main className="flex-1 px-6 sm:px-10 pt-12 pb-12">
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex-1" />
+          <h2 className="text-3xl sm:text-4xl font-medium text-center flex-1">Call it Art...</h2>
+          <div className="flex-1 flex justify-end">
+            <Link to="/cart">
+              <img src={cartIcon} alt="Carrito" className="w-10 h-10 hover:scale-110 transition" />
+            </Link>
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex justify-center items-center h-60">
@@ -104,45 +97,70 @@ export default function Products() {
           <p className="text-gray-400 text-center">No se encontraron productos.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map(prod => (
-              <div
-                key={prod.productId}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                viewport={{ once: true }}
-                className="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col text-black group"
-              >
-                <div className="overflow-hidden rounded-xl">
-                  <img
+            {products.map(prod => {
+              const expanded = expandedId === prod.productId;
+
+              return (
+                <div
+                  key={prod.productId}
+                  className="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col text-black group"
+                >
+                  {/* Imagen con hover */}
+                  <div className="overflow-hidden rounded-xl">
+                    <img
                       src={
                         prod.image
-                            ? `data:image/jpeg;base64,${prod.image}`
-                            : 'https://via.placeholder.com/400x400'
+                          ? `data:image/jpeg;base64,${prod.image}`
+                          : 'https://via.placeholder.com/400x400'
                       }
                       alt={prod.name}
                       className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
-                  />
-                </div>
-                <div className="mt-4 flex-grow">
-                  <h3 className="text-lg font-semibold">{prod.name}</h3>
-                  <p className="text-sm text-gray-600">{prod.technique}</p>
-                </div>
-                <div className="mt-4 flex justify-between items-center">
-                          <span className="text-md font-bold">
-            {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' })
-              .format(prod.price ?? 0)
-              .replace('Bs', 'Bs.')}
-          </span>
+                    />
+                  </div>
+
+                  {/* Info básica */}
+                  <div className="mt-4 flex-grow">
+                    <h3 className="text-lg font-semibold">{prod.name}</h3>
+                    <p className="text-sm text-gray-600">{prod.technique}</p>
+                  </div>
+
+                  {/* Precio + botón */}
+                  <div className="mt-4 flex justify-between items-center">
+                    <span className="text-md font-bold">
+                      {new Intl.NumberFormat('es-BO', {
+                        style: 'currency',
+                        currency: 'BOB'
+                      })
+                        .format(prod.price ?? 0)
+                        .replace('Bs', 'Bs.')}
+                    </span>
+                    <button
+                      onClick={() => addToCart(prod)}
+                      className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"
+                    >
+                      Añadir
+                    </button>
+                  </div>
+
+                  {/* View Details */}
                   <button
-                    onClick={() => addToCart(prod)}
-                    className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"
+                    onClick={() => setExpandedId(expanded ? null : prod.productId)}
+                    className="mt-3 text-sm text-black hover:underline text-left"
                   >
-                    Añadir
+                    {expanded ? 'Hide details' : 'View details'}
                   </button>
+
+                  {/* Detalles extra */}
+                  {expanded && (
+                    <div className="mt-3 bg-gray-100 rounded-lg p-3 text-sm text-black border border-gray-200">
+                      <p><strong>Categoría:</strong> {prod.category}</p>
+                      <p><strong>Estado:</strong> {prod.status}</p>
+                      <p className="mt-2 text-gray-700 italic">{prod.description || 'Sin descripción.'}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

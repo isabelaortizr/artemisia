@@ -38,7 +38,7 @@ export default function OrderHistory() {
       style={{ backgroundImage: `url(${assets.register_img})` }}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
-      <Navbar />
+      <Navbar showSignUpButton={false} />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 text-white">
         <h1 className="text-3xl font-bold mb-8 text-center">My Orders</h1>

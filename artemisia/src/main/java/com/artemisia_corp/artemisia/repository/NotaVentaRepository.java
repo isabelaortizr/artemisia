@@ -6,12 +6,10 @@ import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -36,4 +34,9 @@ public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
             "WHERE nv.buyer.id =:buyer_id AND nv.estadoVenta = 'ON_CART' " +
             "ORDER BY nv.id DESC LIMIT 1")
     Optional<NotaVenta> findByBuyer_IdAndEstadoVenta(@Param("buyer_id") Long buyerId);
+
+    @Query("SELECT nv FROM NotaVenta nv " +
+            "WHERE nv.buyer.id =:buyer_id AND nv.estadoVenta != 'ON_CART' " +
+            "ORDER BY nv.id DESC LIMIT 1")
+    Optional<NotaVenta> findLatestUsedUserCart(@Param("buyer_id") Long buyerId);
 }

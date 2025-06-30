@@ -18,7 +18,7 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto(p)" +
-            "FROM Product p WHERE p.status != 'DELETED'")
+            "FROM Product p WHERE p.status != 'DELETED' OR p.status != 'UNAVAILABLE'")
     Page<ProductResponseDto> findAllProducts(Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.id = :p_productId")

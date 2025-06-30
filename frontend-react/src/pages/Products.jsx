@@ -30,7 +30,8 @@ export default function Products() {
 
     setLoading(true);
     productService
-      .getProducts(page, 12, filters)
+      // .getProducts(page, 12, filters)
+      .getAvailableProducts(page, 12)
       .then(({ items, totalPages }) => {
         setProducts(items);
         setTotalPages(totalPages);

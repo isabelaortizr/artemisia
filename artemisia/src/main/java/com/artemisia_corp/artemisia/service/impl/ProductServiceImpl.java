@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -209,9 +211,15 @@ public class ProductServiceImpl implements ProductService {
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         }
 
+        Optional<User> modifiedBy = userRepository.findByName(product.getModifiedBy());
+
         if (product.getStock() - quantity <= 0) {
             product.setStatus(ProductStatus.UNAVAILABLE);
             logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
+        } else if (modifiedBy.isPresent() && !Objects.equals(modifiedBy.get().getName(),
+                product.getSeller().getName())) {
+            product.setStatus(ProductStatus.AVAILABLE);
+            logsService.info("Product status updated to AVAILABLE for ID: " + productId);
         }
         productRepository.save(product);
     }
@@ -246,18 +254,20 @@ public class ProductServiceImpl implements ProductService {
             logsService.error("Seller not found with ID: " + sellerId);
             throw new NotDataFoundException("Seller not found with ID: " + sellerId);
         }
+        try {
+            Page<ProductResponseDto> products = productRepository.findBySeller_Id(sellerId, pageable);
 
-        Page<ProductResponseDto> products = productRepository.findBySeller_Id(sellerId, pageable);
-
-        // **inyección del base64** de la última imagen en cada DTO
-        for (ProductResponseDto product : products.getContent()) {
-            String image = imageService.getLatestImage(product.getProductId());
-            if (image != null && !image.isBlank()) {
-                product.setImage(image);
+            for (ProductResponseDto product : products.getContent()) {
+                String image = imageService.getLatestImage(product.getProductId());
+                if (image != null && !image.isBlank()) {
+                    product.setImage(image);
+                }
             }
+            return products;
+        } catch (Exception e) {
+            logsService.error("Error fetching products for seller: " + e.getMessage());
+            throw new NotDataFoundException("Error fetching products for seller", e);
         }
-        return products;
-
 
 //        try {
 //            return productRepository.findBySeller_Id(sellerId, pageable);
@@ -265,6 +275,7 @@ public class ProductServiceImpl implements ProductService {
 //            logsService.error("Error fetching products for seller: " + e.getMessage());
 //            throw new NotDataFoundException("Error fetching products for seller", e);
 //        }
+
     }
 
     @Override

@@ -29,7 +29,14 @@ const Login = () => {
                 navigate('/products');
             }
         } catch (err) {
-            setError(err.message || 'Error al autenticar');
+            // setError(err.message || 'Error al autenticar');
+                       // Si el servidor responde 400/500 por credenciales inválidas
+            const msg = err.message || '';
+            if (msg.includes('Data Not Found') || msg.includes('INTERNAL_SERVER_ERROR') || msg.includes('400')) {
+                setError('Incorrect User or Password');
+            } else {
+                setError(err.message || 'Error al autenticar');
+            }
         }
     };
 

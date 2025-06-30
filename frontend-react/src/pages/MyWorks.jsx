@@ -4,7 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import productService from '../services/productService';
 import WorkCard       from '../components/WorkCard';
 import EditModal      from '../components/EditModal';
-import backIcon       from '../assets/back-icon.png';
 
 const MyWorks = () => {
     const [works,      setWorks]    = useState([]);
@@ -47,9 +46,6 @@ const MyWorks = () => {
 
     return (
         <div className="relative max-w-7xl mx-auto p-6">
-            <Link to="/menu" className="absolute top-6 left-6">
-                <img src={backIcon} alt="Volver" className="w-8 h-8" />
-            </Link>
 
             <h2 className="text-3xl font-semibold mb-8 text-center">My pieces</h2>
 

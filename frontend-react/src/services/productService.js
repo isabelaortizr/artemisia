@@ -121,4 +121,30 @@ async function updateProduct(id, productDto) {
     return res.json(); // ProductResponseDto
 }
 
-export default { getProducts, createProduct, getProductsBySeller, updateProduct };
+/**
+  Trae sólo los productos disponibles
+ */
+    async function getAvailableProducts(page = 0, size = 10, sortBy = 'id', sortDir = 'ASC') {
+          const token = localStorage.getItem('authToken');
+          const params = new URLSearchParams({ page, size, sortBy, sortDir });
+          const res = await fetch(`${API_URL}/products/available?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                },
+          });
+          if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || `Request failed with status ${res.status}`);
+              }
+          const json = await res.json();
+          return {
+                items: Array.isArray(json.content) ? json.content : [],
+                page: json.number,
+                totalPages: json.totalPages,
+                totalElements: json.totalElements
+          };
+        }
+
+export default { getProducts, createProduct, getProductsBySeller, updateProduct, getAvailableProducts };

@@ -86,7 +86,13 @@ const AddArt = ({ embedded, dark }) => {
             setSuccess('¡Obra creada con éxito!');
             // setTimeout(() => navigate('/myworks'), 2000);
         } catch (err) {
-            setError(err.message);
+            // setError(err.message);
+            const msg = err.message || '';
+            if (msg.includes('Data Not Found') || msg.includes('INTERNAL_SERVER_ERROR') || msg.includes('400')) {
+                setError('Ocurrio un error al crear su obra, vuelva a intentarlo');
+            } else {
+                setError(err.message || 'Error al autenticar');
+            }
         } finally {
             setLoading(false);
         }

@@ -139,6 +139,7 @@ async function getNotaVentaById(id) {
     return res.json();
 }
 
+/*
 async function getVentasByEstado(estado, page = 0, size = 10) {
     const token = localStorage.getItem('authToken');
     const res = await fetch(
@@ -150,7 +151,7 @@ async function getVentasByEstado(estado, page = 0, size = 10) {
         throw new Error(err.message || `Error ${res.status} cargando órdenes`);
     }
     return res.json(); // { content: NotaVentaResponseDto[], totalPages, ... }
-}
+}*/
 
 async function convertCurrency({ userId, originCurrency, targetCurrency }) {
     const token = localStorage.getItem('authToken');
@@ -169,5 +170,18 @@ async function convertCurrency({ userId, originCurrency, targetCurrency }) {
     return res.json(); // devuelve NotaVentaResponseDto con totales e importes ya convertidos
 }
 
+async function getHistory(userId, page = 0, size = 10) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/notas-venta/historial-usuario/${userId}?page=${page}&size=${size}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} cargando historial`);
+    }
+    return res.json(); // devuelve { content: NotaVentaResponseDto[], totalPages… }
+}
+
 export default { addToCart, getCart, createTransaction, updateOrderDetailStock,
-    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, getVentasByEstado, convertCurrency };
+    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, convertCurrency, getHistory };

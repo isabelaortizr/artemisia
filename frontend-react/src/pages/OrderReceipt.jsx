@@ -11,7 +11,7 @@ export default function OrderReceipt() {
       {/* Overlay and blur */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
 
-      <Navbar />
+      <Navbar showSignUpButton={false} />
 
       <div className="relative z-10 max-w-3xl mx-auto p-6 pt-32 text-white">
         <div className="bg-zinc-900 bg-opacity-90 p-8 rounded-2xl shadow-xl border border-white/10">
@@ -62,7 +62,7 @@ export default function OrderReceipt() {
               Continue Shopping
             </Link>
             <Link
-              to="/profile"
+              to="/orderHistory"
               className="w-full sm:w-auto text-center bg-black border border-white px-6 py-3 rounded-full hover:bg-white hover:text-black transition"
             >
               View My Orders

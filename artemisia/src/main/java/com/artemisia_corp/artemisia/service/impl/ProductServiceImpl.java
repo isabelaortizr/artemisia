@@ -203,16 +203,13 @@ public class ProductServiceImpl implements ProductService {
                 throw new NotDataFoundException("Insufficient stock");
             }
             product.setStock(product.getStock() - quantity);
-            if (product.getStock() - quantity == 0) {
-                logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
-            }
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         } else {
             product.setStock(product.getStock() + quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         }
 
-        if (product.getStock() - quantity == 0) {
+        if (product.getStock() - quantity <= 0) {
             product.setStatus(ProductStatus.UNAVAILABLE);
             logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
         }
@@ -224,7 +221,16 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponseDto> getAvailableProducts(Pageable pageable) {
         logsService.info("Fetching all available products (stock > 0)");
         try {
-            return productRepository.findAllAvailableProducts(pageable);
+            Page<ProductResponseDto> products = productRepository.findAllAvailableProducts(pageable);
+
+            for (ProductResponseDto product : products.getContent()) {
+                String image = imageService.getLatestImage(product.getProductId());
+                if (image != null && !image.isBlank()) {
+                    product.setImage(image);
+                }
+            }
+
+            return products;
         } catch (Exception e) {
             logsService.error("Error fetching available products: " + e.getMessage());
             throw new NotDataFoundException("Error fetching available products", e);

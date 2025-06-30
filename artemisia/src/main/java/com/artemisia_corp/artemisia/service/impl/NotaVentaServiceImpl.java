@@ -389,9 +389,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public EstdoNotaVentaResponseDto obtenerEstadoTransaccion(Long userId) {
-        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId)
+        NotaVenta notaVenta = notaVentaRepository.findLatestUsedUserCart(userId)
                 .orElseThrow(() -> {
                     log.error("NotaVenta not found with User ID: " + userId + " " +
                             "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
@@ -399,9 +399,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                             "In class NotaVentaServiceImpl.obtenerEstadoTransaccion() method.");
                     return new EntityNotFoundException("NotaVenta not found with ID: " + userId);
                 });
-
-        notaVenta.setEstadoVenta(VentaEstado.PAYED);
-        notaVentaRepository.save(notaVenta);
 
         log.info("Transaction ID: {}", notaVenta.getIdTransaccion());
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());

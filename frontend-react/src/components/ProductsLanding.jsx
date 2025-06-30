@@ -76,14 +76,14 @@ function ProductsLanding() {
           {projectsData.map((project, index) => (
             <div
               key={index}
-              className="relative flex-shrink-0 w-full sm:w-1/4 transform-gpu transition duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
-              style={{ perspective: '1000px' }}
-            >
+              className="relative flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2" style={{ perspective: '1000px' }}
+                          >
               <img
                 src={project.image}
                 alt={project.title}
-                className="w-full h-auto mb-14 object-cover rounded-xl"
+                className="w-full h-[300px] sm:h-[220px] md:h-[240px] lg:h-[260px] xl:h-[280px] object-cover mb-14 rounded-xl"
               />
+
               <div className="absolute left-0 right-0 bottom-5 flex justify-center">
                 <div className="rounded bg-black w-3/4 px-4 py-2 shadow-md">
                   <h2 className="text-xl font-semibold text-amber-50">

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { assets } from '../assets/assets';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import ProductsLanding from './ProductsLanding';
 
 function Navbar({ showSignUpButton = true }) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -13,7 +13,9 @@ function Navbar({ showSignUpButton = true }) {
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
+    const role = localStorage.getItem('userRole');
     setIsLoggedIn(!!userId);
+    setUserRole(role);
   }, []);
 
   useEffect(() => {
@@ -23,23 +25,17 @@ function Navbar({ showSignUpButton = true }) {
 
   const closeMenu = () => setShowMobileMenu(false);
 
-const handleProductsClick = () => {
-  const userId = localStorage.getItem('userId');
-  console.log('userId:', userId);
-  console.log('isLanding:', isLanding);
-
-  if (!isLanding) {
-    navigate('/products');
-  } else {
-    const el = document.getElementById('ProductsLanding');
-    console.log('el:', el)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+  const handleProductsClick = () => {
+    const userId = localStorage.getItem('userId');
+    if (!isLanding) {
+      navigate('/products');
+    } else {
+      const el = document.getElementById('ProductsLanding');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     }
-  } 
-};
-
-
+  };
 
   return (
     <div className="absolute top-0 left-0 w-full z-20">
@@ -48,6 +44,7 @@ const handleProductsClick = () => {
           <img src={assets.logo} alt="Logo" className="h-10 cursor-pointer" />
         </Link>
 
+        {/* Desktop menu */}
         <ul className="hidden md:flex gap-8 text-sm font-medium text-white">
           {isLanding && (
             <>
@@ -58,18 +55,24 @@ const handleProductsClick = () => {
           <li>
             <button onClick={handleProductsClick} className="hover:text-gray-400">Products</button>
           </li>
-            {isLoggedIn && !isLanding && (
-          <li>
-            <Link to="/profile" className="hover:text-gray-400">My Profile</Link>
-          </li>
-        )}
 
           {isLoggedIn && !isLanding && (
-          <li>
-            <Link to="/orderHistory" className="hover:text-gray-400">Order History</Link>
-          </li>
-)}
+            <li>
+              <Link to="/profile" className="hover:text-gray-400">My Profile</Link>
+            </li>
+          )}
 
+          {isLoggedIn && !isLanding && (
+            <li>
+              <Link to="/orderHistory" className="hover:text-gray-400">Order History</Link>
+            </li>
+          )}
+
+          {!isLanding && userRole === 'SELLER' && (
+            <li>
+              <Link to="/menu" className="hover:text-gray-400">Seller Menu</Link>
+            </li>
+          )}
         </ul>
 
         {showSignUpButton && (
@@ -88,7 +91,7 @@ const handleProductsClick = () => {
         />
       </div>
 
-      {/* Menú móvil */}
+      {/* Mobile menu */}
       <div
         className={`md:hidden fixed top-0 right-0 h-full w-3/4 max-w-xs bg-white z-50 transform transition-transform duration-300 ${
           showMobileMenu ? 'translate-x-0' : 'translate-x-full'
@@ -119,19 +122,24 @@ const handleProductsClick = () => {
           >
             Products
           </button>
-          {isLoggedIn && !isLanding && (
-  <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
-    My Profile
-  </Link>
-)}
-
 
           {isLoggedIn && !isLanding && (
-  <Link to="/orderHistory" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
-    Order History
-  </Link>
-)}
+            <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              My Profile
+            </Link>
+          )}
 
+          {isLoggedIn && !isLanding && (
+            <Link to="/orderHistory" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              Order History
+            </Link>
+          )}
+
+          {!isLanding && userRole === 'SELLER' && (
+            <Link to="/menu" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              Seller Menu
+            </Link>
+          )}
         </ul>
       </div>
     </div>

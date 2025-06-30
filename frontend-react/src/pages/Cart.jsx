@@ -140,6 +140,10 @@ export default function Cart() {
     try {
       const res = await notaVentaService.verifyTransaction(userId);
       setVerifyResult(res);
+
+      if (verifyResult.estado === "PAGADO") {
+        navigate("/orderReceipt");
+      }
     } catch (err) {
       setVerifyError(err.message || "Error al verificar");
     } finally {

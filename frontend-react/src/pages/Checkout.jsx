@@ -38,9 +38,9 @@ export default function Checkout() {
       const res = await notaVentaService.verifyTransaction(userId);
       setVerifyResult(res);
 
-      if (res.estado === "PAGADO") {
-        navigate("/orderReceipt");
-      }
+      // if (res.status === "PAGADO") {
+      //   navigate("/orderReceipt");
+      // }
     } catch (err) {
       console.error(err);
       setVerifyError(err.message || 'Error al verificar');

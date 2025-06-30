@@ -32,7 +32,7 @@ function ProductsLanding() {
   return (
     <div
       className="container mx-auto pt-20 px-6 md:px-20 lg:px-32 my-20 w-full overflow-hidden"
-      id="Products"
+      id="ProductsLanding"
     >
       <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 text-center">
         Artemisia's{' '}

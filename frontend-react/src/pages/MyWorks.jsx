@@ -47,7 +47,6 @@ const MyWorks = () => {
     return (
         <div className="relative max-w-7xl mx-auto p-6">
 
-
             <h2 className="text-3xl font-semibold mb-8 text-center">Mis Obras</h2>
 
             {works.length === 0

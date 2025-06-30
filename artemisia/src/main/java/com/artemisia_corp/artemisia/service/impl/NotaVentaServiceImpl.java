@@ -562,6 +562,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         Long productId = updateOrderDetailDto.getProductId();
         int quantity = updateOrderDetailDto.getQuantity();
 
+        log.info("Actualizando details de stock: " + quantity + " del producto con id " + productId + " del usuario con id " + userId);
+
         User user = userRepository.findById(userId).orElseThrow(() -> {
             log.error("Usuario con id " + userId + " no encontrado.");
             logsService.error("Usuario con id " + userId + " no encontrado.");

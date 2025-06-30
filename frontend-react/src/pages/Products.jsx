@@ -61,27 +61,25 @@ export default function Products() {
         style={{ backgroundImage: "url('/header_img.png')" }} 
       >
         <div className="absolute inset-0  bg-opacity-40" />
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          viewport={{ once: true }}
-          className="relative z-10 px-6 md:px-16"
-        >
+        <div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
             Our Available Pieces
           </h1>
           <p className="text-md sm:text-lg max-w-2xl mx-auto text-gray-200">
             Explore unique artworks crafted by talented creators — find your next inspiration.
           </p>
-        </motion.div>
+        </div>
       </section>
 
       {toast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-xl animate-bounce">
-          {toast}
-        </div>
-      )}
+  <div
+    className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded shadow-xl animate-bounce
+      ${toast.toLowerCase().includes('error') ? 'bg-red-600' : 'bg-green-600'} text-white`}
+  >
+    {toast}
+  </div>
+)}
+
 
     <main className="flex-1 px-6 sm:px-10 pt-12 pb-12">
       <div className="mb-8 flex items-center justify-between">
@@ -117,9 +115,13 @@ export default function Products() {
               >
                 <div className="overflow-hidden rounded-xl">
                   <img
-                    src={prod.imageUrl || 'https://via.placeholder.com/400x400'}
-                    alt={prod.name}
-                    className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
+                      src={
+                        prod.image
+                            ? `data:image/jpeg;base64,${prod.image}`
+                            : 'https://via.placeholder.com/400x400'
+                      }
+                      alt={prod.name}
+                      className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
                   />
                 </div>
                 <div className="mt-4 flex-grow">

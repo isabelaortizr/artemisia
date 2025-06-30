@@ -45,7 +45,7 @@ async function createTransaction({
                                      userId,
                                      currency = "BOB",
                                      chargeReason = "Compra en Artemisia",
-                                     network = "BISA",
+                                     // network = "BISA",
                                      country = "BO"
                                  }) {
     const token = localStorage.getItem('authToken');
@@ -59,7 +59,7 @@ async function createTransaction({
             user_id:     Number(userId),
             currency,
             charge_reason: chargeReason,
-            network,
+            // network,
             country
         })
     });
@@ -71,4 +71,55 @@ async function createTransaction({
     return res.json(); // StereumPagaResponseDto
 }
 
-export default { addToCart, getCart, createTransaction };
+async function updateOrderDetailStock({ userId, productId, quantity }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/order_detail/update_stock`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, productId, quantity })
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al actualizar carrito`);
+    }
+
+    return res.json(); // NotaVentaResponseDto
+}
+
+async function assignAddressToNotaVenta({ userId, addressId }) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/set_address`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, addressId })
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al asignar dirección`);
+    }
+    // No devuelve body
+}
+
+async function verifyTransaction(userId) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/notas-venta/verify_transaction/${userId}`,
+        {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al verificar`);
+    }
+    return res.json(); // { estado: "...", notaVentaId: 123 }
+}
+
+export default { addToCart, getCart, createTransaction, updateOrderDetailStock, assignAddressToNotaVenta, verifyTransaction };

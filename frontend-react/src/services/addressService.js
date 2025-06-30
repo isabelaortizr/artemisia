@@ -1,21 +1,36 @@
 // src/services/addressService.js
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function createAddress({ direction, userId }) {
-    // const token = localStorage.getItem('authToken'); // si tu API requiere auth
+async function getAddressesByUser(userId, page = 0, size = 10) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/addresses/user/${userId}?page=${page}&size=${size}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al cargar direcciones`);
+    }
+    const json = await res.json();
+    // devolvemos el array de direcciones
+    return json.content;
+}
+
+async function createAddress(addressDto) {
+    const token = localStorage.getItem('authToken');
     const res = await fetch(`${API_URL}/addresses`, {
         method: 'POST',
         headers: {
             'Content-Type':  'application/json',
-            // 'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ direction, userId }),
+        body: JSON.stringify(addressDto),
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `Error al crear dirección (${res.status})`);
+        throw new Error(err.message || `Error ${res.status} al crear dirección`);
     }
     return res.json(); // AddressResponseDto
 }
 
-export default { createAddress };
+export default { getAddressesByUser, createAddress };

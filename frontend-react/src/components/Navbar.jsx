@@ -1,22 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { assets } from '../assets/assets';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 function Navbar({ showSignUpButton = true }) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isLanding = location.pathname === '/';
 
   useEffect(() => {
-    if (showMobileMenu) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    const userId = localStorage.getItem('userId');
+    setIsLoggedIn(!!userId);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = showMobileMenu ? 'hidden' : 'auto';
+    return () => (document.body.style.overflow = 'auto');
   }, [showMobileMenu]);
 
   const closeMenu = () => setShowMobileMenu(false);
+
+  const handleProductsClick = () => {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      navigate('/products'); // Usuario logeado
+    } else {
+      if (location.pathname === '/') {
+        const el = document.getElementById('ProductsLanding');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        navigate('/', { state: { scrollTo: 'ProductsLanding' } });
+      }
+    }
+  };
 
   return (
     <div className="absolute top-0 left-0 w-full z-20">
@@ -26,15 +46,29 @@ function Navbar({ showSignUpButton = true }) {
         </Link>
 
         <ul className="hidden md:flex gap-8 text-sm font-medium text-white">
-          <li><a href="#Header" className="hover:text-gray-400">Home</a></li>
-          <li><a href="#About" className="hover:text-gray-400">About</a></li>
-          <li><a href="#ProductsLanding" className="hover:text-gray-400">Products</a></li>
-          <li><a href="#Profile" className="hover:text-gray-400">My Profile</a></li>
+          {isLanding && (
+            <>
+              <li><a href="#Header" className="hover:text-gray-400">Home</a></li>
+              <li><a href="#About" className="hover:text-gray-400">About</a></li>
+            </>
+          )}
+          <li>
+            <button onClick={handleProductsClick} className="hover:text-gray-400">Products</button>
+          </li>
+          <li>
+            <Link to="/profile" className="hover:text-gray-400">My Profile</Link>
+          </li>
+          {isLoggedIn && !isLanding && (
+  <li>
+    <Link to="/orderHistory" className="hover:text-gray-400">Order History</Link>
+  </li>
+)}
+
         </ul>
 
         {showSignUpButton && (
           <Link to="/register">
-            <button className="hidden md:block bg-white px-8 py-2 rounded-full hover:bg-black hover:text-white transition">
+            <button className="hidden md:block bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white transition">
               Sign Up
             </button>
           </Link>
@@ -48,7 +82,7 @@ function Navbar({ showSignUpButton = true }) {
         />
       </div>
 
-      {/* Menú móvil deslizante */}
+      {/* Menú móvil */}
       <div
         className={`md:hidden fixed top-0 right-0 h-full w-3/4 max-w-xs bg-white z-50 transform transition-transform duration-300 ${
           showMobileMenu ? 'translate-x-0' : 'translate-x-full'
@@ -62,11 +96,30 @@ function Navbar({ showSignUpButton = true }) {
             alt="close"
           />
         </div>
+
         <ul className="flex flex-col items-center gap-4 mt-5 px-5 text-lg font-medium">
-          <a href="#Header" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Home</a>
-          <a href="#About" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">About</a>
-          <a href="#ProductsLanding" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Products</a>
-          <a href="#Profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">My Profile</a>
+          {isLanding && (
+            <>
+              <a href="#Header" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Home</a>
+              <a href="#About" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">About</a>
+            </>
+          )}
+          <button
+            onClick={() => {
+              handleProductsClick();
+              closeMenu();
+            }}
+            className="px-4 py-2 rounded-full inline-block"
+          >
+            Products
+          </button>
+          <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">My Profile</Link>
+          {isLoggedIn && !isLanding && (
+  <Link to="/orderHistory" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+    Order History
+  </Link>
+)}
+
         </ul>
       </div>
     </div>

@@ -1,8 +1,7 @@
-// frontend-react/src/components/ProductsLanding.jsx
 import React, { useEffect, useState } from 'react';
 import { assets, projectsData } from '../assets/assets';
 
-function ProductsLanding() {
+function Products() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardsToShow, setCardsToShow] = useState(1);
 
@@ -35,9 +34,9 @@ function ProductsLanding() {
       id="Products"
     >
       <h1 className="text-2xl sm:text-4xl font-bold text-white mb-2 text-center">
-        Artemisia's{' '}
+        Available{' '}
         <span className="underline underline-offset-4 decoration-1 font-light">
-          Best Solds
+          Masterpieces
         </span>
       </h1>
       <p className="text-center text-white mb-8 max-w-80 mx-auto">
@@ -102,4 +101,4 @@ function ProductsLanding() {
   );
 }
 
-export default ProductsLanding;
+export default Products;

@@ -195,23 +195,21 @@ public class ProductServiceImpl implements ProductService {
                 logsService.error("Insufficient stock for product ID: " + productId);
                 throw new NotDataFoundException("Insufficient stock");
             }
-            productRepository.reduceStock(productId, quantity);
+            product.setStock(product.getStock() - quantity);
             if (product.getStock() - quantity == 0) {
-                product.setStatus(ProductStatus.UNAVAILABLE);
-                productRepository.save(product);
                 logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
             }
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         } else {
-            productRepository.augmentStock(productId, quantity);
+            product.setStock(product.getStock() + quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
         }
 
         if (product.getStock() - quantity == 0) {
             product.setStatus(ProductStatus.UNAVAILABLE);
-            productRepository.save(product);
             logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
         }
+        productRepository.save(product);
     }
 
     @Override
@@ -236,12 +234,24 @@ public class ProductServiceImpl implements ProductService {
             throw new NotDataFoundException("Seller not found with ID: " + sellerId);
         }
 
-        try {
-            return productRepository.findBySeller_Id(sellerId, pageable);
-        } catch (Exception e) {
-            logsService.error("Error fetching products for seller: " + e.getMessage());
-            throw new NotDataFoundException("Error fetching products for seller", e);
+        Page<ProductResponseDto> products = productRepository.findBySeller_Id(sellerId, pageable);
+
+        // **inyección del base64** de la última imagen en cada DTO
+        for (ProductResponseDto product : products.getContent()) {
+            String image = imageService.getLatestImage(product.getProductId());
+            if (image != null && !image.isBlank()) {
+                product.setImage(image);
+            }
         }
+        return products;
+
+
+//        try {
+//            return productRepository.findBySeller_Id(sellerId, pageable);
+//        } catch (Exception e) {
+//            logsService.error("Error fetching products for seller: " + e.getMessage());
+//            throw new NotDataFoundException("Error fetching products for seller", e);
+//        }
     }
 
     @Override

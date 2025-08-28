@@ -46,8 +46,9 @@ public class AddressController {
             @ApiResponse(responseCode = "404", description = "Address not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<AddressResponseDto> getAddressById(@PathVariable Long id) {
-        AddressResponseDto response = addressService.getAddressById(id);
+    public ResponseEntity<AddressResponseDto> getAddressById(
+            @PathVariable Long id, @RequestHeader("Authorization") String token) {
+        AddressResponseDto response = addressService.getAddressById(id, token);
         return ResponseEntity.ok(response);
     }
 
@@ -58,8 +59,9 @@ public class AddressController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<AddressResponseDto> createAddress(@RequestBody AddressRequestDto addressDto) {
-        AddressResponseDto response = addressService.createAddress(addressDto);
+    public ResponseEntity<AddressResponseDto> createAddress(
+            @RequestBody AddressRequestDto addressDto, @RequestHeader("Authorization") String token) {
+        AddressResponseDto response = addressService.createAddress(addressDto, token);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -72,8 +74,10 @@ public class AddressController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<AddressResponseDto> updateAddress(
-            @PathVariable Long id, @RequestBody AddressRequestDto addressDto) {
-        AddressResponseDto response = addressService.updateAddress(id, addressDto);
+            @PathVariable Long id,
+            @RequestBody AddressRequestDto addressDto,
+            @RequestHeader("Authorization") String token) {
+        AddressResponseDto response = addressService.updateAddress(id, addressDto, token);
         return ResponseEntity.ok(response);
     }
 
@@ -83,8 +87,10 @@ public class AddressController {
             @ApiResponse(responseCode = "404", description = "Address not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
-        addressService.deleteAddress(id);
+    public ResponseEntity<Void> deleteAddress(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
+        addressService.deleteAddress(id, token);
         return ResponseEntity.noContent().build();
     }
 
@@ -98,6 +104,7 @@ public class AddressController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<AddressResponseDto>> getAddressesByUser(
             @PathVariable Long userId,
+            @RequestHeader("Authorization") String token,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
@@ -109,19 +116,11 @@ public class AddressController {
             @RequestParam(value = "from", required = false) @DateTimeFormat(pattern = DateUtils.FORMAT_ISO_8601_SHORT) Date from,
             @RequestParam(value = "to" , required = false) @DateTimeFormat(pattern = DateUtils.FORMAT_ISO_8601_SHORT) Date to) {
 
-        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autorizado");
+        if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated())
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autorizado");
 
-
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-            Page<AddressResponseDto> response = addressService.getAddressesByUser(userId, pageable);
-            return ResponseEntity.ok(response);
-        } catch (OperationException e) {
-            log.error("Error al listar el empresas. Causa:{}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            log.error("Error al listar el empresas", e);
-            return ResponseEntity.badRequest().build();
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
+        Page<AddressResponseDto> response = addressService.getAddressesByUser(userId, pageable, token);
+        return ResponseEntity.ok(response);
     }
 }

@@ -206,20 +206,17 @@ public class ProductServiceImpl implements ProductService {
             }
             product.setStock(product.getStock() - quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
+            if (product.getStock() - quantity <  0) {
+                product.setStatus(ProductStatus.UNAVAILABLE);
+                logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
+            }
         } else {
             product.setStock(product.getStock() + quantity);
             logsService.info("Stock reduced for product ID: " + productId + " by quantity: " + quantity);
-        }
-
-        Optional<User> modifiedBy = userRepository.findByName(product.getModifiedBy());
-
-        if (product.getStock() - quantity <= 0) {
-            product.setStatus(ProductStatus.UNAVAILABLE);
-            logsService.info("Product status updated to UNAVAILABLE for ID: " + productId);
-        } else if (modifiedBy.isPresent() && !Objects.equals(modifiedBy.get().getName(),
-                product.getSeller().getName())) {
-            product.setStatus(ProductStatus.AVAILABLE);
-            logsService.info("Product status updated to AVAILABLE for ID: " + productId);
+            if (!product.getModifiedBy().equals(product.getCreatedBy())) {
+                product.setStatus(ProductStatus.AVAILABLE);
+                logsService.info("Product status updated to AVAILABLE for ID: " + productId);
+            }
         }
         productRepository.save(product);
     }
@@ -336,6 +333,12 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable) {
         Page<Product> products = productRepository.findProductsBySellerWithoutDeleted(sellerId, pageable);
         return products.map(this::convertToDto);
+    }
+
+    @Override
+    public Page<ProductResponseDto> getProductsByStatus(Long sellerId, ProductStatus status, Pageable pageable) {
+        return productRepository.findBySellerIdAndStatus(sellerId, status, pageable)
+                .map(this::convertToDto);
     }
 
     private ProductResponseDto convertToDto(Product product) {

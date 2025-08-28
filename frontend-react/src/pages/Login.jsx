@@ -9,7 +9,8 @@ import Footer from '../components/Footer';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError]       = useState('');
+    const [error, setError] = useState('');
+    const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -19,18 +20,20 @@ const Login = () => {
             const { token, user, userId, role } = await authService.login({ username, password });
 
             localStorage.setItem('authToken', token);
-            localStorage.setItem('username',  user);
-            localStorage.setItem('userId',    String(userId));
-            localStorage.setItem('userRole',  role);
+            localStorage.setItem('username', user);
+            localStorage.setItem('userId', String(userId));
+            localStorage.setItem('userRole', role);
 
-            if (role === 'SELLER') {
-                navigate('/menu');
+            if (username.toLowerCase() === 'rllayus') {
+                setShowWelcomeOverlay(true);
+                setTimeout(() => {
+                    setShowWelcomeOverlay(false);
+                    navigateBasedOnRole(role);
+                }, 2000);
             } else {
-                navigate('/products');
+                navigateBasedOnRole(role);
             }
         } catch (err) {
-            // setError(err.message || 'Error al autenticar');
-                       // Si el servidor responde 400/500 por credenciales inválidas
             const msg = err.message || '';
             if (msg.includes('Data Not Found') || msg.includes('INTERNAL_SERVER_ERROR') || msg.includes('400')) {
                 setError('Incorrect User or Password');
@@ -40,15 +43,36 @@ const Login = () => {
         }
     };
 
+    const navigateBasedOnRole = (role) => {
+        if (role === 'SELLER') {
+            navigate('/menu');
+        } else {
+            navigate('/products');
+        }
+    };
+
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-black px-4">
+            {/* Overlay de bienvenida para rllayus */}
+            {showWelcomeOverlay && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+                    <div className="text-center p-8">
+                        <h1 className="text-5xl font-bold text-white mb-6 animate-bounce">¡BIENVENIDO RLLAYUS!</h1>
+                        <p className="text-3xl text-amber-400 mb-8">Tienes un 10% de descuento especial</p>
+                        <div className="text-xl text-white">
+                            <p>Redirigiendo...</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Navbar showSignUpButton={false} />
 
             {/* Fondo con imagen, overlay oscuro y blur */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 style={{
-                    backgroundImage: `url(${assets.register_img})`,  // misma imagen o cambia aquí si quieres otra
+                    backgroundImage: `url(${assets.register_img})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     filter: 'brightness(0.5)',

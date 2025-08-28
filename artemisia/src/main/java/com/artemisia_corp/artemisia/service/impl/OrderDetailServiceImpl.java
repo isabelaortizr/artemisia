@@ -208,6 +208,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return orderDetailRepository.findByGroup_Id(notaVentaId);
     }
 
+    @Override
+    public Page<OrderDetailResponseDto> getOrderDetailsBySeller(Long sellerId, Pageable pageable) {
+        return orderDetailRepository.findDtoBySellerId(sellerId, pageable);
+    }
+
     private OrderDetailResponseDto convertToDto(OrderDetail orderDetail) {
         return OrderDetailResponseDto.builder()
                 .id(orderDetail.getId())

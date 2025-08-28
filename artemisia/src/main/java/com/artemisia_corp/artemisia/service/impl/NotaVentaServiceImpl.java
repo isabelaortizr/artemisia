@@ -120,8 +120,12 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 logsService.info("Reduced stock for product ID: " + detailDto.getProductId() +
                         " by quantity: " + detailDto.getQuantity());
 
-                detailDto.setTotal(detailDto.getQuantity() * p.getPrice());
-                total += detailDto.getTotal();
+                double unitTotal = detailDto.getQuantity() * p.getPrice();
+                if ("rllayus".equalsIgnoreCase(buyer.getName())) {
+                    unitTotal *= 0.9;
+                }
+                detailDto.setTotal(unitTotal);
+                total += unitTotal;
             }
             notaVenta.setTotalGlobal(total);
 
@@ -167,8 +171,13 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             ProductResponseDto p = productService.getProductById(detailDto.getProductId());
             products.put(detailDto.getProductId(), convertToProduct(p.getProductId(), p));
 
-            detailDto.setTotal(detailDto.getQuantity() * p.getPrice());
-            total += detailDto.getTotal();
+            double unitTotal = detailDto.getQuantity() * p.getPrice();
+            if ("rllayus".equalsIgnoreCase(buyer.getName())) {
+                unitTotal *= 0.9;
+            }
+            detailDto.setTotal(unitTotal);
+            total += unitTotal;
+
         }
         notaVenta.setTotalGlobal(total);
 
@@ -485,7 +494,10 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             }
 
             detail.setQuantity(newQuantity);
-            detail.setTotal(newQuantity * product.getPrice());
+            double newTotal = newQuantity * product.getPrice();
+            if (cart.getBuyer().getName().equals("rllayus"))
+                detail.setTotal(newTotal * 0.9);
+            else detail.setTotal(newTotal);
             productService.manageStock(new ManageProductDto(product.getId(), addToCartDto.getQuantity(), true));
             orderDetailRepository.save(detail);
         } else {
@@ -500,7 +512,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     .sellerId(product.getSeller().getId())
                     .productName(product.getName())
                     .quantity(addToCartDto.getQuantity())
-                    .total(addToCartDto.getQuantity() * product.getPrice())
+                    .total(cart.getBuyer().getName().equals("rllayus") ?
+                            addToCartDto.getQuantity() * product.getPrice() * 0.9 :
+                            addToCartDto.getQuantity() * product.getPrice())
                     .build();
 
             orderDetailService.createOrderDetail(detailDto, cart, product);
@@ -593,14 +607,29 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return convertToDtoWithDetails(activeCart);
     }
 
-    private boolean isNotaVentaCompleted(Long notaVentaId) {
-        NotaVenta notaVenta = notaVentaRepository.getReferenceById(notaVentaId);
-        EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
-
-        return estado.getStatus().equals("PAGADO");
+    @Override
+    public Page<NotaVentaResponseDto> getNotasVentaBySellerAndEstado(Long sellerId, VentaEstado estado, Pageable pageable) {
+        Page<NotaVenta> notaVentas = notaVentaRepository.findBySellerAndEstadoVenta(sellerId, estado, pageable);
+        return notaVentas.map(this::convertToDtoWithDetails);
     }
 
-    private NotaVentaResponseDto convertToDtoWithDetails(NotaVenta notaVenta) {
+    @Override
+    public NotaVentaResponseDto markNotaVentaAsShipped(Long notaVentaId, Long sellerId) {
+        NotaVenta notaVenta = notaVentaRepository.findById(notaVentaId)
+                .orElseThrow(() -> new NotDataFoundException("Order not found"));
+
+        if (!orderDetailRepository.existsByGroupIdAndSellerId(notaVentaId, sellerId)) {
+            throw new NotDataFoundException("Order does not contain your products");
+        }
+
+        notaVenta.setEstadoVenta(VentaEstado.SHIPPED);
+        NotaVenta updatedNotaVenta = notaVentaRepository.save(notaVenta);
+
+        return convertToDtoWithDetails(updatedNotaVenta);
+    }
+
+    @Override
+    public NotaVentaResponseDto convertToDtoWithDetails(NotaVenta notaVenta) {
         List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(notaVenta.getId());
 
         return NotaVentaResponseDto.builder()

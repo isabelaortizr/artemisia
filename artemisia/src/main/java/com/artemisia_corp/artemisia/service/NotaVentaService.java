@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.service;
 
+import com.artemisia_corp.artemisia.entity.NotaVenta;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
@@ -25,4 +26,7 @@ public interface NotaVentaService {
     NotaVentaResponseDto addProductToCart(AddToCartDto addToCartDto);
     StereumPagaResponseDto getPaymentInfo(RequestPaymentDto request);
     NotaVentaResponseDto updateOrderDetailStock(UpdateOrderDetailDto updateOrderDetailDto);
+    Page<NotaVentaResponseDto> getNotasVentaBySellerAndEstado(Long sellerId, VentaEstado estado, Pageable pageable);
+    NotaVentaResponseDto markNotaVentaAsShipped(Long notaVentaId, Long sellerId);
+    NotaVentaResponseDto convertToDtoWithDetails(NotaVenta notaVenta);
 }

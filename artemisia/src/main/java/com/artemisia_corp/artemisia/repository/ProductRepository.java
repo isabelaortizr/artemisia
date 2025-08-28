@@ -1,9 +1,13 @@
 package com.artemisia_corp.artemisia.repository;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import com.artemisia_corp.artemisia.entity.Product;
+import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.CategorySalesDto;
+import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.TechniqueSalesDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
 import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
+import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +17,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -54,6 +59,30 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.seller.id = :sellerId AND p.status IN ('AVAILABLE', 'UNAVAILABLE')")
     Page<Product> findProductsBySellerWithoutDeleted(@Param("sellerId") Long sellerId, Pageable pageable);
+
+    @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.admin_dashboard.CategorySalesDto(" +
+            "p.category, COUNT(od), SUM(od.total)) " +
+            "FROM OrderDetail od JOIN od.product p " +
+            "WHERE od.group.estadoVenta = 'PAYED' " +
+            "GROUP BY p.category " +
+            "ORDER BY SUM(od.total) DESC " +
+            "LIMIT :limit")
+    List<CategorySalesDto> findTopCategoriesBySales(@Param("limit") int limit);
+
+    @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.admin_dashboard.TechniqueSalesDto(" +
+            "p.technique, COUNT(od), SUM(od.total)) " +
+            "FROM OrderDetail od JOIN od.product p " +
+            "WHERE od.group.estadoVenta = 'PAYED' " +
+            "GROUP BY p.technique " +
+            "ORDER BY SUM(od.total) DESC " +
+            "LIMIT :limit")
+    List<TechniqueSalesDto> findTopTechniquesBySales(@Param("limit") int limit);
+
+    @Query("SELECT p FROM Product p WHERE p.seller.id = :sellerId AND p.status = :status")
+    Page<Product> findBySellerIdAndStatus(
+            @Param("sellerId") Long sellerId,
+            @Param("status") ProductStatus status,
+            Pageable pageable);
 
     Page<ProductResponseDto> findBySeller_Id(Long sellerId, Pageable pageable);
 

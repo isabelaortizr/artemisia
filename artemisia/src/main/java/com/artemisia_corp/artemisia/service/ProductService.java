@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
+import com.artemisia_corp.artemisia.entity.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -20,4 +21,5 @@ public interface ProductService {
     Page<ProductResponseDto> getByCategory(String category, Pageable pageable);
     Page<ProductResponseDto> getByTechnique(String technique, Pageable pageable);
     Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable);
+    Page<ProductResponseDto> getProductsByStatus(Long sellerId, ProductStatus status, Pageable pageable);
 }

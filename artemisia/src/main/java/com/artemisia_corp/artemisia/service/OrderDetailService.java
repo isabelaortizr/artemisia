@@ -19,4 +19,5 @@ public interface OrderDetailService {
     void deleteOrderDetail(Long id);
     Page<OrderDetailResponseDto> getOrderDetailsByNotaVenta(Long notaVentaId, Pageable pageable);
     List<OrderDetailResponseDto> getOrderDetailsByNotaVenta(Long notaVentaId);
+    Page<OrderDetailResponseDto> getOrderDetailsBySeller(Long sellerId, Pageable pageable);
 }

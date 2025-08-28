@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.service.impl;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.Address;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
@@ -14,6 +15,7 @@ import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.service.LogsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,9 @@ public class AddressServiceImpl implements AddressService {
     private UserRepository userRepository;
     @Autowired
     private LogsService logsService;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
 
     @Override
     @Transactional(readOnly = true)
@@ -43,7 +48,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
-    public AddressResponseDto getAddressById(Long id) {
+    public AddressResponseDto getAddressById(Long id, String token) {
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Address not found: The address with ID " + id + " does not exist.");
@@ -52,15 +57,19 @@ public class AddressServiceImpl implements AddressService {
                             id + " does not exist" );
                 });
 
+        validateUserId(token, address.getUser().getId(), "getAddressById");
+
         return convertToDto(address);
     }
 
     @Override
-    public AddressResponseDto createAddress(AddressRequestDto addressDto) {
+    public AddressResponseDto createAddress(AddressRequestDto addressDto, String token) {
         validateMandatoryFields(addressDto);
 
         User user = userRepository.findById(addressDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        validateUserId(token, addressDto.getUserId(), "createAddress");
 
         Address address = Address.builder()
                 .recipientName(addressDto.getRecipientName())
@@ -80,11 +89,13 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public AddressResponseDto updateAddress(Long id, AddressRequestDto addressDto) {
+    public AddressResponseDto updateAddress(Long id, AddressRequestDto addressDto, String token) {
+        validateUserId(token, addressDto.getUserId(), "updateAddress");
+
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
 
-        if (addressDto.getRecipientName() != null && !addressDto.getRecipientName().isEmpty()) 
+        if (addressDto.getRecipientName() != null && !addressDto.getRecipientName().isEmpty())
             address.setRecipientName(addressDto.getRecipientName());
         if (addressDto.getRecipientSurname() != null && !addressDto.getRecipientSurname().isEmpty())
             address.setRecipientSurname(addressDto.getRecipientSurname());
@@ -105,7 +116,8 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public void deleteAddress(Long id) {
+    public void deleteAddress(Long id, String token) {
+        validateUserId(token, id, "deleteAddress");
         Address existingAddress = addressRepository.findById(id)
                 .orElseThrow(() -> new NotDataFoundException("Address not found: The address with ID " + id + " does not exist."));
 
@@ -115,7 +127,8 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<AddressResponseDto> getAddressesByUser(Long userId, Pageable pageable) {
+    public Page<AddressResponseDto> getAddressesByUser(Long userId, Pageable pageable, String token) {
+        validateUserId(token, userId, "getAddressesByUser");
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("Client not found: The user with ID " + userId + " does not exist.");
@@ -161,4 +174,17 @@ public class AddressServiceImpl implements AddressService {
             throw new IncompleteAddressException("All mandatory fields (name, surname, country, city, street, houseNumber) must be provided");
         }
     }
+
+    private void validateUserId(String token, Long userId, String functionName) {
+        String userIdToken = jwtTokenProvider.getIdFromToken(token);
+        log.info("Validating user " + userIdToken + " with ID " + userId + " in function " + functionName);
+        if (!userIdToken.equals(userId.toString())) {
+            log.error("Address not found: " +
+                    " does not belong to the user with ID " + userIdToken + ".");
+            logsService.error("Address not found: " +
+                    " does not belong to the user with ID " + userIdToken + ". In function " + functionName);
+            throw new NotDataFoundException("User does not have such address");
+        }
+    }
+
 }

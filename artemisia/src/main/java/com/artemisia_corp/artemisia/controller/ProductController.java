@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
@@ -40,6 +41,9 @@ public class ProductController {
     @Autowired
     @Lazy
     private ProductService productService;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Get all products", description = "Returns paginated list of all products")
     @ApiResponses(value = {
@@ -63,7 +67,9 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductResponseDto> getProductById(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
@@ -74,7 +80,10 @@ public class ProductController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto productDto) {
+    public ResponseEntity<ProductResponseDto> createProduct(
+            @RequestBody ProductRequestDto productDto,
+            @RequestHeader("Authorization") String token) {
+        productDto.setSellerId(jwtTokenProvider.getUserIdFromToken(token));
         ProductResponseDto response = productService.createProduct(productDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -88,7 +97,10 @@ public class ProductController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
-            @PathVariable Long id, @RequestBody ProductRequestDto productDto) {
+            @PathVariable Long id,
+            @RequestBody ProductRequestDto productDto,
+            @RequestHeader("Authorization") String token) {
+        productDto.setSellerId(jwtTokenProvider.getUserIdFromToken(token));
         return ResponseEntity.ok(productService.updateProduct(id, productDto));
     }
 
@@ -98,8 +110,10 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Product not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
+        productService.deleteProduct(id, token);
         return ResponseEntity.noContent().build();
     }
 

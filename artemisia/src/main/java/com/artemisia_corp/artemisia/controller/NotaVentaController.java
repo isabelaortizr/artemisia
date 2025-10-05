@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
@@ -19,6 +20,7 @@ import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +45,9 @@ public class NotaVentaController {
     private NotaVentaService notaVentaService;
     @Value("${stereum-pay.api-key}")
     private String apiKey;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Get all sales notes", description = "Returns paginated list of all sales notes")
     @ApiResponses(value = {
@@ -77,7 +82,9 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "400", description = "Invalid input")
     })
     @PostMapping
-    public ResponseEntity<NotaVentaResponseDto> createNotaVenta(@RequestBody NotaVentaRequestDto notaVentaDto) {
+    public ResponseEntity<NotaVentaResponseDto> createNotaVenta(
+            @RequestBody NotaVentaRequestDto notaVentaDto, @RequestHeader("Authorization") String token) {
+        notaVentaDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         NotaVentaResponseDto response = notaVentaService.createNotaVenta(notaVentaDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -92,7 +99,9 @@ public class NotaVentaController {
     @PutMapping("/{id}")
     public ResponseEntity<NotaVentaResponseDto> updateNotaVenta(
             @PathVariable Long id,
-            @RequestBody NotaVentaRequestDto notaVentaDto) {
+            @RequestBody NotaVentaRequestDto notaVentaDto,
+            @RequestHeader("Authorization") String token) {
+        notaVentaDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         return ResponseEntity.ok(notaVentaService.updateNotaVenta(id, notaVentaDto));
     }
 
@@ -102,7 +111,9 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "404", description = "Sales note not found")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNotaVenta(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteNotaVenta(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
         notaVentaService.deleteNotaVenta(id);
         return ResponseEntity.noContent().build();
     }
@@ -113,7 +124,9 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "404", description = "Sales note not found")
     })
     @PutMapping("/{id}/complete")
-    public ResponseEntity<Void> completeNotaVenta(@PathVariable Long id) {
+    public ResponseEntity<Void> completeNotaVenta(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
         notaVentaService.completeNotaVenta(id);
         return ResponseEntity.ok().build();
     }
@@ -124,7 +137,9 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "404", description = "Sales note not found")
     })
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelNotaVenta(@PathVariable Long id) {
+    public ResponseEntity<Void> cancelNotaVenta(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
         notaVentaService.cancelarNotaVenta(id);
         return ResponseEntity.ok().build();
     }
@@ -154,12 +169,13 @@ public class NotaVentaController {
     @GetMapping("/historial-usuario/{id}")
     public ResponseEntity<Page<NotaVentaResponseDto>> getHistory(
             @RequestBody @PathVariable Long id,
+            @RequestHeader("Authorization") String token,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        return ResponseEntity.ok(notaVentaService.getCompletedSalesByUser(id, pageable));
+        return ResponseEntity.ok(notaVentaService.getCompletedSalesByUser(jwtTokenProvider.getUserIdFromToken(token), pageable));
     }
 
     @Operation(summary = "Add product to cart", description = "Adds a product to the user's shopping cart")
@@ -170,7 +186,10 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "404", description = "Product or user not found")
     })
     @PostMapping("/add")
-    public ResponseEntity<NotaVentaResponseDto> addToCart(@RequestBody AddToCartDto addToCartDto) {
+    public ResponseEntity<NotaVentaResponseDto> addToCart(
+            @RequestBody AddToCartDto addToCartDto,
+            @RequestHeader("Authorization") String token) {
+        addToCartDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         return new ResponseEntity<>(notaVentaService.addProductToCart(addToCartDto), HttpStatus.OK);
     }
 
@@ -181,8 +200,12 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "404", description = "User not found or no active cart")
     })
     @GetMapping("/user/{userId}")
-    public ResponseEntity<NotaVentaResponseDto> getCart(@PathVariable Long userId) {
-        return new ResponseEntity<>(notaVentaService.getActiveCartByUserId(userId), HttpStatus.OK);
+    public ResponseEntity<NotaVentaResponseDto> getCart(
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token) {
+        return new ResponseEntity<>(notaVentaService.getActiveCartByUserId(
+                jwtTokenProvider.getUserIdFromToken(token)), HttpStatus.OK
+        );
     }
 
     @Operation(summary = "Assign an address to a sale", description = "Assigns an address to an existing sales note")
@@ -192,8 +215,9 @@ public class NotaVentaController {
     })
     @PutMapping("/set_address")
     public ResponseEntity<Void> assignAddressToNotaVenta(
-            @RequestBody SetAddressDto setAddressDto) {
-
+            @RequestBody SetAddressDto setAddressDto,
+            @RequestHeader("Authorization") String token) {
+        setAddressDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         notaVentaService.assignAddressToNotaVenta(setAddressDto);
         return ResponseEntity.ok().build();
     }
@@ -206,7 +230,10 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/create_transaction")
-    public ResponseEntity<StereumPagaResponseDto> conseguirTransaccion(@RequestBody RequestPaymentDto respuesta) {
+    public ResponseEntity<StereumPagaResponseDto> conseguirTransaccion(
+            @RequestBody RequestPaymentDto respuesta,
+            @RequestHeader("Authorization") String token) {
+        respuesta.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         return ResponseEntity.ok(notaVentaService.getPaymentInfo(respuesta));
     }
 
@@ -217,8 +244,10 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/verify_transaction/{userId}")
-    public ResponseEntity<EstdoNotaVentaResponseDto> verificarTransaccion(@PathVariable Long userId) {
-        EstdoNotaVentaResponseDto estado = notaVentaService.obtenerEstadoTransaccion(userId);
+    public ResponseEntity<EstdoNotaVentaResponseDto> verificarTransaccion(
+            @PathVariable Long userId,
+            @RequestHeader("Authorization") String token) {
+        EstdoNotaVentaResponseDto estado = notaVentaService.obtenerEstadoTransaccion(jwtTokenProvider.getUserIdFromToken(token));
         return ResponseEntity.ok(estado);
     }
 
@@ -229,7 +258,10 @@ public class NotaVentaController {
             @ApiResponse(responseCode = "404", description = "Resource not found")
     })
     @PutMapping("/order_detail/update_stock")
-    public ResponseEntity<NotaVentaResponseDto> updateOrderDetailStock(@RequestBody UpdateOrderDetailDto updateOrderDetailDto) {
+    public ResponseEntity<NotaVentaResponseDto> updateOrderDetailStock(
+            @RequestBody UpdateOrderDetailDto updateOrderDetailDto,
+            @RequestHeader("Authorization") String token) {
+        updateOrderDetailDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         NotaVentaResponseDto nv = notaVentaService.updateOrderDetailStock(updateOrderDetailDto);
         return ResponseEntity.ok(nv);
     }
@@ -238,6 +270,7 @@ public class NotaVentaController {
     public ResponseEntity<String> outbound(
             @RequestHeader("x-signature") String signature,
             @RequestHeader("x-timestamp") long xTimestamp,
+            @RequestHeader("Authorization") String token,
             @RequestBody String body) {
 
         log.info("Received inbound request with headers - x-signature: {}, x-timestamp: {}", signature, xTimestamp);

@@ -46,7 +46,7 @@ public class OrderDetailController {
             @RequestParam(value = "sortBy", defaultValue = "createdDate") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "DESC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        Page<OrderDetailResponseDto> response = orderDetailService.getAllOrderDetails(pageable); // Delegado al servicio.
+        Page<OrderDetailResponseDto> response = orderDetailService.getAllOrderDetails(pageable);
         return ResponseEntity.ok(response);
     }
 

@@ -172,7 +172,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(Long id) {
+    public void deleteProduct(Long id, String token) {
         if (!productRepository.existsById(id)) {
             log.error("Product not found with ID: " + id);
             logsService.error("Product not found with ID: " + id);

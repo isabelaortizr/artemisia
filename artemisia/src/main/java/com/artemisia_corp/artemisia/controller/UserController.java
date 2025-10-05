@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.user.*;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,6 +30,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Get user by ID", description = "Returns a single user by its ID")
     @ApiResponses(value = {
@@ -36,7 +41,8 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDto> getUserById(
+            @PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -63,8 +69,10 @@ public class UserController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
-            @PathVariable Long id, @RequestBody UserRequestDto userDto) {
-        return ResponseEntity.ok(userService.updateUser(id, userDto));
+            @PathVariable Long id,
+            @RequestBody UserRequestDto userDto,
+            @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(userService.updateUser(jwtTokenProvider.getUserIdFromToken(token), userDto));
     }
 
     @Operation(summary = "Delete a user", description = "Deletes a user by its ID (requires authentication token)")
@@ -75,7 +83,8 @@ public class UserController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
-            @PathVariable Long id, @RequestHeader("Authorization") String token) {
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
         userService.deleteUser(id, token);
         return ResponseEntity.noContent().build();
     }
@@ -100,7 +109,9 @@ public class UserController {
     })
     @PutMapping("/email")
     public ResponseEntity<UserResponseDto> updateEmail(
-            @RequestBody UserUpdateEmailDto emailDto) {
+            @RequestBody UserUpdateEmailDto emailDto,
+            @RequestHeader("Authorization") String token) {
+        emailDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         return ResponseEntity.ok(userService.updateEmail(emailDto));
     }
 
@@ -113,7 +124,9 @@ public class UserController {
     })
     @PutMapping("/password")
     public ResponseEntity<UserResponseDto> updatePassword(
-            @RequestBody UserUpdatePasswordDto passwordDto) {
+            @RequestBody UserUpdatePasswordDto passwordDto,
+            @RequestHeader("Authorization") String token) {
+        passwordDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
         return ResponseEntity.ok(userService.updatePassword(passwordDto));
     }
 }

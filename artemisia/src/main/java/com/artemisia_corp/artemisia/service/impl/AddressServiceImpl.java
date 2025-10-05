@@ -63,14 +63,12 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public AddressResponseDto createAddress(AddressRequestDto addressDto, String token) {
+    public AddressResponseDto createAddress(AddressRequestDto addressDto) {
         validateMandatoryFields(addressDto);
 
         User user = userRepository.findById(addressDto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        validateUserId(token, addressDto.getUserId(), "createAddress");
-
+        
         Address address = Address.builder()
                 .recipientName(addressDto.getRecipientName())
                 .recipientSurname(addressDto.getRecipientSurname())
@@ -89,8 +87,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public AddressResponseDto updateAddress(Long id, AddressRequestDto addressDto, String token) {
-        validateUserId(token, addressDto.getUserId(), "updateAddress");
+    public AddressResponseDto updateAddress(Long id, AddressRequestDto addressDto) {
 
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
@@ -117,9 +114,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public void deleteAddress(Long id, String token) {
-        validateUserId(token, id, "deleteAddress");
         Address existingAddress = addressRepository.findById(id)
                 .orElseThrow(() -> new NotDataFoundException("Address not found: The address with ID " + id + " does not exist."));
+        validateUserId(token, existingAddress.getUser().getId(), "deleteAddress");
 
         existingAddress.setStatus(AddressStatus.DELETED);
         addressRepository.save(existingAddress);
@@ -127,8 +124,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<AddressResponseDto> getAddressesByUser(Long userId, Pageable pageable, String token) {
-        validateUserId(token, userId, "getAddressesByUser");
+    public Page<AddressResponseDto> getAddressesByUser(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("Client not found: The user with ID " + userId + " does not exist.");

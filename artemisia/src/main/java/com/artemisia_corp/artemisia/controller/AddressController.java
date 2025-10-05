@@ -1,9 +1,8 @@
 package com.artemisia_corp.artemisia.controller;
 
+import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
-import com.artemisia_corp.artemisia.exception.NotDataFoundException;
-import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,9 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
-import java.util.List;
 
 @Slf4j
 @Controller
@@ -38,6 +36,9 @@ public class AddressController {
 
     @Autowired
     private AddressService addressService;
+    @Autowired
+    @Lazy
+    private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Get address by ID", description = "Returns a single address by its ID")
     @ApiResponses(value = {
@@ -61,7 +62,8 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<AddressResponseDto> createAddress(
             @RequestBody AddressRequestDto addressDto, @RequestHeader("Authorization") String token) {
-        AddressResponseDto response = addressService.createAddress(addressDto, token);
+        addressDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
+        AddressResponseDto response = addressService.createAddress(addressDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -77,7 +79,8 @@ public class AddressController {
             @PathVariable Long id,
             @RequestBody AddressRequestDto addressDto,
             @RequestHeader("Authorization") String token) {
-        AddressResponseDto response = addressService.updateAddress(id, addressDto, token);
+        addressDto.setUserId(jwtTokenProvider.getUserIdFromToken(token));
+        AddressResponseDto response = addressService.updateAddress(id, addressDto);
         return ResponseEntity.ok(response);
     }
 
@@ -120,7 +123,7 @@ public class AddressController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autorizado");
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        Page<AddressResponseDto> response = addressService.getAddressesByUser(userId, pageable, token);
+        Page<AddressResponseDto> response = addressService.getAddressesByUser(jwtTokenProvider.getUserIdFromToken(token), pageable);
         return ResponseEntity.ok(response);
     }
 }

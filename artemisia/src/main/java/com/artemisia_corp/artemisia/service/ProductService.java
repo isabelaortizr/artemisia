@@ -13,7 +13,7 @@ public interface ProductService {
     ProductResponseDto getProductById(Long id);
     ProductResponseDto createProduct(ProductRequestDto productDto);
     ProductResponseDto updateProduct(Long id, ProductRequestDto productDto);
-    void deleteProduct(Long id);
+    void deleteProduct(Long id, String token);
     void manageStock(ManageProductDto manageProductDto);
     Page<ProductResponseDto> getAvailableProducts(Pageable pageable);
     Page<ProductResponseDto> getProductsBySeller(Long sellerId, Pageable pageable);

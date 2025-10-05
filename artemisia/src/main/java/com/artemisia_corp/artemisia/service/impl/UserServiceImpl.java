@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Authorization token is required.");
         }
 
-        String userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        Long userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
         UserResponseDto userCheck = this.getUserById(id);
         if (userIdFromToken.equals(userCheck.getId().toString())) {
             logsService.info("User deleted successfully with ID: " + id);

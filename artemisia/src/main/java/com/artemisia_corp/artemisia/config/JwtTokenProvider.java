@@ -64,14 +64,23 @@ public class JwtTokenProvider implements Serializable {
         return token;
     }
 
-    public String getUserIdFromToken(String token) {
-        String jwt = token.replace("Bearer ", "");
+    public String getUsernameFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public Long getUserIdFromToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
         Claims claims = Jwts.parser()
                 .setSigningKey(secretKey)
-                .parseClaimsJws(jwt)
+                .parseClaimsJws(token)
                 .getBody();
-        log.info("ID: {}", claims.getSubject());
-        return String.valueOf(claims.getSubject());
+        return Long.parseLong(claims.get("user_id").toString());
     }
 
     public String getIdFromToken(String token) {

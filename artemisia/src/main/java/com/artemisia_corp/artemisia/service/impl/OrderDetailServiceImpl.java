@@ -203,9 +203,15 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             logsService.error("Valid NotaVenta ID is required.");
             throw new IllegalArgumentException("Valid NotaVenta ID is required.");
         }
+
         logsService.info("Fetching order details for sale note ID: " + notaVentaId);
         log.info("Fetching order details for sale note ID: " + notaVentaId);
-        return orderDetailRepository.findByGroup_Id(notaVentaId);
+
+        List<OrderDetailResponseDto> listOrderDetail = orderDetailRepository.findByGroup_Id(notaVentaId);
+
+        verificarYActualizarPreciosNotaVenta(notaVentaId, listOrderDetail);
+
+        return listOrderDetail;
     }
 
     @Override
@@ -223,5 +229,55 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .quantity(orderDetail.getQuantity())
                 .total(orderDetail.getTotal())
                 .build();
+    }
+
+    private void verificarYActualizarPreciosNotaVenta(Long notaVentaId, List<OrderDetailResponseDto> orderDetails) {
+        if (orderDetails == null || orderDetails.isEmpty()) {
+            return;
+        }
+
+        NotaVenta notaVenta = notaVentaRepository.findById(notaVentaId)
+                .orElseThrow(() -> {
+                    logsService.error("NotaVenta not found with ID: " + notaVentaId);
+                    return new NotDataFoundException("NotaVenta not found with ID: " + notaVentaId);
+                });
+
+        boolean necesitaActualizacion = false;
+        Double nuevoTotalGlobal = 0.0;
+
+        for (OrderDetailResponseDto orderDetail : orderDetails) {
+            Product productoActual = productRepository.findById(orderDetail.getProductId())
+                    .orElseThrow(() -> {
+                        logsService.error("Product not found with ID: " + orderDetail.getProductId());
+                        return new NotDataFoundException("Product not found with ID: " + orderDetail.getProductId());
+                    });
+
+            Double totalActual = productoActual.getPrice() * orderDetail.getQuantity();
+
+            if (!orderDetail.getTotal().equals(totalActual)) {
+                necesitaActualizacion = true;
+                OrderDetail orderDetailEntity = orderDetailRepository.findById(orderDetail.getId())
+                        .orElseThrow(() -> new NotDataFoundException("Order detail not found with ID: " + orderDetail.getId()));
+
+                orderDetailEntity.setTotal(totalActual);
+                orderDetailRepository.save(orderDetailEntity);
+
+                logsService.info("Updated price for OrderDetail ID: " + orderDetail.getId() +
+                        " from " + orderDetail.getTotal() + " to " + totalActual);
+
+                orderDetail.setTotal(totalActual);
+            }
+
+            nuevoTotalGlobal += orderDetail.getTotal();
+        }
+
+        if (necesitaActualizacion || !notaVenta.getTotalGlobal().equals(nuevoTotalGlobal)) {
+            Double totalGlobalAnterior = notaVenta.getTotalGlobal();
+            notaVenta.setTotalGlobal(nuevoTotalGlobal);
+            notaVentaRepository.save(notaVenta);
+
+            logsService.info("Updated total global for NotaVenta ID: " + notaVentaId +
+                    " from " + totalGlobalAnterior + " to " + nuevoTotalGlobal);
+        }
     }
 }

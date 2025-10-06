@@ -187,9 +187,13 @@ public class SterumPayServiceImpl implements SterumPayService {
                     new CurrencyConversionDto(
                             conversionDto.getOriginCurrency(),
                             conversionDto.getTargetCurrency(),
-                            cart.getTotalGlobal()
+                            1.0
                     ));
         }
+
+        cart.setMonedaCarrito(conversionDto.getTargetCurrency());
+        cart.setTasaCambio(conversion.getExchange_rate());
+        cart.setPreciosConvertidos(true);
 
         for (OrderDetailResponseDto detailDto : orderDetails) {
             OrderDetail detail = orderDetailRepository.findById(detailDto.getId())
@@ -213,6 +217,7 @@ public class SterumPayServiceImpl implements SterumPayService {
             cart.setTotalGlobal(cart.getTotalGlobal() * conversion.getExchange_rate());
         else
             cart.setTotalGlobal(cart.getTotalGlobal() / conversion.getExchange_rate());
+
         notaVentaRepository.save(cart);
 
         return notaVentaService.getNotaVentaById(cart.getId());

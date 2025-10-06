@@ -47,4 +47,16 @@ public class NotaVenta extends AuditableEntity {
     @Comment("Identificador de la transaccion de stereum")
     @Column(name = "id_transaccion", nullable = true, length = 250)
     private String idTransaccion;
+
+    @Comment("Moneda que siendo o fue utilizada en el carrito")
+    @Column(name = "moneda_carrito")
+    private String monedaCarrito;
+
+    @Comment("Tasa de cambio aplicada")
+    @Column(name = "tasa_cambio")
+    private Double tasaCambio;
+
+    @Comment("Indica si los precios ya fueron convertidos")
+    @Column(name = "precios_convertidos")
+    private Boolean preciosConvertidos;
 }

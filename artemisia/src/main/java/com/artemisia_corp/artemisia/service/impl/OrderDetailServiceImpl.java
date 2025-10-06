@@ -209,7 +209,12 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
         List<OrderDetailResponseDto> listOrderDetail = orderDetailRepository.findByGroup_Id(notaVentaId);
 
-        verificarYActualizarPreciosNotaVenta(notaVentaId, listOrderDetail);
+        NotaVenta notaVenta = notaVentaRepository.findById(notaVentaId)
+                .orElseThrow(() -> new NotDataFoundException("NotaVenta not found with ID: " + notaVentaId));
+
+        if (!Boolean.TRUE.equals(notaVenta.getPreciosConvertidos())) {
+            verificarYActualizarPreciosNotaVenta(notaVentaId, listOrderDetail);
+        }
 
         return listOrderDetail;
     }

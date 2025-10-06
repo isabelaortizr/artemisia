@@ -105,6 +105,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .totalGlobal(0.0)
                 .estadoVenta(VentaEstado.ON_CART)
                 .date(LocalDateTime.now())
+                .monedaCarrito("BOB")
                 .build();
 
         if (notaVentaDto.getDetalles() != null && !notaVentaDto.getDetalles().isEmpty()) {
@@ -429,6 +430,11 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 notaVentaRepository.save(notaVenta);
             }
 
+            if (notaVenta.getMonedaCarrito() == null) {
+                notaVenta.setMonedaCarrito("BOB");
+                notaVentaRepository.save(notaVenta);
+            }
+
             return convertToDtoWithDetails(notaVenta);
         }
 
@@ -445,6 +451,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .estadoVenta(VentaEstado.ON_CART)
                 .date(LocalDateTime.now())
                 .totalGlobal(0.0)
+                .monedaCarrito("BOB")
+                .preciosConvertidos(false)
                 .build();
 
         NotaVenta savedNotaVenta = notaVentaRepository.save(newNotaVenta);
@@ -641,6 +649,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                 .date(notaVenta.getDate())
                 .idTransaccion(notaVenta.getIdTransaccion())
                 .detalles(detalles)
+                .monedaCarrito(notaVenta.getMonedaCarrito())
                 .build();
     }
 

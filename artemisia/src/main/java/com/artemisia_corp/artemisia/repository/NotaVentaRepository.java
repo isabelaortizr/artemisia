@@ -39,7 +39,7 @@ public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
     Optional<NotaVenta> findByBuyer_IdAndEstadoVenta(@Param("buyer_id") Long buyerId);
 
     @Query("SELECT nv FROM NotaVenta nv " +
-            "WHERE nv.buyer.id =:buyer_id AND nv.estadoVenta != 'ON_CART' " +
+            "WHERE nv.buyer.id =:buyer_id " +
             "ORDER BY nv.id DESC LIMIT 1")
     Optional<NotaVenta> findLatestUsedUserCart(@Param("buyer_id") Long buyerId);
 

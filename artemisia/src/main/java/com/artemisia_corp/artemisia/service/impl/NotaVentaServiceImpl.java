@@ -247,6 +247,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
+    @Transactional
     public void completeNotaVenta(Long id) {
         userRepository.findById(id)
                 .orElseThrow(() -> {
@@ -261,6 +262,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     logsService.error("Sale note not found with ID: " + id);
                     return new NotDataFoundException("Sale note not found");
                 });
+
+        log.info(notaVenta.toString());
 
         if (notaVenta.getEstadoVenta() == VentaEstado.PAYED) {
             logsService.warning("Sale note already completed with ID: " + id);
@@ -337,6 +340,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
+    @Transactional
     public void obtenerRespuestaTransaccion(RespuestaVerificacionNotaVentaDto respuesta) {
         TransaccionDto transaccionDto = respuesta.getTransaction();
         log.info("Obtain respuesta transaccion: " + transaccionDto);
@@ -399,7 +403,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public EstdoNotaVentaResponseDto obtenerEstadoTransaccion(Long userId) {
         NotaVenta notaVenta = notaVentaRepository.findLatestUsedUserCart(userId)
                 .orElseThrow(() -> {
@@ -412,6 +416,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         log.info("Transaction ID: {}", notaVenta.getIdTransaccion());
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
+
+        if ("PAGADO".equals(estado.getStatus())) {
+            log.info("Transaction completed successfully for ID: " + notaVenta.getId());
+            completeNotaVenta(notaVenta.getBuyer().getId());
+        } else if ("CANCELADA".equals(estado.getStatus())) {
+            log.info("Transaction canceled for ID: " + notaVenta.getId());
+            deleteNotaVenta(notaVenta.getBuyer().getId());
+        }
 
         return new EstdoNotaVentaResponseDto(estado.getStatus(), notaVenta.getId());
     }

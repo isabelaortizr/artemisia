@@ -1,15 +1,13 @@
 package com.artemisia_corp.artemisia.integracion.impl.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class EstadoResponseDto {
     private String id;
     private Double amount;

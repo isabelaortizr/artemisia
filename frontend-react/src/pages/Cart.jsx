@@ -17,7 +17,7 @@ export default function Cart() {
   const [addresses, setAddresses] = useState([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState("");
-  const [currency, setCurrency] = useState("BOB");
+  const [currency, setCurrency] = useState("BOB"); // Valor por defecto
   const [checkoutData, setCheckoutData] = useState(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyResult, setVerifyResult] = useState(null);
@@ -41,15 +41,23 @@ export default function Cart() {
 
   const fetchCart = async () => {
     setInitialLoading(true);
-    setLoading(true); // <— arrancamos loader “operacional”
+    setLoading(true);
     try {
       const data = await notaVentaService.getCart(userId);
       setCart(data);
+      
+      // ✅ ESTA ES LA PARTE IMPORTANTE: Obtener la moneda del carrito
+      if (data.monedaCarrito) {
+        setCurrency(data.monedaCarrito);
+      } else {
+        // Si no viene moneda, usar "BOB" como default
+        setCurrency("BOB");
+      }
     } catch (err) {
       setError(err.message || "Error al cargar el carrito");
     } finally {
       setInitialLoading(false);
-      setLoading(false); // <— ¡aquí dejamos que loading pase a false!
+      setLoading(false);
     }
   };
 
@@ -116,6 +124,11 @@ export default function Cart() {
         quantity: item.quantity - 1,
       });
       setCart(updated);
+      
+      // ✅ Actualizar también la moneda si viene en la respuesta
+      if (updated.monedaCarrito) {
+        setCurrency(updated.monedaCarrito);
+      }
     } catch (err) {
       setError(err.message || "Error al actualizar el carrito");
     } finally {
@@ -148,7 +161,6 @@ export default function Cart() {
       console.log("hola:", userId)
       const res = await notaVentaService.verifyTransaction(userId);
       console.log("hola:", userId)
-      // si ya está pagado, redirigimos al recibo
       if (res.estado === "PAGADO") {
         navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
         return;
@@ -166,28 +178,25 @@ export default function Cart() {
     setNewAddr((prev) => ({ ...prev, [name]: value }));
   };
 
-  // nuevo: cuando el usuario elige moneda
-   const handleCurrencyChange = async (newCurrency) => {
-     if (newCurrency === currency) return;
-     setActionLoading(true);
-     setConversionError(null);              // limpiamos posibles errores previos
+  const handleCurrencyChange = async (newCurrency) => {
+    if (newCurrency === currency) return;
+    setActionLoading(true);
+    setConversionError(null);
 
-     try {
-       // pedimos al backend que reconvierta el carrito
-       const updated = await notaVentaService.convertCurrency({
-         userId,
-         originCurrency: currency,
-         targetCurrency: newCurrency
+    try {
+      const updated = await notaVentaService.convertCurrency({
+        userId,
+        originCurrency: currency,
+        targetCurrency: newCurrency
       });
       setCart(updated);
       setCurrency(newCurrency);
-      } catch (err) {
-       // capturamos sólo el error de conversión
-       setConversionError("No se pudo convertir la moneda. Por favor vuelve a intentarlo.");
-      } finally {
-       setActionLoading(false);
-      }
-   };
+    } catch (err) {
+      setConversionError("No se pudo convertir la moneda. Por favor vuelve a intentarlo.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const submitNewAddress = async (e) => {
     e.preventDefault();
@@ -210,11 +219,10 @@ export default function Cart() {
   };
 
   const currencySymbols = {
-  BOB: 'Bs.',
-  USDT: 'USDT',
-  USDC: 'USDC',
-};
-
+    BOB: 'Bs.',
+    USDT: 'USDT',
+    USDC: 'USDC',
+  };
 
   if (initialLoading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
@@ -227,9 +235,6 @@ export default function Cart() {
 
         {!cart?.detalles?.length ? (
           <div className="bg-black/50 backdrop-blur-md rounded-xl p-8 border border-white/20 shadow-lg text-center">
-            {/* <Link to="/products" className="mr-4 inline-block">
-              <img src={backIcon} alt="Volver" className="w-10 h-10 hover:opacity-80 transition inline" />
-            </Link> */}
             <h2 className="text-3xl font-bold text-white">Tu carrito está vacío</h2>
             <button
               onClick={() => navigate("/products")}
@@ -292,8 +297,12 @@ export default function Cart() {
                 ))}
               </div>
               {conversionError && (
-                  <p className="mt-2 text-red-400">{conversionError}</p>
+                <p className="mt-2 text-red-400">{conversionError}</p>
               )}
+              {/* ✅ Mostrar la moneda actual del carrito */}
+              <p className="mt-2 text-sm text-gray-300">
+                Moneda actual del carrito: <strong>{currency}</strong>
+              </p>
             </div>
 
             {/* Productos */}
@@ -322,9 +331,9 @@ export default function Cart() {
             </ul>
 
             <div className="mt-8 flex justify-between items-center">
-<p className="text-2xl font-bold">
-  Total: {currencySymbols[currency]} {cart.totalGlobal.toFixed(2)}
-</p>
+              <p className="text-2xl font-bold">
+                Total: {currencySymbols[currency]} {cart.totalGlobal.toFixed(2)}
+              </p>
               <button
                 onClick={handleCheckout}
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"

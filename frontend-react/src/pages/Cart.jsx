@@ -23,6 +23,10 @@ export default function Cart() {
   const [verifyResult, setVerifyResult] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
 
+  //Temporizador
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutos en segundos
+  const [isExpired, setIsExpired] = useState(false);
+
   const [conversionError, setConversionError] = useState(null);
 
   const [initialLoading, setInitialLoading] = useState(true);
@@ -38,6 +42,39 @@ export default function Cart() {
     house_number: "",
     extra: "",
   });
+
+  // Agrega este useEffect para el temporizador
+  useEffect(() => {
+    if (!checkoutData || timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setIsExpired(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [checkoutData, timeLeft]);
+
+  // Función para formatear el tiempo
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Resetear el temporizador cuando se cierra el modal
+  const handleCloseCheckout = () => {
+    setCheckoutData(null);
+    setVerifyResult(null);
+    setVerifyError(null);
+    setTimeLeft(600);
+    setIsExpired(false);
+  };
 
   const fetchCart = async () => {
     setInitialLoading(true);
@@ -142,14 +179,22 @@ export default function Cart() {
       return;
     }
     try {
+      console.log("🔄 Creando transacción...");
       const tx = await notaVentaService.createTransaction({
         userId,
         currency,
         chargeReason: "Compra en Artemisia",
         country: "BO",
       });
+
+      console.log("✅ Respuesta de transacción:", tx);
+      console.log("📊 QR Base64 disponible:", !!tx.qr_base64); // Cambiado a qr_base64
+      console.log("📊 QR Base64 longitud:", tx.qr_base64?.length); // Cambiado a qr_base64
+      console.log("📊 Todos los campos de la respuesta:", Object.keys(tx));
+
       setCheckoutData({ transaction: tx, addressId: selectedAddress });
     } catch (err) {
+      console.error("❌ Error al iniciar pago:", err);
       setError(err.message || "Error al iniciar pago");
     }
   };
@@ -342,60 +387,103 @@ export default function Cart() {
               </button>
             </div>
 
-            {/* Checkout */}
+            {/* Checkout Modal */}
             {checkoutData && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-white text-black max-w-3xl w-full mx-auto rounded-2xl p-6 relative shadow-xl max-h-[90vh] overflow-y-auto">
-                  <button
-                    className="absolute top-4 right-4 text-black text-2xl hover:text-red-600"
-                    onClick={() => {
-                      setCheckoutData(null);
-                      setVerifyResult(null);
-                      setVerifyError(null);
-                    }}
-                  >
-                    ×
-                  </button>
-                  <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
-                  <iframe
-                    src={checkoutData.transaction.payment_link}
-                    title="Stereum Pay"
-                    allow="clipboard-read; clipboard-write"
-                    allowFullScreen
-                    loading="lazy"
-                    className="w-full h-[500px] border rounded-lg shadow mb-4"
-                  />
-                  <p className="text-center text-sm">
-                    Si no carga,{" "}
-                    <a
-                      href={checkoutData.transaction.payment_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-black underline"
-                    >
-                      haz clic aquí
-                    </a>.
-                  </p>
-
-                  <div className="text-center mt-4">
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-white text-black max-w-md w-full mx-auto rounded-2xl p-6 relative shadow-xl max-h-[90vh] overflow-y-auto">
                     <button
-                      onClick={handleVerify}
-                      disabled={verifyLoading}
-                      className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition disabled:opacity-50"
+                        className="absolute top-4 right-4 text-black text-2xl hover:text-red-600"
+                        onClick={handleCloseCheckout}
                     >
-                      {verifyLoading ? "Verificando…" : "Verificar pago"}
+                      ×
                     </button>
 
-                    {verifyResult && (
-                      <div className="mt-4">
-                        <p>Estado: <strong>{verifyResult.estado}</strong></p>
-                        <p>NotaVenta ID: <strong>{verifyResult.notaVentaId}</strong></p>
+                    <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
+
+                    {/* QR Code */}
+                    <div className="text-center mb-4">
+                      <p className="text-gray-600 mb-3">Escanea este código QR para pagar</p>
+                      {checkoutData.transaction.qr_base64 ? (
+                          <div className="border-2 border-gray-200 rounded-lg p-4 inline-block">
+                            <img
+                                src={`data:image/png;base64,${checkoutData.transaction.qr_base64}`}
+                                alt="QR Code para pago"
+                                className="w-48 h-48 mx-auto"
+                                onError={(e) => {
+                                  console.error("❌ Error cargando imagen QR");
+                                  console.log("QR Base64 sample:", checkoutData.transaction.qr_base64?.substring(0, 100));
+                                }}
+                                onLoad={() => console.log("✅ QR cargado exitosamente")}
+                            />
+                          </div>
+                      ) : (
+                          <div>
+                            <p className="text-red-500">QR no disponible</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Campos disponibles: {Object.keys(checkoutData.transaction).join(', ')}
+                            </p>
+                          </div>
+                      )}
+                    </div>
+
+                    {/* Información del pago */}
+                    <div className="text-center mb-4">
+                      <p className="text-gray-600 mb-1">Monto a pagar</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {checkoutData.transaction.amount} {checkoutData.transaction.currency}
+                      </p>
+                    </div>
+
+                    {/* Temporizador */}
+                    <div className="text-center mb-4">
+                      <div className={`inline-flex items-center px-4 py-2 rounded-full ${
+                          timeLeft < 60 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        <span className="font-bold text-lg">{formatTime(timeLeft)}</span>
                       </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Tiempo restante para completar el pago
+                      </p>
+                      {isExpired && (
+                          <p className="text-red-500 text-sm mt-1">
+                            El tiempo ha expirado. Por favor, inicia una nueva transacción.
+                          </p>
+                      )}
+                    </div>
+
+
+
+                    {/* Botón de verificación */}
+                    <div className="text-center">
+                      <button
+                          onClick={handleVerify}
+                          disabled={verifyLoading || isExpired}
+                          className="w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition duration-200 mb-2"
+                      >
+                        {verifyLoading ? 'Verificando...' : isExpired ? 'Tiempo Expirado' : 'Verificar Pago'}
+                      </button>
+
+                      <p className="text-xs text-gray-500">
+                        Una vez completado el pago, haz clic en "Verificar Pago"
+                      </p>
+                    </div>
+
+                    {/* Resultados de verificación */}
+                    {verifyResult && (
+                        <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                          <p className="text-center">
+                            Estado: <strong>{verifyResult.estado}</strong>
+                          </p>
+                        </div>
                     )}
-                    {verifyError && <p className="mt-4 text-red-500">Error: {verifyError}</p>}
+
+                    {verifyError && (
+                        <p className="mt-4 text-red-500 text-center text-sm">
+                          Error: {verifyError}
+                        </p>
+                    )}
                   </div>
                 </div>
-              </div>
             )}
 
             {/* Modal agregar dirección */}

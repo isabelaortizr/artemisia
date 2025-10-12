@@ -5,6 +5,7 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.user.*;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.repository.NotaVentaRepository;
+import com.artemisia_corp.artemisia.repository.OrderDetailRepository;
 import com.artemisia_corp.artemisia.repository.ProductRepository;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
@@ -36,6 +37,8 @@ public class AdminDashboardController {
     private UserRepository userRepository;
     @Autowired
     private NotaVentaRepository notaVentaRepository;
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
     @Autowired
     private NotaVentaService notaVentaService;
     @Autowired

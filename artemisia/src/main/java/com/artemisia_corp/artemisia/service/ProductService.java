@@ -18,8 +18,8 @@ public interface ProductService {
     Page<ProductResponseDto> getAvailableProducts(Pageable pageable);
     Page<ProductResponseDto> getProductsBySeller(Long sellerId, Pageable pageable);
     Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable);
-    Page<ProductResponseDto> getByCategory(String category, Pageable pageable);
-    Page<ProductResponseDto> getByTechnique(String technique, Pageable pageable);
+    Page<ProductResponseDto> getByCategory(Long categoryId, Pageable pageable);
+    Page<ProductResponseDto> getByTechnique(Long techniqueId, Pageable pageable);
     Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable);
     Page<ProductResponseDto> getProductsByStatus(Long sellerId, ProductStatus status, Pageable pageable);
 }

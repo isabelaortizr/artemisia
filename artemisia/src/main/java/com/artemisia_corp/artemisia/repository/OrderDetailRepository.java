@@ -1,11 +1,12 @@
 package com.artemisia_corp.artemisia.repository;
 
-import com.artemisia_corp.artemisia.entity.NotaVenta;
 import com.artemisia_corp.artemisia.entity.OrderDetail;
 import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.CategorySalesDto;
 import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.TechniqueSalesDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.seller_dashboard.ProductSalesDto;
+import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
+import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,19 +48,22 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             "LIMIT :limit")
     List<ProductSalesDto> findTopProductsBySeller(@Param("sellerId") Long sellerId, @Param("limit") int limit);
 
+    // Nuevos métodos para dashboard del seller usando enums
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.admin_dashboard.CategorySalesDto(" +
-            "p.category, COUNT(od), SUM(od.total)) " +
+            "cat, COUNT(od), SUM(od.total)) " +
             "FROM OrderDetail od JOIN od.product p " +
+            "JOIN p.categories cat " +
             "WHERE od.seller.id = :sellerId " +
-            "GROUP BY p.category " +
+            "GROUP BY cat " +
             "ORDER BY SUM(od.total) DESC")
     List<CategorySalesDto> findSalesByCategoryForSeller(@Param("sellerId") Long sellerId);
 
     @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.admin_dashboard.TechniqueSalesDto(" +
-            "p.technique, COUNT(od), SUM(od.total)) " +
+            "tech, COUNT(od), SUM(od.total)) " +
             "FROM OrderDetail od JOIN od.product p " +
+            "JOIN p.techniques tech " +
             "WHERE od.seller.id = :sellerId " +
-            "GROUP BY p.technique " +
+            "GROUP BY tech " +
             "ORDER BY SUM(od.total) DESC")
     List<TechniqueSalesDto> findSalesByTechniqueForSeller(@Param("sellerId") Long sellerId);
 
@@ -73,4 +77,23 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
     Page<OrderDetailResponseDto> findDtoBySellerId(
             @Param("sellerId") Long sellerId,
             Pageable pageable);
+
+    // Métodos para el dashboard del admin
+    @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.admin_dashboard.CategorySalesDto(" +
+            "cat, COUNT(od), SUM(od.total)) " +
+            "FROM OrderDetail od JOIN od.product p " +
+            "JOIN p.categories cat " +
+            "WHERE od.group.estadoVenta = 'PAYED' " +
+            "GROUP BY cat " +
+            "ORDER BY SUM(od.total) DESC")
+    List<CategorySalesDto> findTopCategoriesBySales();
+
+    @Query("SELECT new com.artemisia_corp.artemisia.entity.dto.admin_dashboard.TechniqueSalesDto(" +
+            "tech, COUNT(od), SUM(od.total)) " +
+            "FROM OrderDetail od JOIN od.product p " +
+            "JOIN p.techniques tech " +
+            "WHERE od.group.estadoVenta = 'PAYED' " +
+            "GROUP BY tech " +
+            "ORDER BY SUM(od.total) DESC")
+    List<TechniqueSalesDto> findTopTechniquesBySales();
 }

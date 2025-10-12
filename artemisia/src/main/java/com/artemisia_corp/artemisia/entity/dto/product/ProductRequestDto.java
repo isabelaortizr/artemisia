@@ -1,21 +1,25 @@
 package com.artemisia_corp.artemisia.entity.dto.product;
 
+import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
+import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
 import lombok.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+import java.util.List;
+
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductRequestDto {
-    private Long sellerId;
     private String name;
-    private String technique;
     private String materials;
     private String description;
     private Double price;
     private Integer stock;
     private String status;
     private String image;
-    private String category;
+    private Long sellerId;
+    private List<PaintingCategory> categories;
+    private List<PaintingTechnique> techniques;
 }

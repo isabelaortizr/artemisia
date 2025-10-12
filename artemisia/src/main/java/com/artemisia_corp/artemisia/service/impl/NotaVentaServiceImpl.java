@@ -4,7 +4,6 @@ import com.artemisia_corp.artemisia.entity.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.*;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
-import com.artemisia_corp.artemisia.entity.dto.nota_venta.ManageProductDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateOrderDetailDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateQuantityDetailDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
@@ -27,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -495,11 +491,11 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     return notaVentaRepository.save(newCart);
                 });
 
-        Product product = productRepository.findById(addToCartDto.getProductId())
-                .orElseThrow(() -> {
-                    logsService.error("Product not found with ID: " + addToCartDto.getProductId());
-                    return new NotDataFoundException("Product not found");
-                });
+        Product product = productRepository.findProductById(addToCartDto.getProductId());
+        if (product == null) {
+            logsService.error("Product not found with ID: " + addToCartDto.getProductId());
+            throw new NotDataFoundException("Product not found");
+        }
 
         Optional<OrderDetail> existingDetail = orderDetailRepository.findByGroupIdAndProductId(cart.getId(), product.getId());
 
@@ -570,11 +566,11 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         }
 
         return sterumPayService.crearCargoCobro(StereumPagaDto.builder()
-                    .country(request.getCountry())
-                    .amount(notaVenta.getTotalGlobal().toString())
-                    .currency(request.getCurrency())
-                    .chargeReason(request.getChargeReason())
-                    .build(),
+                        .country(request.getCountry())
+                        .amount(notaVenta.getTotalGlobal().toString())
+                        .currency(request.getCurrency())
+                        .chargeReason(request.getChargeReason())
+                        .build(),
                 request.getUserId());
     }
 
@@ -592,11 +588,12 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             logsService.error("Usuario con id " + userId + " no encontrado.");
             return new IllegalArgumentException("Usuario con id " + userId + " no encontrado.");
         });
-        Product product = productRepository.findById(productId).orElseThrow(() -> {
+        Product product = productRepository.findProductById(productId);
+        if (product == null) {
             log.error("Producto con id " + productId + " no encontrado.");
             logsService.error("Producto con id " + productId + " no encontrado.");
-            return new IllegalArgumentException("Producto con id " + productId + " no encontrado.");
-        });
+            throw new IllegalArgumentException("Producto con id " + productId + " no encontrado.");
+        }
         NotaVenta activeCart = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId).orElseThrow(() -> {
             log.error("Carrito activo no encontrado para el usuario con id " + userId);
             logsService.error("Carrito activo no encontrado para el usuario con id " + userId);
@@ -673,18 +670,27 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     }
 
     private Product convertToProduct(Long productId, ProductResponseDto preProduct) {
+        User seller = userRepository.findById(preProduct.getSellerId())
+                .orElseThrow(() -> new NotDataFoundException("Seller not found with ID: " + preProduct.getSellerId()));
+
+        // Crear sets vacíos para categorías y técnicas (ya que ahora son enums y no necesitan entidades separadas)
+        Set<PaintingCategory> categories = preProduct.getCategoryEnums() != null ?
+                new HashSet<>(preProduct.getCategoryEnums()) : new HashSet<>();
+        Set<PaintingTechnique> techniques = preProduct.getTechniqueEnums() != null ?
+                new HashSet<>(preProduct.getTechniqueEnums()) : new HashSet<>();
+
         return Product.builder()
                 .id(productId)
                 .name(preProduct.getName())
-                .technique(PaintingTechnique.valueOf(preProduct.getTechnique()))
                 .materials(preProduct.getMaterials())
                 .description(preProduct.getDescription())
                 .price(preProduct.getPrice())
                 .stock(preProduct.getStock())
                 .status(ProductStatus.valueOf(preProduct.getStatus()))
                 .imageUrl(preProduct.getImage())
-                .category(PaintingCategory.valueOf(preProduct.getCategory()))
-                .seller(userRepository.getReferenceById(preProduct.getSellerId()))
+                .categories(categories)
+                .techniques(techniques)
+                .seller(seller)
                 .build();
     }
 }

@@ -194,38 +194,28 @@ public class ProductController {
         }
     }
 
-    @Operation(summary = "Get products by category", description = "Returns paginated list of products filtered by category")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
-                    content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "Category not found")
-    })
-    @GetMapping("/category/{category}")
+    @Operation(summary = "Get products by category", description = "Returns paginated list of products filtered by category ID")
+    @GetMapping("/category/{categoryId}")
     public ResponseEntity<Page<ProductResponseDto>> getByCategory(
-            @PathVariable String category,
+            @PathVariable Long categoryId,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "ASC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        return ResponseEntity.ok(productService.getByCategory(category, pageable));
+        return ResponseEntity.ok(productService.getByCategory(categoryId, pageable));
     }
 
-    @Operation(summary = "Get products by technique", description = "Returns paginated list of products filtered by technique")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
-                    content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "Technique not found")
-    })
-    @GetMapping("/technique/{technique}")
+    @Operation(summary = "Get products by technique", description = "Returns paginated list of products filtered by technique ID")
+    @GetMapping("/technique/{techniqueId}")
     public ResponseEntity<Page<ProductResponseDto>> getByTechnique(
-            @PathVariable String technique,
+            @PathVariable Long techniqueId,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "ASC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        return ResponseEntity.ok(productService.getByTechnique(technique, pageable));
+        return ResponseEntity.ok(productService.getByTechnique(techniqueId, pageable));
     }
 
     @GetMapping("/seller/{sellerId}/without-deleted")

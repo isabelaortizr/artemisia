@@ -7,6 +7,7 @@ import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.ProductService;
+import com.artemisia_corp.artemisia.service.ProductViewService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,6 +42,11 @@ public class ProductController {
     @Autowired
     @Lazy
     private ProductService productService;
+
+    @Autowired
+    @Lazy
+    private ProductViewService productViewService;
+
     @Autowired
     @Lazy
     private JwtTokenProvider jwtTokenProvider;
@@ -69,8 +75,26 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(
             @PathVariable Long id,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        // El tracking se hace automáticamente en el ProductServiceImpl
         return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @Operation(summary = "Manually track product view", description = "Explicitly track a product view (useful for frontend tracking)")
+    @PostMapping("/{id}/track-view")
+    public ResponseEntity<Void> trackProductView(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token,
+            @RequestParam(value = "duration", required = false) Integer durationSeconds) {
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+        if (durationSeconds != null) {
+            productViewService.trackProductViewWithDuration(userId, id, durationSeconds);
+        } else {
+            productViewService.trackProductView(userId, id);
+        }
+
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Create a new product", description = "Creates a new product")
@@ -181,7 +205,6 @@ public class ProductController {
 
         if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autorizado");
 
-
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
             return ResponseEntity.ok(productService.searchProducts(dto, pageable));
@@ -229,5 +252,4 @@ public class ProductController {
         Page<ProductResponseDto> products = productService.getProductsBySellerWithoutDeleted(sellerId, pageable);
         return ResponseEntity.ok(products);
     }
-
 }

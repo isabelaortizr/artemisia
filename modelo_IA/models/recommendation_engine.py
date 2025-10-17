@@ -80,9 +80,14 @@ class ArtRecommendationEngine:
             
             logger.info(f"📉 Varianza explicada por PCA: {self.pca_model.explained_variance_ratio_.sum():.3f}")
             
-            # Clustering con K-means
+            # Clustering con K-means (tunable via env)
             n_clusters = min(config.NUM_CLUSTERS, len(user_matrix))
-            self.kmeans_model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+            self.kmeans_model = KMeans(
+                n_clusters=n_clusters,
+                random_state=42,
+                n_init=config.KMEANS_N_INIT,
+                max_iter=config.KMEANS_MAX_ITER
+            )
             clusters = self.kmeans_model.fit_predict(user_matrix_reduced)
             
             # Asignar clusters a usuarios
@@ -314,7 +319,8 @@ class ArtRecommendationEngine:
         try:
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             joblib.dump(self, filepath)
-            logger.info(f"💾 Modelo guardado en: {filepath}")
+            abs_path = os.path.abspath(filepath)
+            logger.info(f"💾 Modelo guardado en: {abs_path}")
         except Exception as e:
             logger.error(f"Error guardando modelo: {e}")
     

@@ -57,12 +57,24 @@ class ModelTrainer:
         try:
             # 1. Obtener datos de entrenamiento
             logger.info("📥 Obteniendo datos de entrenamiento...")
-            training_data = self.data_processor.get_training_data_from_db()
-            
+            # If the DataProcessor isn't available (e.g., missing psycopg2) or returns
+            # no/insufficient data, fall back to synthetic data so training can proceed.
+            training_data = []
+
+            if self.data_processor is None:
+                logger.warning("⚠️  DataProcessor no disponible (posible falta de psycopg2). Usando datos sintéticos.")
+                training_data = self._generate_synthetic_data(max(config.MIN_USERS_FOR_TRAINING, 200))
+            else:
+                try:
+                    training_data = self.data_processor.get_training_data_from_db() or []
+                except Exception as e:
+                    logger.warning(f"⚠️  Error obteniendo datos reales: {e}. Usando datos sintéticos.")
+                    training_data = []
+
             if len(training_data) < config.MIN_USERS_FOR_TRAINING:
-                logger.warning(f"⚠️  Datos insuficientes: {len(training_data)} usuarios")
-                # Generar datos sintéticos adicionales
-                synthetic_data = self._generate_synthetic_data(100)
+                logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
+                need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
+                synthetic_data = self._generate_synthetic_data(need + 100)
                 training_data.extend(synthetic_data)
                 logger.info(f"➕ Añadidos {len(synthetic_data)} usuarios sintéticos")
             

@@ -8,6 +8,7 @@ requests==2.31.0
 python-dotenv==1.0.0
 psycopg2-binary==2.9.7
 sqlalchemy==2.0.20
-threading
+gunicorn==21.2.0
+Flask-CORS==4.0.0
 gunicorn==21.2.0
 Flask-CORS==4.0.0

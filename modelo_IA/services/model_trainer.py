@@ -2,22 +2,19 @@ import logging
 import threading
 import time
 from typing import Dict, List, Any
-from models.recommendation_engine import ArtRecommendationEngine
-from services.vector_builder import VectorBuilder
+from ..models.recommendation_engine import ArtRecommendationEngine
+from ..services.vector_builder import VectorBuilder, FEATURE_NAMES
 
 # Delay importing DataProcessor (it depends on psycopg2). Import lazily.
-try:
-    from services.data_processor import DataProcessor
-except Exception:
-    DataProcessor = None
-from config.settings import config
+from ..services.csv_data_processor import CSVDataProcessor
+from ..config.settings import config
+import os
 
 logger = logging.getLogger(__name__)
 
 class ModelTrainer:
     def __init__(self):
-        # instantiate DataProcessor if available; otherwise None (tests can still run)
-        self.data_processor = DataProcessor() if DataProcessor is not None else None
+        self.data_processor = CSVDataProcessor()
         self.vector_builder = VectorBuilder()
         self.is_training = False
         self.last_training_time = None
@@ -71,7 +68,12 @@ class ModelTrainer:
                     logger.warning(f"⚠️  Error obteniendo datos reales: {e}. Usando datos sintéticos.")
                     training_data = []
 
+            # Option: if environment requests CSV-only training, do not generate synthetic users
+            csv_only = os.getenv('CSV_ONLY_TRAINING', '0') in ('1', 'true', 'True')
             if len(training_data) < config.MIN_USERS_FOR_TRAINING:
+                if csv_only:
+                    logger.error(f"❌ Datos insuficientes ({len(training_data)} usuarios) y CSV_ONLY_TRAINING habilitado. Abortando entrenamiento.")
+                    return False
                 logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
                 need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
                 synthetic_data = self._generate_synthetic_data(need + 100)
@@ -112,22 +114,71 @@ class ModelTrainer:
             return False
     
     def _prepare_user_data(self, user_data: Dict) -> Dict[str, Any]:
-        """Prepara datos de usuario para entrenamiento"""
+        """Prepara datos de usuario para entrenamiento.
+
+        Usa `preference_vector` si está presente en el registro (proviene de
+        user_preferences.csv). Si no está, construye el vector desde el
+        `purchase_history` usando VectorBuilder.
+        """
         try:
-            user_id = user_data['user_id']
-            purchase_history = user_data.get('purchase_history', [])
-            
-            # Construir vector de usuario
-            user_vector = self.vector_builder.build_user_vector_from_history(purchase_history)
-            
-            return {
-                'user_id': user_id,
-                'vector': user_vector,
-                'purchase_history': purchase_history,
-                'total_purchases': user_data.get('total_purchases', 0),
-                'avg_purchase_value': user_data.get('avg_purchase_value', 0)
-            }
-            
+            user_id = user_data.get('user_id')
+            if user_id is None:
+                return None
+
+            # Prefer explicit preference vector when present
+            pref = user_data.get('preference_vector') or user_data.get('preferences')
+            if pref and isinstance(pref, dict) and len(pref) > 0:
+                # If pref keys match FEATURE_NAMES directly, keep them. Otherwise
+                # try to build a compatible vector via VectorBuilder helper that
+                # maps free-form keys to model features.
+                vec = {k: float(v) for k, v in pref.items() if k in FEATURE_NAMES}
+                if not vec:
+                    try:
+                        vec = self.vector_builder.build_vector_from_pref_map(pref)
+                    except Exception:
+                        vec = {}
+                if vec:
+                    return {
+                        'user_id': int(user_id),
+                        'vector': vec,
+                        'purchase_history': user_data.get('purchase_history', []),
+                        'total_purchases': user_data.get('total_purchases', 0),
+                        'avg_purchase_value': user_data.get('avg_purchase_value', 0),
+                        'raw': user_data
+                    }
+
+            # Fallback: build from purchase history
+            purchase_history = user_data.get('purchase_history', []) or []
+            if purchase_history:
+                user_vector = self.vector_builder.build_user_vector_from_history(purchase_history)
+                return {
+                    'user_id': int(user_id),
+                    'vector': user_vector,
+                    'purchase_history': purchase_history,
+                    'total_purchases': user_data.get('total_purchases', 0),
+                    'avg_purchase_value': user_data.get('avg_purchase_value', 0),
+                    'raw': user_data
+                }
+
+            # Last resort: check embedded user row for vector_kv or preference_vector
+            user_row = user_data.get('user') or {}
+            upr = None
+            if isinstance(user_row, dict):
+                upr = user_row.get('preference_vector') or user_row.get('vector_kv')
+            if upr and isinstance(upr, dict):
+                vec = {k: float(v) for k, v in upr.items() if k in FEATURE_NAMES}
+                if vec:
+                    return {
+                        'user_id': int(user_id),
+                        'vector': vec,
+                        'purchase_history': purchase_history,
+                        'total_purchases': user_data.get('total_purchases', 0),
+                        'avg_purchase_value': user_data.get('avg_purchase_value', 0),
+                        'raw': user_data
+                    }
+
+            return None
+
         except Exception as e:
             logger.error(f"Error preparando datos de usuario {user_data.get('user_id')}: {e}")
             return None

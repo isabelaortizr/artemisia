@@ -4,10 +4,10 @@ import logging
 import os
 from datetime import datetime
 
-from models.recommendation_engine import ArtRecommendationEngine
-from services.model_trainer import ModelTrainer
-from services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase
-from config.settings import config
+from .models.recommendation_engine import ArtRecommendationEngine
+from .services.model_trainer import ModelTrainer
+from .services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase
+from .config.settings import config
 
 # Configurar logging
 logging.basicConfig(
@@ -51,8 +51,8 @@ def get_recommendations(user_id):
         limit = request.args.get('limit', 10, type=int)
         
         # Obtener vector de usuario
-        from services.data_processor import DataProcessor
-        data_processor = DataProcessor()
+        from services.csv_data_processor import CSVDataProcessor
+        data_processor = CSVDataProcessor()
         user_data = data_processor.get_user_data(user_id)
         if not user_data:
             return jsonify({"error": "User not found"}), 404
@@ -199,8 +199,8 @@ def health_check():
 def get_products():
     """Obtiene productos disponibles"""
     try:
-        from services.data_processor import DataProcessor
-        data_processor = DataProcessor()
+        from services.csv_data_processor import CSVDataProcessor
+        data_processor = CSVDataProcessor()
         products = data_processor.get_available_products()
         return jsonify(products)
     except Exception as e:
@@ -211,8 +211,8 @@ def get_products():
 def get_user_vector(user_id):
     """Obtiene vector de preferencias de usuario"""
     try:
-        from services.data_processor import DataProcessor
-        data_processor = DataProcessor()
+        from services.csv_data_processor import CSVDataProcessor
+        data_processor = CSVDataProcessor()
         user_data = data_processor.get_user_data(user_id)
         if not user_data:
             return jsonify({"error": "User not found"}), 404
@@ -226,6 +226,5 @@ def get_user_vector(user_id):
 if __name__ == '__main__':
     logger.info("🚀 Starting Artemisia Recommendation Service...")
     logger.info(f"🔧 Model path: {config.MODEL_PATH}")
-    logger.info(f"🌐 Java API URL: {config.JAVA_API_URL}")
     
     app.run(host='0.0.0.0', port=5000, debug=True)

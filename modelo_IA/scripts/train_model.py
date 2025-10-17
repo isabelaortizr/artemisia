@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Script para entrenar el modelo de recomendación
 """
@@ -9,8 +8,8 @@ import logging
 # Añadir directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from services.model_trainer import ModelTrainer
-from config.settings import config
+from ..services.model_trainer import ModelTrainer
+from ..config.settings import config
 
 # Configurar logging
 logging.basicConfig(

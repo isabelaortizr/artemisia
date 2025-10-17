@@ -10,8 +10,8 @@ import logging
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from services.model_trainer import ModelTrainer
-from config.settings import config
+from ..services.model_trainer import ModelTrainer
+from ..config.settings import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

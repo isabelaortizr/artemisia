@@ -8,7 +8,7 @@ import joblib
 from typing import List, Dict, Any, Tuple
 import os
 import logging
-from config.settings import config
+from ..config.settings import config
 
 logger = logging.getLogger(__name__)
 

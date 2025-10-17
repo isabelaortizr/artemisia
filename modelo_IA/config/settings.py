@@ -17,17 +17,14 @@ def _get_env(key: str, default: str = None) -> str:
 
 
 class Config:
-    # Database
-    DB_HOST = _get_env('DB_HOST', 'localhost')
-    DB_PORT = int(_get_env('DB_PORT', '5432'))
-    DB_NAME = _get_env('DB_NAME', 'artemisia_db')
-    DB_USER = _get_env('DB_USER', 'postgres')
-    DB_PASSWORD = _get_env('DB_PASSWORD', 'password')
+    # Database (optional, used only by export tool)
+    DB_HOST = _get_env('DB_HOST', None)
+    DB_PORT = int(_get_env('DB_PORT', '5432')) if _get_env('DB_PORT', None) else None
+    DB_NAME = _get_env('DB_NAME', None)
+    DB_USER = _get_env('DB_USER', None)
+    DB_PASSWORD = _get_env('DB_PASSWORD', None)
 
-    # Java API (optional, used by some processors)
-    JAVA_API_URL = _get_env('JAVA_API_URL', 'http://localhost:8081/api')
-
-    # ML Model
+    # ML Model path
     MODEL_PATH = _get_env('MODEL_PATH', 'models/trained/recommendation_model.pkl')
 
     # Training
@@ -62,6 +59,13 @@ class Config:
         'Óleo', 'Acrílico', 'Acuarela', 'Temple', 'Fresco',
         'Gouache', 'Tinta', 'Mixta', 'Spray', 'Digital'
     ]
+
+    # Local cache directory for computed artifacts (product matrix, etc.)
+    CACHE_DIR = _get_env('CACHE_DIR', '.cache')
+
+    def get(self, key: str, default=None):
+        """Small helper to mimic dict-like access used in some modules."""
+        return getattr(self, key, default)
 
 
 config = Config()

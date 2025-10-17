@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Dict, List, Any
 import logging
-from config.settings import config
+from ..config.settings import config
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,110 @@ class VectorBuilder:
         # Normalizar vector
         vector = self._normalize_vector(vector)
         
+        return vector
+
+    def build_vector_from_pref_map(self, pref_map: Dict[str, float]) -> Dict[str, float]:
+        """Construye un vector en el espacio de características a partir de un
+        preference map arbitrario (por ejemplo keys como 'watercolor', 'portrait').
+
+        La función intenta mapear claves libres a las features conocidas
+        (`cat_<category>` y `tech_<technique>`) usando coincidencia directa,
+        normalización (minusculas, sin acentos) y un diccionario de sinónimos
+        común.
+        """
+        import unicodedata
+
+        def norm(s: str) -> str:
+            if not isinstance(s, str):
+                return ''
+            s2 = s.strip().lower()
+            s2 = unicodedata.normalize('NFKD', s2)
+            s2 = ''.join(ch for ch in s2 if not unicodedata.combining(ch))
+            s2 = s2.replace(' ', '_')
+            return s2
+
+        # Prepare normalized lookup for categories and techniques
+        cat_map = {norm(c): c for c in config.CATEGORIES}
+        tech_map = {norm(t): t for t in config.TECHNIQUES}
+
+        # Basic synonyms (english -> spanish config names)
+        synonyms = {
+            'watercolor': 'acurela',
+            'watercolour': 'acurela',
+            'oil_painting': 'óleo',
+            'oil': 'óleo',
+            'acrylic': 'acrílico',
+            'acrilico': 'acrílico',
+            'digital_art': 'digital',
+            'digital': 'digital',
+            'abstract_art': 'abstracta',
+            'realism': 'realista',
+            'realistic': 'realista',
+            'contemporary': 'contemporánea',
+            'classical': 'histórica',
+            'landscape': 'realista',
+            'portrait': 'realista'
+        }
+
+        # normalize synonyms keys
+        synonyms_norm = {norm(k): v for k, v in synonyms.items()}
+
+        vector = {feature: 0.0 for feature in self.feature_names}
+
+        for k, v in (pref_map or {}).items():
+            try:
+                val = float(v)
+            except Exception:
+                continue
+
+            key = norm(k)
+
+            # Direct match to category or technique normalized name
+            if key in cat_map:
+                feature_name = f'cat_{cat_map[key]}'
+                if feature_name in vector:
+                    vector[feature_name] += val
+                continue
+
+            if key in tech_map:
+                feature_name = f'tech_{tech_map[key]}'
+                if feature_name in vector:
+                    vector[feature_name] += val
+                continue
+
+            # Synonym match
+            if key in synonyms_norm:
+                mapped = synonyms_norm[key]
+                mapped_norm = norm(mapped)
+                if mapped_norm in cat_map:
+                    f = f'cat_{cat_map[mapped_norm]}'
+                    if f in vector:
+                        vector[f] += val
+                        continue
+                if mapped_norm in tech_map:
+                    f = f'tech_{tech_map[mapped_norm]}'
+                    if f in vector:
+                        vector[f] += val
+                        continue
+
+            # Fallback: try substring matching against known names
+            for cname_norm, cname in cat_map.items():
+                if cname_norm in key or key in cname_norm:
+                    f = f'cat_{cname}'
+                    vector[f] += val
+                    break
+            else:
+                for tname_norm, tname in tech_map.items():
+                    if tname_norm in key or key in tname_norm:
+                        f = f'tech_{tname}'
+                        vector[f] += val
+                        break
+
+        # Normalize resulting vector to be comparable
+        total = sum(abs(x) for x in vector.values())
+        if total > 0:
+            vector = {k: float(v) / total for k, v in vector.items()}
+
         return vector
     
     def _add_behavioral_features(self, vector: Dict[str, float], purchases: List[Dict], 

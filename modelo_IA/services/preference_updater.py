@@ -1,8 +1,13 @@
 import logging
-from services.vector_builder import product_to_vector, dict_to_array, FEATURE_NAMES, l2_normalize
+from ..services.vector_builder import product_to_vector, dict_to_array, FEATURE_NAMES, l2_normalize
 import numpy as np
 from datetime import datetime
-import logging
+import os
+import pandas as pd
+import json
+
+# CSV directory where exported data lives
+CSV_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data_exports')
 
 # Note: we import db lazily inside functions to avoid requiring psycopg2 at module import time
 
@@ -10,68 +15,110 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_product(product_id: int):
-    from config.database import db
-    conn = db.get_connection()
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT p.id, p.price,
-                   ARRAY_AGG(DISTINCT pc.category) as categories,
-                   ARRAY_AGG(DISTINCT pt.technique) as techniques
-            FROM product p
-            LEFT JOIN product_categories pc ON p.id = pc.product_id
-            LEFT JOIN product_techniques pt ON p.id = pt.product_id
-            WHERE p.id = %s
-            GROUP BY p.id, p.price
-        """, (product_id,))
-        row = cur.fetchone()
-        if not row:
+    """Fetch product information from products.csv"""
+    try:
+        products_path = os.path.join(CSV_DIR, 'products.csv')
+        if not os.path.exists(products_path):
+            logger.warning(f"Products CSV not found at {products_path}")
             return None
+            
+        df = pd.read_csv(products_path)
+        product = df[df['id'] == product_id].iloc[0] if len(df[df['id'] == product_id]) > 0 else None
+        
+        if product is None:
+            return None
+            
+        # Parse categories and techniques from JSON strings
+        try:
+            categories = json.loads(product['categories']) if pd.notna(product['categories']) else []
+            techniques = json.loads(product['techniques']) if pd.notna(product['techniques']) else []
+        except:
+            categories, techniques = [], []
+            
         return {
-            'product_id': row['id'],
-            'price': float(row['price']) if row['price'] is not None else None,
-            'categories': row['categories'] or [],
-            'techniques': row['techniques'] or []
+            'product_id': product['id'],
+            'price': float(product['price']) if pd.notna(product['price']) else None,
+            'categories': categories,
+            'techniques': techniques
         }
+    except Exception as e:
+        logger.error(f"Error fetching product {product_id} from CSV: {e}")
+        return None
 
 
 def fetch_user_pref(user_id: int):
-    from config.database import db
-    conn = db.get_connection()
-    with conn.cursor() as cur:
-        cur.execute("SELECT id FROM user_preferences WHERE user_id = %s", (user_id,))
-        row = cur.fetchone()
-        if not row:
+    """Fetch user preferences from user_preferences.csv"""
+    try:
+        prefs_path = os.path.join(CSV_DIR, 'user_preferences.csv')
+        if not os.path.exists(prefs_path):
             return None, {}
-        pref_id = row['id']
-        cur.execute("SELECT feature, weight FROM user_preference_vectors WHERE user_preference_id = %s", (pref_id,))
-        rows = cur.fetchall()
-        pref_map = {r['feature']: float(r['weight']) for r in rows}
-        return pref_id, pref_map
+            
+        df = pd.read_csv(prefs_path)
+        user_pref = df[df['user_id'] == user_id].iloc[0] if len(df[df['user_id'] == user_id]) > 0 else None
+        
+        if user_pref is None:
+            return None, {}
+            
+        try:
+            # Expecting vector_kv to be a JSON string of feature:weight pairs
+            vector_pairs = json.loads(user_pref['vector_kv'])
+            pref_map = {k: float(v) for k, v in [pair.split(':') for pair in vector_pairs]}
+            return user_pref['user_id'], pref_map
+        except:
+            return None, {}
+    except Exception as e:
+        logger.error(f"Error fetching preferences for user {user_id} from CSV: {e}")
+        return None, {}
 
 
 def create_user_pref(user_id: int):
-    from config.database import db
-    conn = db.get_connection()
-    with conn.cursor() as cur:
-        cur.execute("INSERT INTO user_preferences (user_id, last_updated) VALUES (%s, %s) RETURNING id", (user_id, datetime.utcnow()))
-        row = cur.fetchone()
-        conn.commit()
-        return row['id']
+    """Create new user preference entry in user_preferences.csv"""
+    try:
+        prefs_path = os.path.join(CSV_DIR, 'user_preferences.csv')
+        
+        # Create empty CSV if it doesn't exist
+        if not os.path.exists(prefs_path):
+            df = pd.DataFrame(columns=['user_id', 'last_updated', 'vector_kv'])
+        else:
+            df = pd.read_csv(prefs_path)
+            
+        # Add new user preference
+        new_pref = pd.DataFrame([{
+            'user_id': user_id,
+            'last_updated': datetime.utcnow().isoformat(),
+            'vector_kv': '[]'  # empty vector
+        }])
+        
+        df = pd.concat([df, new_pref], ignore_index=True)
+        df.to_csv(prefs_path, index=False)
+        
+        return user_id  # using user_id as pref_id for simplicity in CSV version
+    except Exception as e:
+        logger.error(f"Error creating preferences for user {user_id} in CSV: {e}")
+        return None
 
 
 def write_user_pref_map(pref_id: int, pref_map: dict):
-    from config.database import db
-    conn = db.get_connection()
-    with conn.cursor() as cur:
-        # delete existing
-        cur.execute("DELETE FROM user_preference_vectors WHERE user_preference_id = %s", (pref_id,))
-        # insert new
-        params = [(pref_id, k, float(v)) for k, v in pref_map.items()]
-        if params:
-            cur.executemany("INSERT INTO user_preference_vectors (user_preference_id, feature, weight) VALUES (%s, %s, %s)", params)
-        # update timestamp
-        cur.execute("UPDATE user_preferences SET last_updated = %s WHERE id = %s", (datetime.utcnow(), pref_id))
-        conn.commit()
+    """Update user preferences in user_preferences.csv"""
+    try:
+        prefs_path = os.path.join(CSV_DIR, 'user_preferences.csv')
+        if not os.path.exists(prefs_path):
+            return
+            
+        df = pd.read_csv(prefs_path)
+        
+        # Convert preference map to vector_kv format
+        vector_kv = json.dumps([f"{k}:{v}" for k, v in pref_map.items()])
+        
+        # Update existing preference
+        mask = df['user_id'] == pref_id  # using user_id as pref_id in CSV version
+        if any(mask):
+            df.loc[mask, 'vector_kv'] = vector_kv
+            df.loc[mask, 'last_updated'] = datetime.utcnow().isoformat()
+            df.to_csv(prefs_path, index=False)
+    except Exception as e:
+        logger.error(f"Error writing preferences for user {pref_id} to CSV: {e}")
+        return
 
 
 def update_user_preferences_from_product(user_id: int, product_id: int, beta: float = 0.05, event_weight: float = None):
@@ -96,76 +143,38 @@ def update_user_preferences_from_product(user_id: int, product_id: int, beta: fl
         except Exception:
             pass
 
-    # Transactional update: try to use preference_accum & weight_sum columns for O(1) update
-    from config.database import db
-    conn = db.get_connection()
+    # CSV-based update: read existing preferences, update vector, write back
     try:
-        with conn.cursor() as cur:
-            # try to select user_preferences row for update
-            cur.execute("SELECT id, preference_accum, weight_sum FROM user_preferences WHERE user_id = %s FOR UPDATE", (user_id,))
-            row = cur.fetchone()
-            if not row:
-                # create preference row
-                cur.execute("INSERT INTO user_preferences (user_id, last_updated, preference_accum, weight_sum) VALUES (%s, now(), %s, %s) RETURNING id, preference_accum, weight_sum", (user_id, None, 0.0))
-                row = cur.fetchone()
+        pref_id, existing_map = fetch_user_pref(user_id)
+        if pref_id is None:
+            # create an entry
+            create_user_pref(user_id)
+            pref_id, existing_map = fetch_user_pref(user_id)
 
-            pref_id = row['id']
+        # Convert existing_map to array
+        old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)
+        for i, fname in enumerate(FEATURE_NAMES):
+            old_arr[i] = float(existing_map.get(fname, 0.0)) if existing_map else 0.0
 
-            # If preference_accum exists and is not null, use it; otherwise reconstruct from map
-            accum = row.get('preference_accum')
-            wsum = row.get('weight_sum')
-            if accum is not None and isinstance(accum, dict):
-                # accum stored as map feature->value
-                old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)
-                for i, fname in enumerate(FEATURE_NAMES):
-                    old_arr[i] = float(accum.get(fname, 0.0))
-                weight_sum = float(wsum or 0.0)
-            else:
-                # fallback: read element collection table
-                cur.execute("SELECT feature, weight FROM user_preference_vectors WHERE user_preference_id = %s", (pref_id,))
-                pref_rows = cur.fetchall()
-                old_map = {r['feature']: float(r['weight']) for r in pref_rows} if pref_rows else {}
-                old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)
-                for i, fname in enumerate(FEATURE_NAMES):
-                    old_arr[i] = float(old_map.get(fname, 0.0))
-                weight_sum = 0.0
+        weight_sum = 1.0 if existing_map else 0.0
 
-            # Update accumulators
-            new_accum = old_arr + (beta * pvec)
-            new_weight_sum = weight_sum + beta
+        new_accum = old_arr + (beta * pvec)
+        new_weight_sum = weight_sum + beta
 
-            # compute normalized vector
-            if new_weight_sum == 0:
-                raw = new_accum
-            else:
-                raw = new_accum / new_weight_sum
-            new_norm = l2_normalize(raw)
+        if new_weight_sum == 0:
+            raw = new_accum
+        else:
+            raw = new_accum / new_weight_sum
 
-            # persist: update preference_accum (jsonb), weight_sum, preference_json, and element collection
-            # preference_accum stored as jsonb map
-            accum_map = {FEATURE_NAMES[i]: float(new_accum[i]) for i in range(len(FEATURE_NAMES))}
-            pref_json = {FEATURE_NAMES[i]: float(new_norm[i]) for i in range(len(FEATURE_NAMES))}
+        new_norm = l2_normalize(raw)
 
-            # update accum & weight_sum & last_updated
-            try:
-                cur.execute("UPDATE user_preferences SET preference_accum = %s, weight_sum = %s, preference_json = %s, last_updated = now() WHERE id = %s",
-                            (accum_map, new_weight_sum, pref_json, pref_id))
-            except Exception:
-                # If DB doesn't have these columns, fall back to deleting/inserting element collection
-                cur.execute("DELETE FROM user_preference_vectors WHERE user_preference_id = %s", (pref_id,))
-                params = [(pref_id, k, float(pref_json[k])) for k in pref_json.keys()]
-                if params:
-                    cur.executemany("INSERT INTO user_preference_vectors (user_preference_id, feature, weight) VALUES (%s, %s, %s)", params)
-                cur.execute("UPDATE user_preferences SET last_updated = now() WHERE id = %s", (pref_id,))
+        pref_json = {FEATURE_NAMES[i]: float(new_norm[i]) for i in range(len(FEATURE_NAMES))}
 
-            conn.commit()
-            return True
+        # write back
+        write_user_pref_map(pref_id or user_id, pref_json)
+        return True
     except Exception as e:
-        logger.error(f"Error updating user preference for user {user_id}: {e}")
-        try:
-            conn.rollback()
-        except Exception:
-            pass
+        logger.error(f"Error updating user preference (CSV) for user {user_id}: {e}")
         return False
 
 
@@ -185,61 +194,45 @@ def update_user_preferences_from_purchase(user_id: int, product_ids: list, beta:
 
     combined = np.mean(np.stack(vecs, axis=0), axis=0)
 
-    # Use similar transactional pattern as product update
-    from config.database import db
-    conn = db.get_connection()
+    # CSV-based batch update: combine product vectors then reuse single-update logic
     try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, preference_accum, weight_sum FROM user_preferences WHERE user_id = %s FOR UPDATE", (user_id,))
-            row = cur.fetchone()
-            if not row:
-                cur.execute("INSERT INTO user_preferences (user_id, last_updated, preference_accum, weight_sum) VALUES (%s, now(), %s, %s) RETURNING id, preference_accum, weight_sum", (user_id, None, 0.0))
-                row = cur.fetchone()
+        vecs = []
+        for pid in product_ids:
+            prod = fetch_product(pid)
+            if prod:
+                vecs.append(product_to_vector(prod))
+        if not vecs:
+            logger.warning("No valid products found for purchase update")
+            return False
 
-            pref_id = row['id']
-            accum = row.get('preference_accum')
-            wsum = row.get('weight_sum')
-            if accum is not None and isinstance(accum, dict):
-                old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)
-                for i, fname in enumerate(FEATURE_NAMES):
-                    old_arr[i] = float(accum.get(fname, 0.0))
-                weight_sum = float(wsum or 0.0)
-            else:
-                cur.execute("SELECT feature, weight FROM user_preference_vectors WHERE user_preference_id = %s", (pref_id,))
-                pref_rows = cur.fetchall()
-                old_map = {r['feature']: float(r['weight']) for r in pref_rows} if pref_rows else {}
-                old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)
-                for i, fname in enumerate(FEATURE_NAMES):
-                    old_arr[i] = float(old_map.get(fname, 0.0))
-                weight_sum = 0.0
+        combined = np.mean(np.stack(vecs, axis=0), axis=0)
 
-            new_accum = old_arr + (beta * combined)
-            new_weight_sum = weight_sum + beta
-            if new_weight_sum == 0:
-                raw = new_accum
-            else:
-                raw = new_accum / new_weight_sum
-            new_norm = l2_normalize(raw)
+        # reuse single product update logic but apply combined vector
+        # emulate pvec input by calling internal steps
+        pref_id, existing_map = fetch_user_pref(user_id)
+        if pref_id is None:
+            create_user_pref(user_id)
+            pref_id, existing_map = fetch_user_pref(user_id)
 
-            accum_map = {FEATURE_NAMES[i]: float(new_accum[i]) for i in range(len(FEATURE_NAMES))}
-            pref_json = {FEATURE_NAMES[i]: float(new_norm[i]) for i in range(len(FEATURE_NAMES))}
+        old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)
+        for i, fname in enumerate(FEATURE_NAMES):
+            old_arr[i] = float(existing_map.get(fname, 0.0)) if existing_map else 0.0
 
-            try:
-                cur.execute("UPDATE user_preferences SET preference_accum = %s, weight_sum = %s, preference_json = %s, last_updated = now() WHERE id = %s",
-                            (accum_map, new_weight_sum, pref_json, pref_id))
-            except Exception:
-                cur.execute("DELETE FROM user_preference_vectors WHERE user_preference_id = %s", (pref_id,))
-                params = [(pref_id, k, float(pref_json[k])) for k in pref_json.keys()]
-                if params:
-                    cur.executemany("INSERT INTO user_preference_vectors (user_preference_id, feature, weight) VALUES (%s, %s, %s)", params)
-                cur.execute("UPDATE user_preferences SET last_updated = now() WHERE id = %s", (pref_id,))
+        weight_sum = 1.0 if existing_map else 0.0
 
-            conn.commit()
-            return True
+        new_accum = old_arr + (beta * combined)
+        new_weight_sum = weight_sum + beta
+
+        if new_weight_sum == 0:
+            raw = new_accum
+        else:
+            raw = new_accum / new_weight_sum
+
+        new_norm = l2_normalize(raw)
+        pref_json = {FEATURE_NAMES[i]: float(new_norm[i]) for i in range(len(FEATURE_NAMES))}
+
+        write_user_pref_map(pref_id or user_id, pref_json)
+        return True
     except Exception as e:
-        logger.error(f"Error updating preferences from purchase for user {user_id}: {e}")
-        try:
-            conn.rollback()
-        except Exception:
-            pass
+        logger.error(f"Error updating preferences from purchase (CSV) for user {user_id}: {e}")
         return False

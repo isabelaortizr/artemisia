@@ -10,8 +10,8 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from services.data_processor import DataProcessor
-from config.settings import config
+from ..services.csv_data_processor import CSVDataProcessor as DataProcessor
+from ..config.settings import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

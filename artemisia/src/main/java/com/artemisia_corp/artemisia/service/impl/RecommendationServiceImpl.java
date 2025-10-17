@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,7 +52,13 @@ public class RecommendationServiceImpl implements RecommendationService {
     private ViewPreferenceCalculator viewPreferenceCalculator;
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String PYTHON_ML_SERVICE = "http://localhost:5000";
+
+    // Client that talks to the Python recommender API (FastAPI)
+    private final RecommenderPythonClient recommenderClient;
+
+    public RecommendationServiceImpl(RecommenderPythonClient recommenderClient) {
+        this.recommenderClient = recommenderClient;
+    }
 
     @Override
     @Transactional
@@ -60,14 +67,28 @@ public class RecommendationServiceImpl implements RecommendationService {
             // Primero actualizar preferencias si es necesario
             updateUserPreferences(userId);
 
-            // Llamar al servicio Python para recomendaciones
-            String url = PYTHON_ML_SERVICE + "/recommendations/" + userId + "?limit=" + limit;
-            Long[] recommendedProductIds = restTemplate.getForObject(url, Long[].class);
+            // Llamar al servicio Python para recomendaciones mediante el cliente wrapper
+            Map[] recommended = recommenderClient.getRecommendations(userId.intValue(), limit);
 
-            if (recommendedProductIds != null && recommendedProductIds.length > 0) {
-                return Arrays.stream(recommendedProductIds)
-                        .map(productId -> productService.getProductById(productId))
-                        .collect(Collectors.toList());
+            if (recommended != null && recommended.length > 0) {
+                List<ProductResponseDto> mapped = new ArrayList<>();
+                for (Map item : recommended) {
+                    Object idObj = item.get("id");
+                    if (idObj == null) idObj = item.get("product_id");
+
+                    if (idObj instanceof Number) {
+                        Long pid = ((Number) idObj).longValue();
+                        try {
+                            mapped.add(productService.getProductById(pid));
+                        } catch (Exception e) {
+                            // if product not found locally, skip
+                        }
+                    }
+                }
+
+                if (!mapped.isEmpty()) {
+                    return mapped;
+                }
             }
 
             // Fallback: productos populares si no hay recomendaciones
@@ -165,8 +186,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Override
     public List<Long> findSimilarUsers(Long userId, int limit) {
         try {
-            String url = PYTHON_ML_SERVICE + "/similar-users/" + userId + "?limit=" + limit;
-            Long[] similarUsers = restTemplate.getForObject(url, Long[].class);
+            Long[] similarUsers = recommenderClient.getSimilarUsersAsArray(userId.intValue(), limit);
             return similarUsers != null ? Arrays.asList(similarUsers) : new ArrayList<>();
         } catch (Exception e) {
             log.error("Error finding similar users: {}", e.getMessage());
@@ -199,9 +219,9 @@ public class RecommendationServiceImpl implements RecommendationService {
                 trainingData.add(userData);
             }
 
-            // Enviar datos al servicio Python para entrenamiento
-            restTemplate.postForObject(PYTHON_ML_SERVICE + "/train", trainingData, String.class);
-            log.info("Sent training data for {} users to ML service", trainingData.size());
+            // Enviar datos al servicio Python para entrenamiento usando el cliente
+            String resp = recommenderClient.train(trainingData);
+            log.info("Sent training data for {} users to ML service, resp={}", trainingData.size(), resp);
 
         } catch (Exception e) {
             log.error("Error training recommendation model: {}", e.getMessage());

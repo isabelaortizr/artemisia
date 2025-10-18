@@ -15,26 +15,44 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_product(product_id: int):
-    """Fetch product information from products.csv"""
+    """Fetch product information (DB preferred via DataProcessor, fallback to CSV)."""
+    # Try DataProcessor (DB preferred)
+    try:
+        from .csv_data_processor import DataProcessor
+        dp = DataProcessor()
+        products = dp.get_available_products()
+        for p in products:
+            if int(p.get('id') or 0) == int(product_id):
+                return {
+                    'product_id': p.get('id'),
+                    'price': p.get('price'),
+                    'categories': p.get('categories', []),
+                    'techniques': p.get('techniques', [])
+                }
+    except Exception:
+        # fallthrough to CSV fallback
+        pass
+
+    # CSV fallback
     try:
         products_path = os.path.join(CSV_DIR, 'products.csv')
         if not os.path.exists(products_path):
             logger.warning(f"Products CSV not found at {products_path}")
             return None
-            
+
         df = pd.read_csv(products_path)
         product = df[df['id'] == product_id].iloc[0] if len(df[df['id'] == product_id]) > 0 else None
-        
+
         if product is None:
             return None
-            
+
         # Parse categories and techniques from JSON strings
         try:
             categories = json.loads(product['categories']) if pd.notna(product['categories']) else []
             techniques = json.loads(product['techniques']) if pd.notna(product['techniques']) else []
-        except:
+        except Exception:
             categories, techniques = [], []
-            
+
         return {
             'product_id': product['id'],
             'price': float(product['price']) if pd.notna(product['price']) else None,

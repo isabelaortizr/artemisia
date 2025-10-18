@@ -7,6 +7,7 @@ from datetime import datetime
 from .models.recommendation_engine import ArtRecommendationEngine
 from .services.model_trainer import ModelTrainer
 from .services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase
+from .services.csv_data_processor import DataProcessor
 from .config.settings import config
 
 # Configurar logging
@@ -49,10 +50,9 @@ def get_recommendations(user_id):
     """Obtiene recomendaciones para un usuario"""
     try:
         limit = request.args.get('limit', 10, type=int)
-        
-        # Obtener vector de usuario
-        from services.csv_data_processor import CSVDataProcessor
-        data_processor = CSVDataProcessor()
+
+        # Use DataProcessor factory which prefers DB when available
+        data_processor = DataProcessor()
         user_data = data_processor.get_user_data(user_id)
         if not user_data:
             return jsonify({"error": "User not found"}), 404
@@ -65,17 +65,17 @@ def get_recommendations(user_id):
             user_vector = vector_builder.build_user_vector_from_history(
                 user_data.get('purchase_history', [])
             )
-        
-        # Obtener productos disponibles
+
+        # Obtener productos disponibles (DB preferred)
         products = data_processor.get_available_products()
-            
+
         # Obtener recomendaciones
         recommendations = recommendation_engine.get_recommendations(
             user_vector, products, top_n=limit
         )
-        
-        return jsonify([prod['product_id'] for prod in recommendations])
-        
+
+        return jsonify([prod.get('id') or prod.get('product_id') for prod in recommendations])
+
     except Exception as e:
         logger.error(f"Error getting recommendations for user {user_id}: {e}")
         return jsonify({"error": "Internal server error"}), 500
@@ -95,6 +95,7 @@ def get_similar_users(user_id):
 def train_model():
     """Inicia entrenamiento del modelo"""
     try:
+        # Start async training (DB-preferred). This will try DB via DataProcessor.
         success = model_trainer.train_model_async()
         
         if success:
@@ -108,6 +109,41 @@ def train_model():
     except Exception as e:
         logger.error(f"Error starting training: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route('/train/initial-csv', methods=['POST'])
+def train_initial_csv():
+    """Run an initial, synchronous training from CSV files only.
+
+    Useful to seed the model once using CSV exports; after that the service
+    will use DB-based data for recommendations and retraining.
+    """
+    try:
+        ok = model_trainer.train_from_csv()
+        if ok:
+            return jsonify({'status': 'ok', 'mode': 'csv'}), 200
+        else:
+            return jsonify({'status': 'failed'}), 500
+    except Exception as e:
+        logger.error(f"Error training from CSV: {e}")
+        return jsonify({'error': 'internal error'}), 500
+
+
+@app.route('/train/retrain-db', methods=['POST'])
+def retrain_from_db():
+    """Trigger a synchronous retrain using DB data.
+
+    This endpoint will attempt to load fresh data from the DB and retrain the model.
+    """
+    try:
+        ok = model_trainer._train_model()
+        if ok:
+            return jsonify({'status': 'ok', 'mode': 'db'}), 200
+        else:
+            return jsonify({'status': 'failed'}), 500
+    except Exception as e:
+        logger.error(f"Error retraining from DB: {e}")
+        return jsonify({'error': 'internal error'}), 500
 
 
 @app.route('/update-view', methods=['POST'])
@@ -199,8 +235,8 @@ def health_check():
 def get_products():
     """Obtiene productos disponibles"""
     try:
-        from services.csv_data_processor import CSVDataProcessor
-        data_processor = CSVDataProcessor()
+        # Use DataProcessor factory to prefer DB when available
+        data_processor = DataProcessor()
         products = data_processor.get_available_products()
         return jsonify(products)
     except Exception as e:
@@ -211,8 +247,7 @@ def get_products():
 def get_user_vector(user_id):
     """Obtiene vector de preferencias de usuario"""
     try:
-        from services.csv_data_processor import CSVDataProcessor
-        data_processor = CSVDataProcessor()
+        data_processor = DataProcessor()
         user_data = data_processor.get_user_data(user_id)
         if not user_data:
             return jsonify({"error": "User not found"}), 404

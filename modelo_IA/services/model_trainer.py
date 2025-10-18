@@ -6,7 +6,7 @@ from ..models.recommendation_engine import ArtRecommendationEngine
 from ..services.vector_builder import VectorBuilder, FEATURE_NAMES
 
 # Delay importing DataProcessor (it depends on psycopg2). Import lazily.
-from ..services.csv_data_processor import CSVDataProcessor
+from ..services.csv_data_processor import DataProcessor
 from ..config.settings import config
 import os
 
@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 class ModelTrainer:
     def __init__(self):
-        self.data_processor = CSVDataProcessor()
+        # DataProcessor factory will prefer DB when available, else CSV files
+        self.data_processor = DataProcessor()
         self.vector_builder = VectorBuilder()
         self.is_training = False
         self.last_training_time = None
@@ -52,63 +53,16 @@ class ModelTrainer:
     def _train_model(self) -> bool:
         """Lógica principal de entrenamiento"""
         try:
-            # 1. Obtener datos de entrenamiento
-            logger.info("📥 Obteniendo datos de entrenamiento...")
-            # If the DataProcessor isn't available (e.g., missing psycopg2) or returns
-            # no/insufficient data, fall back to synthetic data so training can proceed.
+            # 1. Obtener datos de entrenamiento usando the DataProcessor factory (DB preferred)
+            logger.info("📥 Obteniendo datos de entrenamiento (fuente preferida: DB)...")
             training_data = []
+            try:
+                training_data = (self.data_processor.get_training_data_from_db() or [])
+            except Exception as e:
+                logger.warning(f"⚠️  Error obteniendo datos reales: {e}. Usando datos sintéticos o CSV fallback.")
+                training_data = []
 
-            if self.data_processor is None:
-                logger.warning("⚠️  DataProcessor no disponible (posible falta de psycopg2). Usando datos sintéticos.")
-                training_data = self._generate_synthetic_data(max(config.MIN_USERS_FOR_TRAINING, 200))
-            else:
-                try:
-                    training_data = self.data_processor.get_training_data_from_db() or []
-                except Exception as e:
-                    logger.warning(f"⚠️  Error obteniendo datos reales: {e}. Usando datos sintéticos.")
-                    training_data = []
-
-            # Option: if environment requests CSV-only training, do not generate synthetic users
-            csv_only = os.getenv('CSV_ONLY_TRAINING', '0') in ('1', 'true', 'True')
-            if len(training_data) < config.MIN_USERS_FOR_TRAINING:
-                if csv_only:
-                    logger.error(f"❌ Datos insuficientes ({len(training_data)} usuarios) y CSV_ONLY_TRAINING habilitado. Abortando entrenamiento.")
-                    return False
-                logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
-                need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
-                synthetic_data = self._generate_synthetic_data(need + 100)
-                training_data.extend(synthetic_data)
-                logger.info(f"➕ Añadidos {len(synthetic_data)} usuarios sintéticos")
-            
-            # 2. Preparar datos para el modelo
-            logger.info("🔧 Preparando datos para entrenamiento...")
-            model_training_data = []
-            
-            for user_data in training_data:
-                prepared_data = self._prepare_user_data(user_data)
-                if prepared_data:
-                    model_training_data.append(prepared_data)
-            
-            if not model_training_data:
-                logger.error("❌ No se pudieron preparar datos para entrenamiento")
-                return False
-            
-            # 3. Entrenar modelo
-            logger.info(f"🏋️‍♂️ Entrenando con {len(model_training_data)} usuarios...")
-            model = ArtRecommendationEngine()
-            success = model.train(model_training_data)
-            
-            if success:
-                # 4. Guardar modelo
-                model.save_model(config.MODEL_PATH)
-                
-                # 5. Guardar estadísticas
-                self._save_training_stats(model, len(model_training_data))
-                
-                return True
-            else:
-                return False
-                
+            return self._run_training_pipeline(training_data)
         except Exception as e:
             logger.error(f"Error en entrenamiento: {e}")
             return False
@@ -227,6 +181,69 @@ class ModelTrainer:
             synthetic_data.append(user_data)
         
         return synthetic_data
+
+    def _run_training_pipeline(self, training_data: List[Dict]) -> bool:
+        """Core pipeline: prepare, optionally augment, train, save model.
+
+        This extracts the core steps so we can call it both from CSV-based
+        initial training and DB-based retraining.
+        """
+        try:
+            # Option: if environment requests CSV-only training, do not generate synthetic users
+            csv_only = os.getenv('CSV_ONLY_TRAINING', '0') in ('1', 'true', 'True')
+            if len(training_data) < config.MIN_USERS_FOR_TRAINING:
+                if csv_only:
+                    logger.error(f"❌ Datos insuficientes ({len(training_data)} usuarios) y CSV_ONLY_TRAINING habilitado. Abortando entrenamiento.")
+                    return False
+                logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
+                need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
+                synthetic_data = self._generate_synthetic_data(need + 100)
+                training_data.extend(synthetic_data)
+                logger.info(f"➕ Añadidos {len(synthetic_data)} usuarios sintéticos")
+
+            # Prepare data
+            logger.info("🔧 Preparando datos para entrenamiento...")
+            model_training_data = []
+            for user_data in training_data:
+                prepared_data = self._prepare_user_data(user_data)
+                if prepared_data:
+                    model_training_data.append(prepared_data)
+
+            if not model_training_data:
+                logger.error("❌ No se pudieron preparar datos para entrenamiento")
+                return False
+
+            # Train model
+            logger.info(f"🏋️‍♂️ Entrenando con {len(model_training_data)} usuarios...")
+            model = ArtRecommendationEngine()
+            success = model.train(model_training_data)
+
+            if success:
+                model.save_model(config.MODEL_PATH)
+                self._save_training_stats(model, len(model_training_data))
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            logger.error(f"Error en pipeline de entrenamiento: {e}")
+            return False
+
+    def train_from_csv(self) -> bool:
+        """Convenience: run a synchronous initial training using CSV files only.
+
+        Useful for one-time initial training in environments where the DB is not
+        available during development. This reads CSV via CSVDataProcessor and
+        invokes the shared training pipeline.
+        """
+        from ..services.csv_data_processor import CSVDataProcessor
+        try:
+            dp = CSVDataProcessor()
+            training_data = dp.get_training_data_from_db() or []
+            return self._run_training_pipeline(training_data)
+        except Exception as e:
+            logger.error(f"Error entrenando desde CSV: {e}")
+            return False
     
     def _generate_synthetic_user(self, user_id: int, pattern: Dict) -> Dict:
         """Genera un usuario sintético"""

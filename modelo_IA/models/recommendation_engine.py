@@ -328,13 +328,95 @@ class ArtRecommendationEngine:
     def load_model(cls, filepath: str) -> 'ArtRecommendationEngine':
         """Carga modelo desde archivo"""
         try:
-            if os.path.exists(filepath):
-                model = joblib.load(filepath)
-                logger.info(f"📂 Modelo cargado desde: {filepath}")
-                return model
-            else:
-                logger.warning(f"Modelo no encontrado en: {filepath}")
-                return cls()
+            # Try a few candidate locations: the given path, and package-relative paths
+            candidates = [os.path.abspath(filepath)]
+            pkg_root = os.path.dirname(os.path.dirname(__file__))
+            candidates.append(os.path.abspath(os.path.join(pkg_root, filepath)))
+            candidates.append(os.path.abspath(os.path.join(pkg_root, os.path.basename(filepath))))
+
+            for p in candidates:
+                if os.path.exists(p):
+                    try:
+                        model = joblib.load(p)
+                        logger.info(f"📂 Modelo cargado desde: {p}")
+                        # If DB is configured, ensure model only contains DB users
+                        try:
+                            from ..services.csv_data_processor import DataProcessor
+                            dp = DataProcessor()
+                            if dp and hasattr(dp, 'get_all_users_data') and config.db_is_configured():
+                                db_users = dp.get_all_users_data(100000) or []
+                                db_user_ids = {int(u.get('id')) for u in db_users if u.get('id')}
+                                if model.user_vectors:
+                                    model_user_ids = set(model.user_vectors.keys())
+                                    # If there are model users not present in DB, attempt retrain from DB
+                                    extra = model_user_ids - db_user_ids
+                                    if extra:
+                                        logger.info(f"🔁 Modelo contiene usuarios no presentes en DB ({len(extra)}); intentando reentrenar desde DB...")
+                                        try:
+                                            from ..services.model_trainer import ModelTrainer
+                                            trainer = ModelTrainer()
+                                            ok = trainer._train_model()
+                                            if ok:
+                                                # reload newly saved model
+                                                try:
+                                                    model = joblib.load(p)
+                                                    logger.info(f"📂 Modelo recargado luego de reentrenar desde DB: {p}")
+                                                    return model
+                                                except Exception:
+                                                    logger.warning("No se pudo recargar modelo luego de reentrenamiento, se usará la versión actual podada.")
+                                        except Exception as e:
+                                            logger.error(f"Error intentando reentrenar desde DB: {e}")
+
+                                    # In case retrain didn't happen or failed, prune user_vectors to DB users
+                                    pruned = {uid: vec for uid, vec in model.user_vectors.items() if uid in db_user_ids}
+                                    if len(pruned) != len(model.user_vectors):
+                                        model.user_vectors = pruned
+                                        try:
+                                            # save pruned model back to disk
+                                            joblib.dump(model, p)
+                                            logger.info(f"💾 Modelo podado y guardado (solo usuarios DB) en: {p}")
+                                        except Exception as e:
+                                            logger.warning(f"No se pudo guardar modelo podado: {e}")
+                        except Exception:
+                            # If any step fails, continue and return unmodified model
+                            pass
+                        return model
+                    except Exception as e:
+                        logger.error(f"Error cargando modelo desde {p}: {e}")
+
+            # If model file not found, attempt initial CSV-only training if data exports exist
+            logger.warning(f"Modelo no encontrado en candidates: {candidates}. Intentando entrenamiento inicial desde CSV si hay datos...")
+            try:
+                # lazy import to avoid top-level dependency
+                from ..services.model_trainer import ModelTrainer
+                # Verify existence of at least products.csv in package data_exports
+                csv_dir = os.path.join(pkg_root, 'data_exports')
+                products_csv = os.path.join(csv_dir, 'products.csv')
+                interactions_csv = os.path.join(csv_dir, 'interactions.csv')
+                purchases_csv = os.path.join(csv_dir, 'purchases.csv')
+
+                if os.path.exists(products_csv) and (os.path.exists(interactions_csv) or os.path.exists(purchases_csv) or os.path.exists(os.path.join(csv_dir, 'user_preferences.csv'))):
+                    logger.info("📁 CSVs detectados en data_exports, lanzando entrenamiento inicial (CSV-only).")
+                    trainer = ModelTrainer()
+                    ok = trainer.train_from_csv()
+                    if ok:
+                        # try load again from same candidates
+                        for p in candidates:
+                            if os.path.exists(p):
+                                try:
+                                    model = joblib.load(p)
+                                    logger.info(f"📂 Modelo cargado luego de entrenamiento desde: {p}")
+                                    return model
+                                except Exception:
+                                    continue
+                else:
+                    logger.info("No se encontraron CSVs suficientes para entrenamiento inicial en: %s", csv_dir)
+            except Exception as e:
+                logger.error(f"Error intentando entrenamiento inicial desde CSV: {e}")
+
+            # Nothing worked: return an empty (untrained) instance
+            logger.warning(f"Devolviendo instancia vacía de {cls.__name__} (sin modelo cargado)")
+            return cls()
         except Exception as e:
             logger.error(f"Error cargando modelo: {e}")
             return cls()

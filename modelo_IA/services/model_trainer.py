@@ -191,15 +191,24 @@ class ModelTrainer:
         try:
             # Option: if environment requests CSV-only training, do not generate synthetic users
             csv_only = os.getenv('CSV_ONLY_TRAINING', '0') in ('1', 'true', 'True')
+
+            # If DB is configured and returned training_data (even small), allow training using the
+            # real DB dataset instead of forcing synthetic augmentation. This is important when the
+            # production DB contains a small but authoritative dataset (e.g. 6 users, 150 products).
             if len(training_data) < config.MIN_USERS_FOR_TRAINING:
-                if csv_only:
+                if csv_only and not config.db_is_configured():
                     logger.error(f"❌ Datos insuficientes ({len(training_data)} usuarios) y CSV_ONLY_TRAINING habilitado. Abortando entrenamiento.")
                     return False
-                logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
-                need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
-                synthetic_data = self._generate_synthetic_data(need + 100)
-                training_data.extend(synthetic_data)
-                logger.info(f"➕ Añadidos {len(synthetic_data)} usuarios sintéticos")
+
+                if config.db_is_configured():
+                    # When DB is configured, respect the real dataset size and proceed with training
+                    logger.info(f"ℹ️ DB configurada y se encontraron {len(training_data)} usuarios; procediendo sin añadir sintéticos.")
+                else:
+                    logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
+                    need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
+                    synthetic_data = self._generate_synthetic_data(need + 100)
+                    training_data.extend(synthetic_data)
+                    logger.info(f"➕ Añadidos {len(synthetic_data)} usuarios sintéticos")
 
             # Prepare data
             logger.info("🔧 Preparando datos para entrenamiento...")

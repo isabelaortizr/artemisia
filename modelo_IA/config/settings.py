@@ -63,6 +63,24 @@ class Config:
     # Local cache directory for computed artifacts (product matrix, etc.)
     CACHE_DIR = _get_env('CACHE_DIR', '.cache')
 
+    def db_is_configured(self) -> bool:
+        """Return True when minimal DB credentials are present."""
+        return all([self.DB_HOST, self.DB_NAME, self.DB_USER, self.DB_PASSWORD])
+
+    def get_db_url(self, driver: str = 'postgresql') -> str:
+        """Return a DB URL usable by SQLAlchemy or other clients.
+
+        Example: postgresql://user:password@host:5432/dbname
+        Password will be included verbatim (caller should be careful with logs).
+        """
+        if not self.db_is_configured():
+            return None
+        host = self.DB_HOST
+        port = f":{self.DB_PORT}" if self.DB_PORT else ''
+        user = self.DB_USER
+        pwd = self.DB_PASSWORD
+        return f"{driver}://{user}:{pwd}@{host}{port}/{self.DB_NAME}"
+
     def get(self, key: str, default=None):
         """Small helper to mimic dict-like access used in some modules."""
         return getattr(self, key, default)

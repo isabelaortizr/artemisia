@@ -96,4 +96,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             "GROUP BY tech " +
             "ORDER BY SUM(od.total) DESC")
     List<TechniqueSalesDto> findTopTechniquesBySales();
+
+    @Query("SELECT od FROM OrderDetail od WHERE od.group.id = :groupId")
+    List<OrderDetail> findByGroupId(@Param("groupId") Long groupId);
+
+    @Query("SELECT od FROM OrderDetail od WHERE od.group.id = :groupId")
+    Page<OrderDetail> findByGroupId(@Param("groupId") Long groupId, Pageable pageable);
 }

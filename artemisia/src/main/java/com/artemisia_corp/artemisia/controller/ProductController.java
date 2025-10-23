@@ -7,6 +7,7 @@ import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.ProductService;
+import com.artemisia_corp.artemisia.service.ProductViewService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,7 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -33,7 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/api/products")
 @Tag(name = "Product Management", description = "Endpoints for managing products")
 public class ProductController {
@@ -41,9 +42,18 @@ public class ProductController {
     @Autowired
     @Lazy
     private ProductService productService;
+
+    @Autowired
+    @Lazy
+    private ProductViewService productViewService;
+
     @Autowired
     @Lazy
     private JwtTokenProvider jwtTokenProvider;
+    
+        @Autowired
+        @Lazy
+        private com.artemisia_corp.artemisia.service.RecommendationService recommendationService;
 
     @Operation(summary = "Get all products", description = "Returns paginated list of all products")
     @ApiResponses(value = {
@@ -69,8 +79,26 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(
             @PathVariable Long id,
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        // El tracking se hace automáticamente en el ProductServiceImpl
         return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @Operation(summary = "Manually track product view", description = "Explicitly track a product view (useful for frontend tracking)")
+    @PostMapping("/{id}/track-view")
+    public ResponseEntity<Void> trackProductView(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token,
+            @RequestParam(value = "duration", required = false) Integer durationSeconds) {
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+        if (durationSeconds != null) {
+            productViewService.trackProductViewWithDuration(userId, id, durationSeconds);
+        } else {
+            productViewService.trackProductView(userId, id);
+        }
+
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Create a new product", description = "Creates a new product")
@@ -181,7 +209,6 @@ public class ProductController {
 
         if (!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autorizado");
 
-
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
             return ResponseEntity.ok(productService.searchProducts(dto, pageable));
@@ -230,4 +257,14 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+        @Operation(summary = "Get recommended products for user", description = "Returns up to 10 recommended products for the authenticated user")
+        @GetMapping("/recommendations")
+        public ResponseEntity<List<ProductResponseDto>> getRecommendations(
+                        @RequestHeader("Authorization") String token,
+                        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+
+                Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                List<ProductResponseDto> recommendations = recommendationService.getUserRecommendations(userId, limit);
+                return ResponseEntity.ok(recommendations);
+        }
 }

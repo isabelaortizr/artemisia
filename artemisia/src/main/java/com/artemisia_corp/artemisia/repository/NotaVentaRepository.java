@@ -84,4 +84,18 @@ public interface NotaVentaRepository extends JpaRepository<NotaVenta, Long> {
             "WHERE EXISTS (SELECT od FROM OrderDetail od WHERE od.group = nv AND od.seller.id = :sellerId) " +
             "GROUP BY nv.estadoVenta")
     Map<VentaEstado, Long> countOrdersBySellerAndStatus(@Param("sellerId") Long sellerId);
+
+    @Query("SELECT nv FROM NotaVenta nv WHERE nv.buyer.id = :buyerId AND nv.estadoVenta = :estado")
+    Page<NotaVenta> findByBuyerIdAndEstadoVenta(
+            @Param("buyerId") Long buyerId,
+            @Param("estado") VentaEstado estado,
+            Pageable pageable);
+
+    @Query("SELECT COUNT(nv) FROM NotaVenta nv WHERE nv.buyer.id = :buyerId AND nv.estadoVenta = :estado")
+    Long countByBuyerIdAndEstadoVenta(
+            @Param("buyerId") Long buyerId,
+            @Param("estado") VentaEstado estado);
+
+    @Query("SELECT nv FROM NotaVenta nv WHERE nv.buyer.id = :buyerId")
+    Page<NotaVenta> findByBuyerId(@Param("buyerId") Long buyerId, Pageable pageable);
 }

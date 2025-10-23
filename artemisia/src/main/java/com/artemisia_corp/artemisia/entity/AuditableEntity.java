@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
@@ -34,6 +35,7 @@ public abstract class AuditableEntity implements Serializable {
     protected String modifiedBy;
 
     @Version
-    protected Integer version;
+    @Column(nullable = false)
+    protected Integer version = 0;
 
 }

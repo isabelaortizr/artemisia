@@ -1,0 +1,3 @@
+2025-10-16 15:46:01,680 - models.recommendation_engine - WARNING - Modelo no encontrado en: models/trained/recommendation_model.pkl
+2025-10-16 15:54:11,629 - models.recommendation_engine - WARNING - Modelo no encontrado en: models/trained/recommendation_model.pkl
+2025-10-16 15:55:11,523 - models.recommendation_engine - WARNING - Modelo no encontrado en: models/trained/recommendation_model.pkl

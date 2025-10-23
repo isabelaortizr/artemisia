@@ -14,11 +14,15 @@ import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.ImageService;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.ProductService;
+import com.artemisia_corp.artemisia.service.ProductViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +42,9 @@ public class ProductServiceImpl implements ProductService {
     private LogsService logsService;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    @Lazy
+    private ProductViewService productViewService;
 
     @Override
     @Transactional(readOnly = true)
@@ -49,6 +56,9 @@ public class ProductServiceImpl implements ProductService {
         List<ProductResponseDto> productDtos = products.getContent().stream()
                 .map(this::convertToDtoWithImage)
                 .collect(Collectors.toList());
+
+        // Trackear vistas si hay usuario autenticado
+        trackProductViewsForAuthenticatedUser(products.getContent());
 
         return new PageImpl<>(productDtos, pageable, products.getTotalElements());
     }
@@ -66,6 +76,9 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             throw new NotDataFoundException("Product not found with ID: " + id);
         }
+
+        // Trackear la vista de este producto específico
+        trackProductViewForAuthenticatedUser(id);
 
         return convertToDtoWithImage(product);
     }
@@ -246,6 +259,9 @@ public class ProductServiceImpl implements ProductService {
                     .map(this::convertToDtoWithImage)
                     .collect(Collectors.toList());
 
+            // Trackear vistas si hay usuario autenticado
+            trackProductViewsForAuthenticatedUser(products.getContent());
+
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (Exception e) {
             logsService.error("Error fetching available products: " + e.getMessage());
@@ -269,6 +285,9 @@ public class ProductServiceImpl implements ProductService {
             List<ProductResponseDto> productDtos = products.getContent().stream()
                     .map(this::convertToDtoWithImage)
                     .collect(Collectors.toList());
+
+            // Trackear vistas si hay usuario autenticado
+            trackProductViewsForAuthenticatedUser(products.getContent());
 
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (Exception e) {
@@ -295,6 +314,9 @@ public class ProductServiceImpl implements ProductService {
                 .map(this::convertToDtoWithImage)
                 .collect(Collectors.toList());
 
+        // Trackear vistas si hay usuario autenticado
+        trackProductViewsForAuthenticatedUser(products.getContent());
+
         return new PageImpl<>(productDtos, pageable, products.getTotalElements());
     }
 
@@ -310,6 +332,9 @@ public class ProductServiceImpl implements ProductService {
             List<ProductResponseDto> productDtos = products.getContent().stream()
                     .map(this::convertToDtoWithImage)
                     .collect(Collectors.toList());
+
+            // Trackear vistas si hay usuario autenticado
+            trackProductViewsForAuthenticatedUser(products.getContent());
 
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -329,6 +354,9 @@ public class ProductServiceImpl implements ProductService {
                     .map(this::convertToDtoWithImage)
                     .collect(Collectors.toList());
 
+            // Trackear vistas si hay usuario autenticado
+            trackProductViewsForAuthenticatedUser(products.getContent());
+
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new IllegalArgumentException("Invalid technique ID: " + techniqueId);
@@ -339,13 +367,74 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable) {
         Page<Product> products = productRepository.findProductsBySellerWithoutDeleted(sellerId, pageable);
+
+        // Trackear vistas si hay usuario autenticado
+        trackProductViewsForAuthenticatedUser(products.getContent());
+
         return products.map(this::convertToDto);
     }
 
     @Override
     public Page<ProductResponseDto> getProductsByStatus(Long sellerId, ProductStatus status, Pageable pageable) {
-        return productRepository.findBySellerIdAndStatus(sellerId, status, pageable)
-                .map(this::convertToDto);
+        Page<Product> products = productRepository.findBySellerIdAndStatus(sellerId, status, pageable);
+
+        // Trackear vistas si hay usuario autenticado
+        trackProductViewsForAuthenticatedUser(products.getContent());
+
+        return products.map(this::convertToDto);
+    }
+
+    /**
+     * Trackea la vista de un producto específico para el usuario autenticado
+     */
+    private void trackProductViewForAuthenticatedUser(Long productId) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated() &&
+                    !"anonymousUser".equals(authentication.getPrincipal())) {
+
+                String username = authentication.getName();
+                User user = userRepository.findByName(username)
+                        .orElseThrow(() -> new NotDataFoundException("User not found with name: " + username));
+
+                // Trackear la vista del producto
+                productViewService.trackProductView(user.getId(), productId);
+                log.debug("Tracked product view for user {} and product {}", user.getId(), productId);
+            }
+        } catch (Exception e) {
+            log.warn("Could not track product view for product {}: {}", productId, e.getMessage());
+        }
+    }
+
+    /**
+     * Trackea vistas múltiples para una lista de productos
+     */
+    private void trackProductViewsForAuthenticatedUser(List<Product> products) {
+        if (products == null || products.isEmpty()) {
+            return;
+        }
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated() &&
+                    !"anonymousUser".equals(authentication.getPrincipal())) {
+
+                String username = authentication.getName();
+                User user = userRepository.findByName(username)
+                        .orElseThrow(() -> new NotDataFoundException("User not found with name: " + username));
+
+                // Trackear solo los primeros 5 productos para evitar sobrecarga
+                products.stream()
+                        .limit(5)
+                        .forEach(product -> {
+                            productViewService.trackProductView(user.getId(), product.getId());
+                        });
+
+                log.debug("Tracked product views for user {} and {} products", user.getId(), Math.min(5, products.size()));
+            }
+        } catch (Exception e) {
+            log.warn("Could not track product views: {}", e.getMessage());
+        }
     }
 
     private ProductResponseDto convertToDtoWithImage(Product product) {

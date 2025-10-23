@@ -1,26 +1,26 @@
 // src/pages/MyWorks.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
-import WorkCard       from '../components/WorkCard';
-import EditModal      from '../components/EditModal';
-import AddArt         from './AddArt'; // Importamos AddArt
+import WorkCard from '../components/WorkCard';
+import EditModal from '../components/EditModal';
+import AddArt from './AddArt';
 
 const MyWorks = () => {
-    const [works,      setWorks]    = useState([]);
-    const [loading,    setLoading]  = useState(true);
-    const [error,      setError]    = useState(null);
-    const [page,       setPage]     = useState(0);
-    const [totalPages, setTotal]    = useState(0);
-    const [editing,    setEditing]  = useState(null);
-    const [showAddModal, setShowAddModal] = useState(false); // Estado para el modal de agregar
+    const [works, setWorks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotal] = useState(0);
+    const [editing, setEditing] = useState(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [expandedWorkId, setExpandedWorkId] = useState(null); // Nueva state para controlar qué tarjeta está expandida
     const navigate = useNavigate();
     const sellerId = localStorage.getItem('userId');
 
     const normalize = items =>
         items.map(item => ({ ...item, id: item.id ?? item.productId }));
 
-    // 1) función de carga
     const loadWorks = useCallback(() => {
         setLoading(true);
         productService
@@ -33,7 +33,6 @@ const MyWorks = () => {
             .finally(() => setLoading(false));
     }, [page, sellerId]);
 
-    // 2) useEffect que dispara la carga
     useEffect(() => {
         const role = localStorage.getItem('userRole');
         if (role !== 'SELLER' || !sellerId) {
@@ -43,20 +42,24 @@ const MyWorks = () => {
         loadWorks();
     }, [loadWorks, navigate, sellerId]);
 
-    // Función para manejar el éxito al agregar una obra
     const handleAddSuccess = () => {
         setShowAddModal(false);
-        loadWorks(); // Recargar la lista después de agregar
+        loadWorks();
+    };
+
+    // Función para manejar la expansión/contracción
+    const handleToggleExpand = (workId) => {
+        setExpandedWorkId(prev => prev === workId ? null : workId);
     };
 
     if (loading) return <p className="text-center mt-10">Cargando tus obras…</p>;
-    if (error)   return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
+    if (error) return <p className="text-center mt-10 text-red-500">Error: {error}</p>;
 
     return (
         <div className="relative max-w-7xl mx-auto p-6">
             <h2 className="text-3xl font-semibold mb-8 text-center">My pieces</h2>
 
-            {/* Botón para agregar nueva obra - Siempre visible */}
+            {/* Botón para agregar nueva obra */}
             <div className="mb-8 flex justify-center">
                 <button
                     onClick={() => setShowAddModal(true)}
@@ -78,7 +81,13 @@ const MyWorks = () => {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {works.map(w => (
-                        <WorkCard key={w.id} work={w} onEdit={() => setEditing(w)} />
+                        <WorkCard
+                            key={w.id}
+                            work={w}
+                            isExpanded={expandedWorkId === w.id} // Pasamos si está expandida
+                            onToggleExpand={() => handleToggleExpand(w.id)} // Pasamos la función para toggle
+                            onEdit={() => setEditing(w)}
+                        />
                     ))}
                 </div>
             )}
@@ -105,7 +114,7 @@ const MyWorks = () => {
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
                         <button
-                            className="absolute top-4 right-4 text-black text-2xl hover:text-red-600 z-10 bg-white rounded-full w-8 h-8 flex items-center justify-center"
+                            className="absolute top-4 right-4 text-black text-2xl hover:text-red-600 z-10 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-md"
                             onClick={() => setShowAddModal(false)}
                         >
                             ×
@@ -126,7 +135,7 @@ const MyWorks = () => {
                     onClose={() => setEditing(null)}
                     onSave={async updated => {
                         setEditing(null);
-                        await loadWorks(); // Recargar la lista después de editar
+                        await loadWorks();
                     }}
                 />
             )}

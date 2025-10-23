@@ -1,5 +1,5 @@
 // src/components/WorkCard.jsx
-import React, { useState } from 'react';
+import React from 'react';
 
 // Función para formatear el texto
 const formatText = (text) => {
@@ -10,15 +10,19 @@ const formatText = (text) => {
         .join(' ');
 };
 
-export default function WorkCard({ work, onEdit }) {
-    const [expanded, setExpanded] = useState(false);
-
+export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit }) {
     const imageSrc = work.image
         ? `data:image/jpeg;base64,${work.image}`
         : 'https://via.placeholder.com/300x200';
 
-    const toggleExpand = () => {
-        setExpanded(!expanded);
+    const handleToggle = (e) => {
+        e.stopPropagation();
+        onToggleExpand();
+    };
+
+    const handleEdit = (e) => {
+        e.stopPropagation();
+        onEdit();
     };
 
     return (
@@ -32,8 +36,11 @@ export default function WorkCard({ work, onEdit }) {
                 {new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' }).format(work.price)}
             </p>
 
-            {expanded && (
-                <div className="mt-4 space-y-2 text-gray-700 text-sm animate-fadeIn">
+            {/* Contenido expandible */}
+            <div className={`overflow-hidden transition-all duration-300 ${
+                isExpanded ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
+            }`}>
+                <div className="space-y-2 text-gray-700 text-sm">
                     <p><strong>Techniques:</strong> {work.techniques ? work.techniques.map(formatText).join(', ') : 'N/A'}</p>
                     <p><strong>Categories:</strong> {work.categories ? work.categories.map(formatText).join(', ') : 'N/A'}</p>
                     <p><strong>Materials:</strong> {work.materials || 'N/A'}</p>
@@ -41,17 +48,17 @@ export default function WorkCard({ work, onEdit }) {
                     <p><strong>Stock:</strong> {work.stock}</p>
                     <p><strong>Status:</strong> {work.status === 'AVAILABLE' ? 'Available' : 'Unavailable'}</p>
                 </div>
-            )}
+            </div>
 
             <div className="mt-auto flex justify-between items-center pt-4">
                 <button
-                    onClick={toggleExpand}
-                    className="text-blue-600 hover:underline text-sm focus:outline-none"
+                    onClick={handleToggle}
+                    className="text-black  hover:underline text-sm focus:outline-none transition-colors"
                 >
-                    {expanded ? 'See less ▲' : 'See details ▼'}
+                    {isExpanded ? 'See less ▲' : 'See details ▼'}
                 </button>
                 <button
-                    onClick={onEdit}
+                    onClick={handleEdit}
                     className="bg-black text-white py-2 px-4 rounded-full hover:bg-gray-800 text-sm focus:outline-none transition-colors"
                 >
                     Edit

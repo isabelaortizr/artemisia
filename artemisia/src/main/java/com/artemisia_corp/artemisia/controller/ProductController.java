@@ -26,7 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,7 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/api/products")
 @Tag(name = "Product Management", description = "Endpoints for managing products")
 public class ProductController {
@@ -50,6 +50,10 @@ public class ProductController {
     @Autowired
     @Lazy
     private JwtTokenProvider jwtTokenProvider;
+    
+        @Autowired
+        @Lazy
+        private com.artemisia_corp.artemisia.service.RecommendationService recommendationService;
 
     @Operation(summary = "Get all products", description = "Returns paginated list of all products")
     @ApiResponses(value = {
@@ -252,4 +256,15 @@ public class ProductController {
         Page<ProductResponseDto> products = productService.getProductsBySellerWithoutDeleted(sellerId, pageable);
         return ResponseEntity.ok(products);
     }
+
+        @Operation(summary = "Get recommended products for user", description = "Returns up to 10 recommended products for the authenticated user")
+        @GetMapping("/recommendations")
+        public ResponseEntity<List<ProductResponseDto>> getRecommendations(
+                        @RequestHeader("Authorization") String token,
+                        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+
+                Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                List<ProductResponseDto> recommendations = recommendationService.getUserRecommendations(userId, limit);
+                return ResponseEntity.ok(recommendations);
+        }
 }

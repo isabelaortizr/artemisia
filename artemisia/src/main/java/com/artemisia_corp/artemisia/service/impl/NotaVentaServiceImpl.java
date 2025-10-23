@@ -497,6 +497,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             throw new NotDataFoundException("Product not found");
         }
 
+        log.info(cart.toString());
+
         Optional<OrderDetail> existingDetail = orderDetailRepository.findByGroupIdAndProductId(cart.getId(), product.getId());
 
         if (existingDetail.isPresent()) {

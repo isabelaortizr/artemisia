@@ -6,7 +6,7 @@ import com.artemisia_corp.artemisia.integracion.impl.dtos.*;
 public interface SterumPayService {
     StereumAuthResponse obtenerTokenAutenticacion();
     StereumPagaResponseDto crearCargoCobro(StereumPagaDto chargeDTO, Long idNotaVenta);
-    EstadoResponseDto obtenerEstadoCobro(String id_transaccion);
+    EstadoResponseDto obtenerEstadoCobro(String idTransaccion);
     NotaVentaResponseDto conversionBob (ConversionDto conversionDto);
-    EstadoResponseDto cancelarCargo(String id_transaccion);
+    EstadoResponseDto cancelarCargo(String idTransaccion);
 }

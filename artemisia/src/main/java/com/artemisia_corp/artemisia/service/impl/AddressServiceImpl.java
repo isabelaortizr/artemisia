@@ -13,9 +13,8 @@ import com.artemisia_corp.artemisia.repository.AddressRepository;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.service.LogsService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,16 +24,11 @@ import java.util.List;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class AddressServiceImpl implements AddressService {
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private LogsService logsService;
-    @Autowired
-    @Lazy
-    private JwtTokenProvider jwtTokenProvider;
+    private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
+    private final LogsService logsService;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,8 +50,6 @@ public class AddressServiceImpl implements AddressService {
                     return new NotDataFoundException("Address not found: The address with ID " +
                             id + " does not exist" );
                 });
-
-        validateUserId(token, address.getUser().getId(), "getAddressById");
 
         return convertToDto(address);
     }
@@ -116,7 +108,6 @@ public class AddressServiceImpl implements AddressService {
     public void deleteAddress(Long id, String token) {
         Address existingAddress = addressRepository.findById(id)
                 .orElseThrow(() -> new NotDataFoundException("Address not found: The address with ID " + id + " does not exist."));
-        validateUserId(token, existingAddress.getUser().getId(), "deleteAddress");
 
         existingAddress.setStatus(AddressStatus.DELETED);
         addressRepository.save(existingAddress);
@@ -170,17 +161,4 @@ public class AddressServiceImpl implements AddressService {
             throw new IncompleteAddressException("All mandatory fields (name, surname, country, city, street, houseNumber) must be provided");
         }
     }
-
-    private void validateUserId(String token, Long userId, String functionName) {
-        String userIdToken = jwtTokenProvider.getIdFromToken(token);
-        log.info("Validating user " + userIdToken + " with ID " + userId + " in function " + functionName);
-        if (!userIdToken.equals(userId.toString())) {
-            log.error("Address not found: " +
-                    " does not belong to the user with ID " + userIdToken + ".");
-            logsService.error("Address not found: " +
-                    " does not belong to the user with ID " + userIdToken + ". In function " + functionName);
-            throw new NotDataFoundException("User does not have such address");
-        }
-    }
-
 }

@@ -22,16 +22,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // Query mejorado usando DISTINCT para evitar duplicados
     @Query("SELECT DISTINCT p FROM Product p " +
-            "WHERE p.status != 'DELETED'")
-    Page<Product> findAllProducts(Pageable pageable);
+            "WHERE p.status != 'DELETED' AND p.seller.id != :user_id")
+    Page<Product> findAllProducts(Pageable pageable, @Param("user_id") Long userId);
 
     @Query("SELECT p FROM Product p WHERE p.id = :p_productId")
     Product findProductById(@Param("p_productId") Long productId);
 
     // Query para productos disponibles
     @Query("SELECT DISTINCT p FROM Product p " +
-            "WHERE p.stock > 0 AND p.status = 'AVAILABLE'")
-    Page<Product> findAllAvailableProducts(Pageable pageable);
+            "WHERE p.stock > 0 AND p.status = 'AVAILABLE' AND p.seller.id != :user_id")
+    Page<Product> findAllAvailableProducts(Pageable pageable, @Param("user_id") Long userId);
 
     @Transactional
     @Modifying

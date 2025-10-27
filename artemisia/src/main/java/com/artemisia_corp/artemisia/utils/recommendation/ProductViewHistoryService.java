@@ -102,7 +102,7 @@ public class ProductViewHistoryService {
 
         // Si no hay compras, simular vistas basadas en productos disponibles
         if (fallbackData.isEmpty()) {
-            Page<Product> availableProducts = productRepository.findAllAvailableProducts(PageRequest.of(0, 10));
+            Page<Product> availableProducts = productRepository.findAllAvailableProducts(PageRequest.of(0, 10), userId);
             for (Product product : availableProducts) {
                 Object[] viewData = {
                         product.getId(),

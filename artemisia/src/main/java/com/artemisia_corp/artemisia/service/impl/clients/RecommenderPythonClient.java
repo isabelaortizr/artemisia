@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.service.impl.clients;
 
+import com.artemisia_corp.artemisia.service.LogsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -8,15 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 
-import java.util.Map;
-
 @Component
 public class RecommenderPythonClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${recommender.python.url:http://localhost:8000}")
+    @Value("${recommender_python_url}")
     private String recommenderUrl;
+
+    private LogsService logsService;
 
     public Map[] getRecommendations(int userId, int topN) {
         String url = String.format("%s/recommendations/%d?top_n=%d", recommenderUrl, userId, topN);
@@ -27,7 +28,7 @@ public class RecommenderPythonClient {
         return new Map[0];
     }
 
-    public Map<String, Object> getSimilarUsers(int userId, int limit) {
+    public Map getSimilarUsers(int userId, int limit) {
         String url = String.format("%s/similar_users/%d?limit=%d", recommenderUrl, userId, limit);
         ResponseEntity<Map> resp = restTemplate.getForEntity(url, Map.class);
         if (resp.getStatusCode() == HttpStatus.OK) {
@@ -56,7 +57,10 @@ public class RecommenderPythonClient {
         for (Object o : list) {
             if (o instanceof Number) longs.add(((Number) o).longValue());
             else {
-                try { longs.add(Long.parseLong(o.toString())); } catch (Exception ignored) {}
+                try { longs.add(Long.parseLong(o.toString())); }
+                catch (Exception e) {
+                    logsService.error(e.getMessage());
+                }
             }
         }
 

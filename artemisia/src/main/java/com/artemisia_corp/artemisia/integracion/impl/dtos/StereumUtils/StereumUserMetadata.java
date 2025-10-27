@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.integracion.impl.dtos.StereumUtils;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,22 +13,35 @@ import lombok.Setter;
 public class StereumUserMetadata {
     private String sub;
     private String country;
-    private Boolean email_verified;
+    @JsonProperty("email_verified")
+    private Boolean emailVerified;
     private String birthdate;
-    private String document_number;
-    private String second_surname;
-    private Boolean _2fa_biometrics;
-    private String first_surname;
-    private String locale_code;
-    private String user_type;
-    private Boolean phone_verified;
-    private String terms_conditions;
+    @JsonProperty("document_number")
+    private String documentNumber;
+    @JsonProperty("second_surname")
+    private String secondSurname;
+    @JsonProperty("_2fa_biometrics")
+    private Boolean twoFaBiometrics;
+    @JsonProperty("first_surname")
+    private String firstSurname;
+    @JsonProperty("locale_code")
+    private String localeCode;
+    @JsonProperty("user_type")
+    private String userType;
+    @JsonProperty("phone_verified")
+    private Boolean phoneVerified;
+    @JsonProperty("terms_conditions")
+    private String termsConditions;
     private String name;
-    private String phone_number;
+    @JsonProperty("phone_number")
+    private String phoneNumber;
     private String exp;
     private String email;
     private String username;
-    private String document_type;
-    private String ACTIVO;
-    private String privacy_policies;
+    @JsonProperty("document_type")
+    private String documentType;
+    @JsonProperty("ACTIVO")
+    private String activo;
+    @JsonProperty("privacy_policies")
+    private String privacyPolicies;
 }

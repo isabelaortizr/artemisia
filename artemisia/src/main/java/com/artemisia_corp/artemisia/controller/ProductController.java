@@ -8,6 +8,7 @@ import com.artemisia_corp.artemisia.entity.dto.product.ProductSearchDto;
 import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.service.ProductService;
 import com.artemisia_corp.artemisia.service.ProductViewService;
+import com.artemisia_corp.artemisia.service.RecommendationService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,9 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,25 +35,14 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/products")
 @Tag(name = "Product Management", description = "Endpoints for managing products")
 public class ProductController {
-
-    @Autowired
-    @Lazy
-    private ProductService productService;
-
-    @Autowired
-    @Lazy
-    private ProductViewService productViewService;
-
-    @Autowired
-    @Lazy
-    private JwtTokenProvider jwtTokenProvider;
-    
-        @Autowired
-        @Lazy
-        private com.artemisia_corp.artemisia.service.RecommendationService recommendationService;
+    private final ProductService productService;
+    private final ProductViewService productViewService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RecommendationService recommendationService;
 
     @Operation(summary = "Get all products", description = "Returns paginated list of all products")
     @ApiResponses(value = {
@@ -62,12 +51,13 @@ public class ProductController {
     })
     @GetMapping
     public ResponseEntity<Page<ProductResponseDto>> getAllProducts(
+            @RequestHeader("Authorization") String token,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "ASC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        return ResponseEntity.ok(productService.getAllProducts(pageable));
+        return ResponseEntity.ok(productService.getAllProducts(pageable, jwtTokenProvider.getUserIdFromToken(token)));
     }
 
     @Operation(summary = "Get product by ID", description = "Returns a single product by its ID")
@@ -152,12 +142,13 @@ public class ProductController {
     })
     @GetMapping("/available")
     public ResponseEntity<Page<ProductResponseDto>> getAvailableProducts(
+            @RequestHeader("Authorization") String token,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
             @RequestParam(value = "sortDir", defaultValue = "ASC") Sort.Direction sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDir, sortBy));
-        return ResponseEntity.ok(productService.getAvailableProducts(pageable));
+        return ResponseEntity.ok(productService.getAvailableProducts(pageable, jwtTokenProvider.getUserIdFromToken(token)));
     }
 
     @Operation(summary = "Get products by seller", description = "Returns paginated list of products for a specific seller")

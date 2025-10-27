@@ -8,6 +8,7 @@ import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.OrderDetailService;
 import com.artemisia_corp.artemisia.service.ProductService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,19 +19,14 @@ import java.util.List;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private NotaVentaRepository notaVentaRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private LogsService logsService;
-    @Autowired
-    private ProductService productService;
+    private final OrderDetailRepository orderDetailRepository;
+    private final NotaVentaRepository notaVentaRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final LogsService logsService;
+    private final ProductService productService;
 
     @Override
     public Page<OrderDetailResponseDto> getAllOrderDetails(Pageable pageable) {

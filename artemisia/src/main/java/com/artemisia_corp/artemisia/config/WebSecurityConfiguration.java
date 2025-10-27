@@ -21,15 +21,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable {
 
+    private final CorsFilter corsFilter;
+    private final JwtTokenFilter jwtTokenFilter;
+
     @Bean
     @Order(1)
-    public SecurityFilterChain filterChain(HttpSecurity http, CorsFilter corsFilter, JwtTokenFilter jwtTokenFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(corsFilter, SessionManagementFilter.class)
                 .authorizeHttpRequests(
@@ -51,7 +55,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
                         httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterAfter(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .cors((cors) -> cors.configurationSource(apiConfigurationSource()));
+                .cors(cors -> cors.configurationSource(apiConfigurationSource()));
         return http.build();
     }
 
@@ -62,21 +66,13 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
 
     private CorsConfigurationSource apiConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-//    @Override
-//    public void addCorsMappings(CorsRegistry registry) {
-//        registry.addMapping("/api/**")
-//                .allowedOrigins("http://localhost:5173")  // ajusta el puerto de Vite
-//                .allowedMethods("*")
-//                .allowCredentials(true);
-//    }
 }

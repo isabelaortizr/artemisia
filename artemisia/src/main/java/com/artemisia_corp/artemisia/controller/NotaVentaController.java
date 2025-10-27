@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -37,17 +38,14 @@ import static org.springframework.http.ResponseEntity.ok;
 
 @Slf4j
 @Controller
-    @RequestMapping("/api/notas-venta")
+@RequiredArgsConstructor
+@RequestMapping("/api/notas-venta")
 @Tag(name = "Sales Note Management", description = "Endpoints for managing sales notes")
 public class NotaVentaController {
-
-    @Autowired
-    private NotaVentaService notaVentaService;
+    private final NotaVentaService notaVentaService;
+    private final JwtTokenProvider jwtTokenProvider;
     @Value("${stereum-pay.api-key}")
     private String apiKey;
-    @Autowired
-    @Lazy
-    private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Get all sales notes", description = "Returns paginated list of all sales notes")
     @ApiResponses(value = {

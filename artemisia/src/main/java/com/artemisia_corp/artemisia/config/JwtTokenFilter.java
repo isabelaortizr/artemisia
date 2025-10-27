@@ -40,7 +40,6 @@ public class JwtTokenFilter extends OncePerRequestFilter implements Serializable
                 filterChain.doFilter(servletRequest, servletResponse);
                 return;
             }
-            // log.info("Token: {}", token);
             try {
                 Optional<Authentication> optionalAuthentication = jwtTokenProvider.validateToken(token);
                 if (optionalAuthentication.isPresent()) {

@@ -5,8 +5,6 @@ import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.CategorySalesDto;
 import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.TechniqueSalesDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.seller_dashboard.ProductSalesDto;
-import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
-import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

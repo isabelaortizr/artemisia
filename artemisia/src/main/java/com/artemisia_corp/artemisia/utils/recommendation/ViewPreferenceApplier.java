@@ -47,7 +47,7 @@ public class ViewPreferenceApplier {
     }
 
     public void applyDerivedFeaturesToVector(Map<String, Double> vector, Product product,
-                                             double weight, double viewWeight) {
+                                             double weight) {
         featureDerivationService.applyPricePreference(vector, product, weight);
         featureDerivationService.applyStylePreference(vector, product, weight);
         featureDerivationService.applyTechnicalComplexityPreference(vector, product, weight);

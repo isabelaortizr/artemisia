@@ -31,7 +31,7 @@ public class JwtTokenProvider implements Serializable {
     @Value("${security.jwt.token.secret-key:Ch4ng1t}")
     private String secretKey;
     private byte[] secretKeyByte;
-    @Value("${security.jwt.token.expire-length:28800000}")
+    @Value("${security_jwt_token_expire-length:28800000}")
     private int validityInMinutes;
     @Autowired
     private UserService userService;
@@ -53,15 +53,11 @@ public class JwtTokenProvider implements Serializable {
         claims.put(USER_ROLE_CLAIM, user.getRole());
         claims.put(USER_EMAIL_CLAIM, user.getMail());
 
-        String token = Jwts.builder()
+        return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(validity)
                 .signWith(SignatureAlgorithm.HS256, secretKeyByte)
                 .compact();
-
-        //log.info("User id: {}. Token: {}", user.getId(), token);
-
-        return token;
     }
 
     public String getUsernameFromToken(String token) {
@@ -101,10 +97,6 @@ public class JwtTokenProvider implements Serializable {
                 .getBody();
         log.info("Role: {}", claims.get(USER_ROLE_CLAIM));
         return String.valueOf(claims.get(USER_ROLE_CLAIM));
-    }
-
-    private String getUsername(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
     public Long getId(String token) {

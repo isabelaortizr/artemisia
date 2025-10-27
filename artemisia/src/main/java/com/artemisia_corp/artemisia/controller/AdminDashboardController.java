@@ -2,7 +2,6 @@ package com.artemisia_corp.artemisia.controller;
 
 import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
-import com.artemisia_corp.artemisia.entity.dto.user.*;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.repository.NotaVentaRepository;
 import com.artemisia_corp.artemisia.repository.OrderDetailRepository;
@@ -11,12 +10,11 @@ import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.NotaVentaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,17 +29,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin/dashboard")
 @Slf4j
+@AllArgsConstructor
 @Tag(name = "Admin Dashboard", description = "Endpoints for admin dashboard analytics")
 public class AdminDashboardController {
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private NotaVentaRepository notaVentaRepository;
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
     private NotaVentaService notaVentaService;
-    @Autowired
     private ProductRepository productRepository;
 
     @Operation(summary = "Get new users report", description = "Returns count of new users in a date range")
@@ -50,15 +43,7 @@ public class AdminDashboardController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
-        Date sDate = startDate != null ? Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) :
-                Date.from(LocalDate.now().withDayOfMonth(1).atStartOfDay().toInstant(ZoneOffset.MIN));
-        Date eDate = endDate != null ? Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) :
-                Date.from(LocalDate.now().atStartOfDay().toInstant(ZoneOffset.MIN));
-
-        long newUsersCount = userRepository.countByCreatedDateBetween(
-                sDate, eDate);
-
-        return ResponseEntity.ok(new NewUsersReportDto(sDate, eDate, newUsersCount));
+        return getNewUsersReportDtoResponseEntity(startDate, endDate);
     }
 
     @Operation(summary = "Get new users report", description = "Returns count of new users in a date range")
@@ -67,6 +52,10 @@ public class AdminDashboardController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
+        return getNewUsersReportDtoResponseEntity(startDate, endDate);
+    }
+
+    private ResponseEntity<NewUsersReportDto> getNewUsersReportDtoResponseEntity(@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false) LocalDate startDate, @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false) LocalDate endDate) {
         Date sDate = startDate != null ? Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) :
                 Date.from(LocalDate.now().withDayOfMonth(1).atStartOfDay().toInstant(ZoneOffset.MIN));
         Date eDate = endDate != null ? Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant()) :

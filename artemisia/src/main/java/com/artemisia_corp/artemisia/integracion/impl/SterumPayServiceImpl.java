@@ -136,7 +136,7 @@ public class SterumPayServiceImpl implements SterumPayService {
     }
 
     @Override
-    public EstadoResponseDto obtenerEstadoCobro(String id_transaccion) {
+    public EstadoResponseDto obtenerEstadoCobro(String idTransaccion) {
         if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L))
             obtenerTokenAutenticacion();
         RestClient restClient = create();
@@ -144,7 +144,7 @@ public class SterumPayServiceImpl implements SterumPayService {
 
         try {
             response = restClient.get()
-                    .uri(urlBase + String.format("/api/v1/transactions/%s/verify", id_transaccion))
+                    .uri(urlBase + String.format("/api/v1/transactions/%s/verify", idTransaccion))
                     .header("Authorization", "Bearer " + jwtToken)
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header("Accept", MediaType.APPLICATION_JSON_VALUE)
@@ -187,13 +187,9 @@ public class SterumPayServiceImpl implements SterumPayService {
                     new CurrencyConversionDto(
                             conversionDto.getOriginCurrency(),
                             conversionDto.getTargetCurrency(),
-                            1.0
+                            cart.getTotalGlobal()
                     ));
         }
-
-        cart.setMonedaCarrito(conversionDto.getTargetCurrency());
-        cart.setTasaCambio(conversion.getExchange_rate());
-        cart.setPreciosConvertidos(true);
 
         for (OrderDetailResponseDto detailDto : orderDetails) {
             OrderDetail detail = orderDetailRepository.findById(detailDto.getId())
@@ -205,19 +201,18 @@ public class SterumPayServiceImpl implements SterumPayService {
 
             double convertedTotal = detail.getTotal();
             if (isBob)
-                convertedTotal = detailDto.getTotal() * conversion.getExchange_rate();
+                convertedTotal = detailDto.getTotal() * conversion.getExchangeRate();
             else
-                convertedTotal = detailDto.getTotal() / conversion.getExchange_rate();
+                convertedTotal = detailDto.getTotal() / conversion.getExchangeRate();
 
             detail.setTotal(convertedTotal);
             orderDetailRepository.save(detail);
         }
 
         if (isBob)
-            cart.setTotalGlobal(cart.getTotalGlobal() * conversion.getExchange_rate());
+            cart.setTotalGlobal(cart.getTotalGlobal() * conversion.getExchangeRate());
         else
-            cart.setTotalGlobal(cart.getTotalGlobal() / conversion.getExchange_rate());
-
+            cart.setTotalGlobal(cart.getTotalGlobal() / conversion.getExchangeRate());
         notaVentaRepository.save(cart);
 
         return notaVentaService.getNotaVentaById(cart.getId());
@@ -246,14 +241,14 @@ public class SterumPayServiceImpl implements SterumPayService {
     }
 
     @Override
-    public EstadoResponseDto cancelarCargo(String id_transaccion) {
+    public EstadoResponseDto cancelarCargo(String idTransaccion) {
         if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) obtenerTokenAutenticacion();
         RestClient restClient = create();
         ResponseEntity<EstadoResponseDto> response;
 
         try {
             response = restClient.post()
-                    .uri(urlBase + String.format("/api/v1/transactions/%s/cancel", id_transaccion))
+                    .uri(urlBase + String.format("/api/v1/transactions/%s/cancel", idTransaccion))
                     .header("Authorization", "Bearer " + jwtToken)
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header("Accept", MediaType.APPLICATION_JSON_VALUE)

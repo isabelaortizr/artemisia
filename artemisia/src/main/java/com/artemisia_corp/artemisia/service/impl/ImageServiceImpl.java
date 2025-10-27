@@ -92,8 +92,7 @@ public class ImageServiceImpl implements ImageService {
                     return new NotDataFoundException("Product not found with ID: " + productId);
                 });
 
-        String image = imageRepository.findLastBase64DataByProductId(product.getId());
-        return image;
+        return imageRepository.findLastBase64DataByProductId(product.getId());
     }
 }
 

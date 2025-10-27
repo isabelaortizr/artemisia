@@ -28,11 +28,11 @@ public class ViewWeightCalculator {
         for (Object[] view : viewHistory) {
             Integer viewCount = (Integer) view[1];
             Integer totalDuration = (Integer) view[2];
-            LocalDateTime lastViewed = (LocalDateTime) view[3];
+            LocalDateTime lastViewed = convertToLocalDateTime(view[3]);
 
             maxViewCount = Math.max(maxViewCount, viewCount);
             maxTotalDuration = Math.max(maxTotalDuration, totalDuration);
-            if (lastViewed.isAfter(mostRecent)) {
+            if (lastViewed != null && lastViewed.isAfter(mostRecent)) {
                 mostRecent = lastViewed;
             }
         }
@@ -46,8 +46,8 @@ public class ViewWeightCalculator {
             Long productId = ((Number) view[0]).longValue();
             Integer viewCount = (Integer) view[1];
             Integer totalDuration = (Integer) view[2];
-            LocalDateTime lastViewed = (LocalDateTime) view[3];
-            LocalDateTime firstViewed = (LocalDateTime) view[4];
+            LocalDateTime lastViewed = convertToLocalDateTime(view[3]);
+            LocalDateTime firstViewed = convertToLocalDateTime(view[4]);
 
             double weight = calculateSingleViewWeight(
                     productId, viewCount, totalDuration, lastViewed, firstViewed,
@@ -114,5 +114,26 @@ public class ViewWeightCalculator {
         }
 
         return weights;
+    }
+
+    private LocalDateTime convertToLocalDateTime(Object timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        if (timestamp instanceof LocalDateTime) {
+            return (LocalDateTime) timestamp;
+        }
+        if (timestamp instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) timestamp).toLocalDateTime();
+        }
+        if (timestamp instanceof java.sql.Date) {
+            return ((java.sql.Date) timestamp).toLocalDate().atStartOfDay();
+        }
+        if (timestamp instanceof java.util.Date) {
+            return ((java.util.Date) timestamp).toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime();
+        }
+        throw new IllegalArgumentException("Unsupported timestamp type: " + timestamp.getClass());
     }
 }

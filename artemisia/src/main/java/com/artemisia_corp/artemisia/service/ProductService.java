@@ -9,13 +9,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
-    Page<ProductResponseDto> getAllProducts(Pageable pageable);
+    Page<ProductResponseDto> getAllProducts(Pageable pageable, long userId);
     ProductResponseDto getProductById(Long id);
     ProductResponseDto createProduct(ProductRequestDto productDto);
     ProductResponseDto updateProduct(Long id, ProductRequestDto productDto);
     void deleteProduct(Long id, String token);
     void manageStock(ManageProductDto manageProductDto);
-    Page<ProductResponseDto> getAvailableProducts(Pageable pageable);
+    Page<ProductResponseDto> getAvailableProducts(Pageable pageable, Long userId);
     Page<ProductResponseDto> getProductsBySeller(Long sellerId, Pageable pageable);
     Page<ProductResponseDto> searchProducts(ProductSearchDto dto, Pageable pageable);
     Page<ProductResponseDto> getByCategory(Long categoryId, Pageable pageable);

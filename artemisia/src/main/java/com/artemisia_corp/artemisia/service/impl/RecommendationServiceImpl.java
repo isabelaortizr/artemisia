@@ -6,65 +6,41 @@ import com.artemisia_corp.artemisia.entity.enums.PaintingCategory;
 import com.artemisia_corp.artemisia.entity.enums.PaintingTechnique;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.repository.*;
+import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.ProductService;
 import com.artemisia_corp.artemisia.service.ProductViewService;
 import com.artemisia_corp.artemisia.service.RecommendationService;
 import com.artemisia_corp.artemisia.utils.recommendation.ViewPreferenceCalculator;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
+@AllArgsConstructor
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
-
-    @Autowired
-    private UserPreferenceRepository userPreferenceRepository;
-
-    @Autowired
-    private NotaVentaRepository notaVentaRepository;
-
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ProductService productService;
-
-    @Autowired
-    private ProductViewService productViewService;
-
-    @Autowired
-    private ViewPreferenceCalculator viewPreferenceCalculator;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    // Client that talks to the Python recommender API (FastAPI)
+    private final UserPreferenceRepository userPreferenceRepository;
+    private final NotaVentaRepository notaVentaRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final UserRepository userRepository;
+    private final ProductService productService;
+    private final ProductViewService productViewService;
+    private final ViewPreferenceCalculator viewPreferenceCalculator;
+    private final LogsService logsService;
     private final RecommenderPythonClient recommenderClient;
-
-    public RecommendationServiceImpl(RecommenderPythonClient recommenderClient) {
-        this.recommenderClient = recommenderClient;
-    }
 
     @Override
     @Transactional
     public List<ProductResponseDto> getUserRecommendations(Long userId, int limit) {
         try {
-            // Primero actualizar preferencias si es necesario
             updateUserPreferences(userId);
 
             // Llamar al servicio Python para recomendaciones mediante el cliente wrapper
@@ -81,7 +57,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                         try {
                             mapped.add(productService.getProductById(pid));
                         } catch (Exception e) {
-                            // if product not found locally, skip
+                            logsService.error(e.getMessage());
                         }
                     }
                 }
@@ -91,12 +67,11 @@ public class RecommendationServiceImpl implements RecommendationService {
                 }
             }
 
-            // Fallback: productos populares si no hay recomendaciones
-            return getPopularProducts(limit);
+            return getPopularProducts(limit, userId);
 
         } catch (Exception e) {
             log.error("Error getting recommendations for user {}: {}", userId, e.getMessage());
-            return getPopularProducts(limit);
+            return getPopularProducts(limit, userId);
         }
     }
 
@@ -256,8 +231,8 @@ public class RecommendationServiceImpl implements RecommendationService {
         }
     }
 
-    private List<ProductResponseDto> getPopularProducts(int limit) {
+    private List<ProductResponseDto> getPopularProducts(int limit, long userId) {
         Pageable pageable = Pageable.ofSize(limit);
-        return productService.getAvailableProducts(pageable).getContent();
+        return productService.getAvailableProducts(pageable, userId).getContent();
     }
-}
+} 

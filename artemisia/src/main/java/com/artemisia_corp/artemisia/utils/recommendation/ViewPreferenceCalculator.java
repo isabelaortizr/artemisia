@@ -83,7 +83,7 @@ public class ViewPreferenceCalculator {
             viewPreferenceApplier.applyProductTechniquesToVector(vector, product, adjustedWeight);
 
             // Aplicar características derivadas del producto
-            viewPreferenceApplier.applyDerivedFeaturesToVector(vector, product, adjustedWeight, viewWeight);
+            viewPreferenceApplier.applyDerivedFeaturesToVector(vector, product, adjustedWeight);
         }
 
         log.debug("Applied view preferences with influence factor: {}", viewInfluenceFactor);

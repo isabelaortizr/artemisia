@@ -9,6 +9,7 @@ import com.artemisia_corp.artemisia.entity.dto.order_detail.UpdateQuantityDetail
 import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.*;
 import com.artemisia_corp.artemisia.exception.NotDataFoundException;
+import com.artemisia_corp.artemisia.exception.NotaVentaException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.EstadoResponseDto;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaDto;
@@ -16,9 +17,9 @@ import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.*;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,26 +31,18 @@ import java.util.*;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class NotaVentaServiceImpl implements NotaVentaService {
-    @Autowired
-    private NotaVentaRepository notaVentaRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    @Lazy
-    private AddressRepository addressRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private OrderDetailService orderDetailService;
-    @Autowired
-    private ProductService productService;
-    @Autowired
-    private LogsService logsService;
-    @Autowired
-    private SterumPayService sterumPayService;
+    private final NotaVentaRepository notaVentaRepository;
+    private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
+    private final ProductRepository productRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final OrderDetailService orderDetailService;
+    private final ProductService productService;
+    private final LogsService logsService;
+    private final SterumPayService sterumPayService;
+    private final RecommendationService recommendationService;
 
     @Override
     public Page<NotaVentaResponseDto> getAllNotasVenta(Pageable pageable) {
@@ -94,8 +87,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     return new NotDataFoundException("User not found with ID: " + notaVentaDto.getUserId());
                 });
 
-        NotaVentaResponseDto nv = this.getActiveCartByUserId(buyer.getId());
-
         NotaVenta notaVenta = NotaVenta.builder()
                 .buyer(buyer)
                 .totalGlobal(0.0)
@@ -118,9 +109,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                         " by quantity: " + detailDto.getQuantity());
 
                 double unitTotal = detailDto.getQuantity() * p.getPrice();
-                if ("rllayus".equalsIgnoreCase(buyer.getName())) {
-                    unitTotal *= 0.9;
-                }
+
                 detailDto.setTotal(unitTotal);
                 total += unitTotal;
             }
@@ -169,9 +158,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             products.put(detailDto.getProductId(), convertToProduct(p.getProductId(), p));
 
             double unitTotal = detailDto.getQuantity() * p.getPrice();
-            if ("rllayus".equalsIgnoreCase(buyer.getName())) {
-                unitTotal *= 0.9;
-            }
             detailDto.setTotal(unitTotal);
             total += unitTotal;
 
@@ -268,6 +254,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         notaVenta.setEstadoVenta(VentaEstado.PAYED);
         notaVentaRepository.save(notaVenta);
+        recommendationService.updateUserPreferences(id);
         logsService.info("Sale note completed with ID: " + id);
     }
 
@@ -344,14 +331,19 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         NotaVenta notaVenta = notaVentaRepository.findNotaVentaByIdTransaccion(transaccionDto.getId());
         if (notaVenta == null) {
             log.error("No NotaVenta found for transaction ID: {}", respuesta.getTransaction().getId());
-            throw new RuntimeException("No NotaVenta found for transaction ID: " + respuesta.getTransaction().getId());
+            throw new NotaVentaException("No NotaVenta found for transaction ID: " + respuesta.getTransaction().getId());
         }
 
         logsService.info("Obtaining transaction status for ID: " + notaVenta.getId());
         log.info("Fetching transaction status from sterumPayService for transaction ID: {}", transaccionDto.getId());
         EstadoResponseDto estado = sterumPayService.obtenerEstadoCobro(notaVenta.getIdTransaccion());
 
-        log.info("Retrieved transaction status: {}", estado != null ? estado.getStatus() : "null");
+        if (estado == null) {
+            log.error("No Estado found for transaction ID: {}", transaccionDto.getId());
+            logsService.error("No Estado found for transaction ID: " + transaccionDto.getId());
+            throw new NotaVentaException("No Estado found for transaction ID: " + transaccionDto.getId());
+        }
+        log.info("Retrieved transaction status: {}", estado.getStatus());
 
         NotaVentaResponseDto notaVentaResponseDto = this.getActiveCartByUserId(notaVenta.getBuyer().getId());
         log.info("Retrieved active cart for user ID: {}", notaVenta.getBuyer().getId());
@@ -361,7 +353,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
             log.error("Transaction ID mismatch. Cart transaction ID: {}, Notification transaction ID: {}",
                     notaVentaResponseDto.getIdTransaccion(), transaccionDto.getId());
             logsService.error("Transaction ID does not match the cart");
-            throw new RuntimeException("Transaction ID does not match the cart");
+            throw new NotaVentaException("Transaction ID does not match the cart");
         }
 
         if ("PAGADO".equals(estado.getStatus())) {
@@ -585,11 +577,6 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         log.info("Actualizando details de stock: " + quantity + " del producto con id " + productId + " del usuario con id " + userId);
 
-        User user = userRepository.findById(userId).orElseThrow(() -> {
-            log.error("Usuario con id " + userId + " no encontrado.");
-            logsService.error("Usuario con id " + userId + " no encontrado.");
-            return new IllegalArgumentException("Usuario con id " + userId + " no encontrado.");
-        });
         Product product = productRepository.findProductById(productId);
         if (product == null) {
             log.error("Producto con id " + productId + " no encontrado.");

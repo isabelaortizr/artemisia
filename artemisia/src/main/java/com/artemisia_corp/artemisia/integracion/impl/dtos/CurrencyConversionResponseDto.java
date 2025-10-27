@@ -1,5 +1,6 @@
 package com.artemisia_corp.artemisia.integracion.impl.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,8 @@ public class CurrencyConversionResponseDto {
     private String sourceCurrency;
     private String targetCurrency;
     private Double amount;
-    private Double converted_amount;
-    private Double exchange_rate;
+    @JsonProperty("converted_amount")
+    private Double convertedAmount;
+    @JsonProperty("exchange_rate")
+    private Double exchangeRate;
 }

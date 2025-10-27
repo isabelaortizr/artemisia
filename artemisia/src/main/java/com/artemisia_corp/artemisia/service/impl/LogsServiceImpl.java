@@ -4,7 +4,7 @@ import com.artemisia_corp.artemisia.entity.Logs;
 import com.artemisia_corp.artemisia.entity.dto.logs.LogsResponseDto;
 import com.artemisia_corp.artemisia.repository.LogerRespository;
 import com.artemisia_corp.artemisia.service.LogsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -14,8 +14,8 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class LogsServiceImpl implements LogsService {
-    @Autowired
     private LogerRespository logerRespository;
 
     @Override

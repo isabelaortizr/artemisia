@@ -48,7 +48,7 @@ public class ProductResponseDto {
         if (product.getCategories() != null) {
             this.categories = product.getCategories().stream()
                     .map(Enum::name)
-                    .collect(Collectors.toList());
+                    .toList();
             this.categoryEnums = new ArrayList<>(product.getCategories());
         }
 
@@ -56,7 +56,7 @@ public class ProductResponseDto {
         if (product.getTechniques() != null) {
             this.techniques = product.getTechniques().stream()
                     .map(Enum::name)
-                    .collect(Collectors.toList());
+                    .toList();
             this.techniqueEnums = new ArrayList<>(product.getTechniques());
         }
     }

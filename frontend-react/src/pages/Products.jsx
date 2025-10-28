@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import FilterSidebar from '../components/FilterSideBar';
+import ImageModal from '../components/ImageModal';
 import productService from '../services/productService';
 import notaVentaService from '../services/notaVentaService';
 import cartIcon from '../assets/cart_icon.png';
@@ -18,6 +19,12 @@ const formatText = (text) => {
 
 // Componente para mostrar productos (reutilizable)
 const ProductCard = ({ product, isExpanded, onToggleExpand, onAddToCart }) => {
+    const [showImageModal, setShowImageModal] = useState(false);
+
+    const handleImageClick = () => {
+        setShowImageModal(true);
+    };
+
     const handleToggle = async () => {
         // Si el usuario está expandiendo (viendo detalles), trackear la vista
         if (!isExpanded) {
@@ -33,76 +40,89 @@ const ProductCard = ({ product, isExpanded, onToggleExpand, onAddToCart }) => {
         onToggleExpand();
     };
 
+    const imageSrc = product.image
+        ? `data:image/jpeg;base64,${product.image}`
+        : 'https://via.placeholder.com/400x400';
+
     return (
-        <div className="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col text-black group">
-            {/* Imagen con hover */}
-            <div className="overflow-hidden rounded-xl">
-                <img
-                    src={
-                        product.image
-                            ? `data:image/jpeg;base64,${product.image}`
-                            : 'https://via.placeholder.com/400x400'
-                    }
-                    alt={product.name}
-                    className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
-                />
-            </div>
-
-            {/* Info básica */}
-            <div className="mt-4 flex-grow">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                {/* Mostrar primera técnica como principal */}
-                <p className="text-sm text-gray-600">
-                    {product.techniques && product.techniques.length > 0
-                        ? formatText(product.techniques[0])
-                        : 'No technique specified'
-                    }
-                    {product.techniques && product.techniques.length > 1 &&
-                        ` +${product.techniques.length - 1} more`
-                    }
-                </p>
-            </div>
-
-            {/* Precio + botón */}
-            <div className="mt-4 flex justify-between items-center">
-                <span className="text-md font-bold">
-                    {new Intl.NumberFormat('es-BO', {
-                        style: 'currency',
-                        currency: 'BOB'
-                    })
-                        .format(product.price ?? 0)
-                        .replace('Bs', 'Bs.')}
-                </span>
-                <button
-                    onClick={() => onAddToCart(product)}
-                    className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"
+        <>
+            <div className="bg-white p-4 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 flex flex-col text-black group">
+                {/* Imagen con hover y click */}
+                <div
+                    className="overflow-hidden rounded-xl cursor-zoom-in"
+                    onClick={handleImageClick}
                 >
-                    Add to Cart
+                    <img
+                        src={imageSrc}
+                        alt={product.name}
+                        className="w-full h-64 object-cover transform group-hover:scale-105 transition duration-300"
+                    />
+                </div>
+
+                {/* Info básica */}
+                <div className="mt-4 flex-grow">
+                    <h3 className="text-lg font-semibold">{product.name}</h3>
+                    {/* Mostrar primera técnica como principal */}
+                    <p className="text-sm text-gray-600">
+                        {product.techniques && product.techniques.length > 0
+                            ? formatText(product.techniques[0])
+                            : 'No technique specified'
+                        }
+                        {product.techniques && product.techniques.length > 1 &&
+                            ` +${product.techniques.length - 1} more`
+                        }
+                    </p>
+                </div>
+
+                {/* Precio + botón */}
+                <div className="mt-4 flex justify-between items-center">
+                    <span className="text-md font-bold">
+                        {new Intl.NumberFormat('es-BO', {
+                            style: 'currency',
+                            currency: 'BOB'
+                        })
+                            .format(product.price ?? 0)
+                            .replace('Bs', 'Bs.')}
+                    </span>
+                    <button
+                        onClick={() => onAddToCart(product)}
+                        className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 active:scale-95 transition"
+                    >
+                        Add to Cart
+                    </button>
+                </div>
+
+                {/* View Details */}
+                <button
+                    onClick={handleToggle}
+                    className="mt-3 text-sm text-black hover:underline text-left"
+                >
+                    {isExpanded ? 'Hide details' : 'View details'}
                 </button>
+
+                {/* Detalles extra */}
+                {isExpanded && (
+                    <div className="mt-3 bg-gray-100 rounded-lg p-3 text-sm text-black border border-gray-200">
+                        <p><strong>Techniques:</strong> {product.techniques ? product.techniques.map(formatText).join(', ') : 'N/A'}</p>
+                        <p><strong>Categories:</strong> {product.categories ? product.categories.map(formatText).join(', ') : 'N/A'}</p>
+                        <p><strong>Status:</strong> {product.status}</p>
+                        <p className="mt-2 text-gray-700 italic">{product.description || 'No description.'}</p>
+                    </div>
+                )}
             </div>
 
-            {/* View Details */}
-            <button
-                onClick={handleToggle}
-                className="mt-3 text-sm text-black hover:underline text-left"
-            >
-                {isExpanded ? 'Hide details' : 'View details'}
-            </button>
-
-            {/* Detalles extra */}
-            {isExpanded && (
-                <div className="mt-3 bg-gray-100 rounded-lg p-3 text-sm text-black border border-gray-200">
-                    <p><strong>Techniques:</strong> {product.techniques ? product.techniques.map(formatText).join(', ') : 'N/A'}</p>
-                    <p><strong>Categories:</strong> {product.categories ? product.categories.map(formatText).join(', ') : 'N/A'}</p>
-                    <p><strong>Status:</strong> {product.status}</p>
-                    <p className="mt-2 text-gray-700 italic">{product.description || 'No description.'}</p>
-                </div>
+            {/* Modal de imagen */}
+            {showImageModal && (
+                <ImageModal
+                    imageSrc={imageSrc}
+                    alt={product.name}
+                    onClose={() => setShowImageModal(false)}
+                />
             )}
-        </div>
+        </>
     );
 };
 
-// El resto del código de Products.jsx se mantiene igual...
 export default function Products() {
     const [products, setProducts] = useState([]);
     const [recommendedProducts, setRecommendedProducts] = useState([]);
@@ -227,7 +247,7 @@ export default function Products() {
                 <section className="mb-16">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                                Recommended For You
+                            Recommended For You
                         </h2>
                         <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"></div>
                     </div>

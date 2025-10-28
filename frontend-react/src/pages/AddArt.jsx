@@ -32,12 +32,6 @@ const CATEGORY_OPTIONS = [
     'Contemporánea'
 ];
 
-// Función para formatear el texto (solo para mostrar, no para enviar)
-const formatText = (text) => {
-    if (!text) return '';
-    return text;
-};
-
 const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
     const [form, setForm] = useState({
         name: '',
@@ -48,9 +42,9 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
         status: 'AVAILABLE'
     });
 
-    // Estados para técnicas y categorías múltiples
-    const [techniques, setTechniques] = useState(['']);
-    const [categories, setCategories] = useState(['']);
+    // Estados para técnicas y categorías como arrays (checkboxes)
+    const [selectedTechniques, setSelectedTechniques] = useState([]);
+    const [selectedCategories, setSelectedCategories] = useState([]);
 
     const [fileData, setFileData] = useState({ fileName: '', base64Image: '' });
     const [loading, setLoading] = useState(false);
@@ -64,44 +58,22 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
         setForm(f => ({ ...f, [name]: value }));
     };
 
-    // Manejar cambios en técnicas
-    const handleTechniqueChange = (index, value) => {
-        const newTechniques = [...techniques];
-        newTechniques[index] = value;
-        setTechniques(newTechniques);
+    // Manejar checkboxes para técnicas
+    const handleTechniqueToggle = (technique) => {
+        setSelectedTechniques(prev =>
+            prev.includes(technique)
+                ? prev.filter(t => t !== technique)
+                : [...prev, technique]
+        );
     };
 
-    // Agregar nuevo dropdown de técnica
-    const addTechnique = () => {
-        setTechniques([...techniques, '']);
-    };
-
-    // Eliminar técnica
-    const removeTechnique = (index) => {
-        if (techniques.length > 1) {
-            const newTechniques = techniques.filter((_, i) => i !== index);
-            setTechniques(newTechniques);
-        }
-    };
-
-    // Manejar cambios en categorías
-    const handleCategoryChange = (index, value) => {
-        const newCategories = [...categories];
-        newCategories[index] = value;
-        setCategories(newCategories);
-    };
-
-    // Agregar nuevo dropdown de categoría
-    const addCategory = () => {
-        setCategories([...categories, '']);
-    };
-
-    // Eliminar categoría
-    const removeCategory = (index) => {
-        if (categories.length > 1) {
-            const newCategories = categories.filter((_, i) => i !== index);
-            setCategories(newCategories);
-        }
+    // Manejar checkboxes para categorías
+    const handleCategoryToggle = (category) => {
+        setSelectedCategories(prev =>
+            prev.includes(category)
+                ? prev.filter(c => c !== category)
+                : [...prev, category]
+        );
     };
 
     const handleFileChange = e => {
@@ -120,17 +92,13 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
         setError('');
         setSuccess('');
 
-        // Filtrar técnicas y categorías vacías
-        const filteredTechniques = techniques.filter(tech => tech !== '');
-        const filteredCategories = categories.filter(cat => cat !== '');
-
         // Validaciones
-        if (filteredTechniques.length === 0) {
+        if (selectedTechniques.length === 0) {
             setError('Selecciona al menos una técnica.');
             return;
         }
 
-        if (filteredCategories.length === 0) {
+        if (selectedCategories.length === 0) {
             setError('Selecciona al menos una categoría.');
             return;
         }
@@ -162,8 +130,8 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
                 price: parseFloat(form.price),
                 stock: parseInt(form.stock, 10),
                 status: form.status,
-                techniques: filteredTechniques,
-                categories: filteredCategories
+                techniques: selectedTechniques,
+                categories: selectedCategories
             };
 
             console.log('Enviando datos al backend:', productData);
@@ -191,8 +159,8 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
                 stock: '',
                 status: 'AVAILABLE'
             });
-            setTechniques(['']);
-            setCategories(['']);
+            setSelectedTechniques([]);
+            setSelectedCategories([]);
             setFileData({ fileName: '', base64Image: '' });
 
             // Llamar a onSuccess si existe
@@ -224,7 +192,7 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
     };
 
     return (
-        <div className={`relative max-w-lg mx-auto p-6 ${embedded ? '' : ''}`}>
+        <div className={`relative max-w-2xl mx-auto p-6 ${embedded ? '' : ''}`}>
             <h2 className="text-2xl font-bold mb-6 text-center">Agregar nueva obra</h2>
 
             {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
@@ -234,128 +202,91 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow text-black">
+            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow text-black">
                 {/* Nombre */}
                 <div>
-                    <label className="block text-gray-700">Nombre de la obra</label>
+                    <label className="block text-gray-700 font-medium mb-2">Nombre de la obra</label>
                     <input
                         name="name"
                         value={form.name}
                         onChange={handleChange}
                         required
-                        className="w-full mt-1 px-3 py-2 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Ingresa el nombre de tu obra"
                     />
                 </div>
 
-                {/* Técnicas (Múltiples dropdowns) */}
+                {/* Técnicas (Checkboxes) */}
                 <div>
-                    <label className="block text-gray-700 mb-2">Técnicas *</label>
-                    {techniques.map((technique, index) => (
-                        <div key={index} className="flex gap-2 mb-2">
-                            <select
-                                value={technique}
-                                onChange={(e) => handleTechniqueChange(index, e.target.value)}
-                                required={index === 0}
-                                className="flex-1 px-3 py-2 border rounded"
-                            >
-                                <option value="">Selecciona una técnica</option>
-                                {TECHNIQUE_OPTIONS.map(tech => (
-                                    <option key={tech} value={tech}>
-                                        {tech}
-                                    </option>
-                                ))}
-                            </select>
-                            {techniques.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => removeTechnique(index)}
-                                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                >
-                                    ✕
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                    <button
-                        type="button"
-                        onClick={addTechnique}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                        + Agregar otra técnica
-                    </button>
-                    <p className="text-xs text-gray-500 mt-1">
-                        Seleccionadas: {techniques.filter(t => t !== '').join(', ') || 'Ninguna'}
+                    <label className="block text-gray-700 font-medium mb-3">Técnicas *</label>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        {TECHNIQUE_OPTIONS.map(technique => (
+                            <label key={technique} className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-white rounded transition">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedTechniques.includes(technique)}
+                                    onChange={() => handleTechniqueToggle(technique)}
+                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                />
+                                <span className="text-gray-700">{technique}</span>
+                            </label>
+                        ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                        {selectedTechniques.length} seleccionada(s): {selectedTechniques.join(', ') || 'Ninguna'}
                     </p>
                 </div>
 
-                {/* Categorías (Múltiples dropdowns) */}
+                {/* Categorías (Checkboxes) */}
                 <div>
-                    <label className="block text-gray-700 mb-2">Categorías *</label>
-                    {categories.map((category, index) => (
-                        <div key={index} className="flex gap-2 mb-2">
-                            <select
-                                value={category}
-                                onChange={(e) => handleCategoryChange(index, e.target.value)}
-                                required={index === 0}
-                                className="flex-1 px-3 py-2 border rounded"
-                            >
-                                <option value="">Selecciona una categoría</option>
-                                {CATEGORY_OPTIONS.map(cat => (
-                                    <option key={cat} value={cat}>
-                                        {cat}
-                                    </option>
-                                ))}
-                            </select>
-                            {categories.length > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={() => removeCategory(index)}
-                                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                >
-                                    ✕
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                    <button
-                        type="button"
-                        onClick={addCategory}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                        + Agregar otra categoría
-                    </button>
-                    <p className="text-xs text-gray-500 mt-1">
-                        Seleccionadas: {categories.filter(c => c !== '').join(', ') || 'Ninguna'}
+                    <label className="block text-gray-700 font-medium mb-3">Categorías *</label>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        {CATEGORY_OPTIONS.map(category => (
+                            <label key={category} className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-white rounded transition">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedCategories.includes(category)}
+                                    onChange={() => handleCategoryToggle(category)}
+                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                />
+                                <span className="text-gray-700">{category}</span>
+                            </label>
+                        ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                        {selectedCategories.length} seleccionada(s): {selectedCategories.join(', ') || 'Ninguna'}
                     </p>
                 </div>
 
                 {/* Materiales */}
                 <div>
-                    <label className="block text-gray-700">Materiales</label>
+                    <label className="block text-gray-700 font-medium mb-2">Materiales</label>
                     <input
                         name="materials"
                         value={form.materials}
                         onChange={handleChange}
-                        className="w-full mt-1 px-3 py-2 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Lista los materiales utilizados..."
                     />
                 </div>
 
                 {/* Descripción */}
                 <div>
-                    <label className="block text-gray-700">Descripción</label>
+                    <label className="block text-gray-700 font-medium mb-2">Descripción</label>
                     <textarea
                         name="description"
                         value={form.description}
                         onChange={handleChange}
                         rows={3}
-                        className="w-full mt-1 px-3 py-2 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Describe tu obra de arte..."
                     />
                 </div>
 
                 {/* Precio y Stock */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-gray-700">Precio (Bs.)</label>
+                        <label className="block text-gray-700 font-medium mb-2">Precio (Bs.) *</label>
                         <input
                             name="price"
                             type="number"
@@ -364,11 +295,12 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
                             value={form.price}
                             onChange={handleChange}
                             required
-                            className="w-full mt-1 px-3 py-2 border rounded"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="0.00"
                         />
                     </div>
                     <div>
-                        <label className="block text-gray-700">Stock</label>
+                        <label className="block text-gray-700 font-medium mb-2">Stock *</label>
                         <input
                             name="stock"
                             type="number"
@@ -376,19 +308,20 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
                             value={form.stock}
                             onChange={handleChange}
                             required
-                            className="w-full mt-1 px-3 py-2 border rounded"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="0"
                         />
                     </div>
                 </div>
 
                 {/* Estado */}
                 <div>
-                    <label className="block text-gray-700">Estado</label>
+                    <label className="block text-gray-700 font-medium mb-2">Estado</label>
                     <select
                         name="status"
                         value={form.status}
                         onChange={handleChange}
-                        className="w-full mt-1 px-3 py-2 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     >
                         <option value="AVAILABLE">Disponible</option>
                         <option value="UNAVAILABLE">No disponible</option>
@@ -397,28 +330,44 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
 
                 {/* Imagen */}
                 <div>
-                    <label className="block text-gray-700 mb-1">Imagen</label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="w-full mt-1 p-4 border-2 border-dashed border-gray-400 rounded-lg cursor-pointer hover:border-gray-600 focus:outline-none focus:border-indigo-500"
-                    />
+                    <label className="block text-gray-700 font-medium mb-2">Imagen</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            id="file-upload"
+                        />
+                        <label htmlFor="file-upload" className="cursor-pointer">
+                            <div className="flex flex-col items-center justify-center">
+                                <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-sm text-gray-600">
+                                    {fileData.fileName ? `Seleccionado: ${fileData.fileName}` : 'Haz clic para subir una imagen'}
+                                </span>
+                                <span className="text-xs text-gray-500 mt-1">
+                                    PNG, JPG, JPEG hasta 10MB
+                                </span>
+                            </div>
+                        </label>
+                    </div>
                     {fileData.fileName && (
-                        <p className="mt-1 text-sm text-gray-600">
-                            Seleccionado: <span className="font-medium">{fileData.fileName}</span>
+                        <p className="mt-2 text-sm text-green-600 text-center">
+                            ✅ {fileData.fileName}
                         </p>
                     )}
                 </div>
 
                 {/* Botones */}
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-4">
                     {onCancel && (
                         <button
                             type="button"
                             onClick={handleCancel}
                             disabled={loading}
-                            className="flex-1 py-2 font-medium rounded transition bg-gray-300 text-black hover:bg-gray-400"
+                            className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 font-medium"
                         >
                             Cancelar
                         </button>
@@ -426,13 +375,11 @@ const AddArt = ({ embedded, dark, onSuccess, onCancel }) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`flex-1 py-2 font-medium rounded transition ${
-                            loading
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-black text-white hover:bg-gray-900'
+                        className={`flex-1 py-3 px-4 rounded-lg text-white font-medium transition-colors ${
+                            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
                         }`}
                     >
-                        {loading ? 'Guardando...' : 'Crear Obra'}
+                        {loading ? 'Creando obra...' : 'Crear Obra'}
                     </button>
                 </div>
             </form>

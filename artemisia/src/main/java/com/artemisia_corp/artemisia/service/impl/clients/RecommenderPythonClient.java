@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.service.impl.clients;
 
 import com.artemisia_corp.artemisia.service.LogsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class RecommenderPythonClient {
     @Value("${recommender_python_url}")
     private String recommenderUrl;
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @Autowired(required = false)
     private LogsService logsService;
 
     @Value("${recommender_python_api_key:}")
@@ -75,7 +76,7 @@ public class RecommenderPythonClient {
      * Send training payload to the Python service (/train). Returns the server response string (if any).
      */
     public String train(Object trainingPayload) {
-        String url = String.format("%s/train_trigger", recommenderUrl);
+        String url = String.format("%s/train_trigger?source=db", recommenderUrl);
         ResponseEntity<String> resp = restTemplate.postForEntity(url, trainingPayload, String.class);
         return resp.getBody();
     }

@@ -6,7 +6,6 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.order_detail.OrderDetailResponseDto;
 import com.artemisia_corp.artemisia.entity.dto.seller_dashboard.*;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
-import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.repository.NotaVentaRepository;
 import com.artemisia_corp.artemisia.repository.OrderDetailRepository;
 import com.artemisia_corp.artemisia.service.NotaVentaService;

@@ -1,6 +1,5 @@
 package com.artemisia_corp.artemisia.service.impl;
 
-import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.user.*;
 import com.artemisia_corp.artemisia.entity.enums.StateEntity;

@@ -4,7 +4,6 @@ import com.artemisia_corp.artemisia.entity.dto.admin_dashboard.*;
 import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.VentaEstado;
 import com.artemisia_corp.artemisia.repository.NotaVentaRepository;
-import com.artemisia_corp.artemisia.repository.OrderDetailRepository;
 import com.artemisia_corp.artemisia.repository.ProductRepository;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.NotaVentaService;

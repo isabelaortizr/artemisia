@@ -145,10 +145,54 @@ async function getAvailableProducts(page = 0, size = 10, sortBy = 'id', sortDir 
     };
 }
 
+// Nuevo método para obtener recomendaciones
+async function getRecommendedProducts(limit = 10) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(
+        `${API_URL}/products/recommendations?limit=${limit}`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        }
+    );
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al cargar recomendaciones`);
+    }
+
+    return await res.json(); // Retorna directamente el array de productos recomendados
+}
+
+async function trackProductView(productId) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/product-views/track/${productId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Error tracking product view:', err);
+        // No lanzamos error para no interrumpir la experiencia del usuario
+    }
+
+    return res.ok;
+}
+
+
 export default {
     getProducts,
     createProduct,
     getProductsBySeller,
     updateProduct,
-    getAvailableProducts
+    getAvailableProducts,
+    getRecommendedProducts,
+    trackProductView
 };

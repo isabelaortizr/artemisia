@@ -1,5 +1,6 @@
 // src/components/WorkCard.jsx
 import React from 'react';
+import productService from '../services/productService';
 
 // Función para formatear el texto
 const formatText = (text) => {
@@ -15,8 +16,20 @@ export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit }) {
         ? `data:image/jpeg;base64,${work.image}`
         : 'https://via.placeholder.com/300x200';
 
-    const handleToggle = (e) => {
+    const handleToggle = async (e) => {
         e.stopPropagation();
+
+        // Si el usuario está expandiendo (viendo detalles), trackear la vista
+        if (!isExpanded) {
+            try {
+                await productService.trackProductView(work.productId || work.id);
+                console.log(`Tracked view for product: ${work.name}`);
+            } catch (error) {
+                console.error('Error tracking product view:', error);
+                // No mostramos error al usuario para no interrumpir la experiencia
+            }
+        }
+
         onToggleExpand();
     };
 
@@ -53,7 +66,7 @@ export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit }) {
             <div className="mt-auto flex justify-between items-center pt-4">
                 <button
                     onClick={handleToggle}
-                    className="text-black  hover:underline text-sm focus:outline-none transition-colors"
+                    className="text-black hover:underline text-sm focus:outline-none transition-colors"
                 >
                     {isExpanded ? 'See less ▲' : 'See details ▼'}
                 </button>

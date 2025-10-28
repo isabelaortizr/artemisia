@@ -23,6 +23,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final LogsService logsService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient recommenderPythonClient;
 
     @Override
     public List<UserResponseDto> getAllUsers() {
@@ -88,6 +90,17 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        try {
+            if (recommenderPythonClient != null) {
+                boolean ok = recommenderPythonClient.registerUser(savedUser.getId().intValue());
+                if (!ok) logsService.warning("Could not register new user in recommender: " + savedUser.getId());
+                else logsService.info("Registered new user in recommender: " + savedUser.getId());
+            }
+        } catch (Exception e) {
+            logsService.error("Error registering user in recommender: " + e.getMessage());
+        }
+
         return convertToDto(savedUser);
     }
 

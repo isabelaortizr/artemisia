@@ -11,7 +11,6 @@ import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.ProductService;
 import com.artemisia_corp.artemisia.service.ProductViewService;
 import lombok.AllArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient;
 
 @Slf4j
 @Service
@@ -30,6 +30,7 @@ public class ProductViewServiceImpl implements ProductViewService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
+    private final RecommenderPythonClient recommenderClient;
 
     @Override
     @Async
@@ -88,6 +89,13 @@ public class ProductViewServiceImpl implements ProductViewService {
             productViewRepository.save(productView);
             log.debug("Tracked product view - User: {}, Product: {}, Views: {}",
                     userId, productId, productView.getViewCount());
+
+            try {
+                Integer pid = productId != null ? productId.intValue() : null;
+                recommenderClient.notifyView(userId.intValue(), pid, durationSeconds);
+            } catch (Exception ex) {
+                log.warn("Failed to notify recommender service about view: {}", ex.getMessage());
+            }
 
         } catch (Exception e) {
             log.error("Error in trackProductViewInternal for user {} product {}: {}",

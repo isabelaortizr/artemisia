@@ -16,9 +16,9 @@ import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaDto;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaResponseDto;
 import com.artemisia_corp.artemisia.repository.*;
 import com.artemisia_corp.artemisia.service.*;
+import com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +43,7 @@ public class NotaVentaServiceImpl implements NotaVentaService {
     private final LogsService logsService;
     private final SterumPayService sterumPayService;
     private final RecommendationService recommendationService;
+    private final RecommenderPythonClient recommenderPythonClient;
 
     @Override
     public Page<NotaVentaResponseDto> getAllNotasVenta(Pageable pageable) {
@@ -254,7 +255,30 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
         notaVenta.setEstadoVenta(VentaEstado.PAYED);
         notaVentaRepository.save(notaVenta);
+
+        // Trigger preference update (asynchronous in RecommendationServiceImpl)
         recommendationService.updateUserPreferences(id);
+
+        // Build list of purchased product IDs to notify the Python recommender service
+        try {
+            List<OrderDetailResponseDto> detalles = orderDetailService.getOrderDetailsByNotaVenta(notaVenta.getId());
+            List<Integer> productIds = detalles.stream()
+                    .map(d -> d.getProductId() != null ? d.getProductId().intValue() : null)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            Double eventWeight = notaVenta.getTotalGlobal();
+
+            boolean notified = recommenderPythonClient.notifyPurchase(notaVenta.getBuyer().getId().intValue(), productIds, eventWeight);
+            if (!notified) {
+                logsService.warning("Failed to notify recommender service about purchase for notaVenta id: " + notaVenta.getId());
+            } else {
+                logsService.info("Notified recommender service of purchase for notaVenta id: " + notaVenta.getId());
+            }
+        } catch (Exception e) {
+            logsService.error("Error notifying recommender service of purchase: " + e.getMessage());
+        }
+
         logsService.info("Sale note completed with ID: " + id);
     }
 

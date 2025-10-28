@@ -141,6 +141,18 @@ class CSVDataProcessor:
         users = {u['id']: u for u in self.get_all_users_data(100000)}
         products = {p['id']: p for p in self.get_available_products()}
 
+        # Diagnostic logging to help debug DB-based training failures
+        try:
+            logger.info(f"DBDataProcessor: users={len(users)}, products={len(products)}")
+            interactions_preview = []
+            interactions = self._read_csv('interactions.csv') or self._read_csv('purchases.csv')
+            if interactions:
+                interactions_preview = interactions[:5]
+            logger.info(f"DBDataProcessor: interactions_count={len(interactions) if interactions is not None else 0}; preview={interactions_preview}")
+        except Exception:
+            # non-fatal diagnostic
+            pass
+
         # support multiple possible interaction filenames (interactions.csv or purchases.csv)
         interactions = self._read_csv('interactions.csv')
         if not interactions:

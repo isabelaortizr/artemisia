@@ -24,25 +24,25 @@ class ModelTrainer:
     def train_model_async(self) -> bool:
         """Entrena el modelo en segundo plano"""
         if self.is_training:
-            logger.warning("⚠️  Entrenamiento ya en progreso")
+            logger.warning("Entrenamiento ya en progreso")
             return False
         
         def training_thread():
             self.is_training = True
             try:
-                logger.info("🚀 Iniciando entrenamiento asíncrono...")
+                logger.info("Iniciando entrenamiento asíncrono...")
                 success = self._train_model()
                 self.is_training = False
                 self.last_training_time = time.time()
                 
                 if success:
-                    logger.info("✅ Entrenamiento completado exitosamente")
+                    logger.info("Entrenamiento completado exitosamente")
                 else:
-                    logger.error("❌ Entrenamiento falló")
+                    logger.error("Entrenamiento falló")
                     
             except Exception as e:
                 self.is_training = False
-                logger.error(f"💥 Error en entrenamiento: {e}")
+                logger.error(f"Error en entrenamiento: {e}")
         
         thread = threading.Thread(target=training_thread)
         thread.daemon = True
@@ -54,13 +54,23 @@ class ModelTrainer:
         """Lógica principal de entrenamiento"""
         try:
             # 1. Obtener datos de entrenamiento usando the DataProcessor factory (DB preferred)
-            logger.info("📥 Obteniendo datos de entrenamiento (fuente preferida: DB)...")
+            logger.info("Obteniendo datos de entrenamiento (fuente preferida: DB)...")
             training_data = []
             try:
                 training_data = (self.data_processor.get_training_data_from_db() or [])
             except Exception as e:
-                logger.warning(f"⚠️  Error obteniendo datos reales: {e}. Usando datos sintéticos o CSV fallback.")
+                logger.warning(f"Error obteniendo datos reales: {e}. Usando datos sintéticos o CSV fallback.")
                 training_data = []
+
+            # Diagnostic logging: report how many records were returned and sample a few
+            try:
+                logger.info(f"Registros retornados por DataProcessor: {len(training_data)}")
+                if len(training_data) > 0:
+                    sample_n = min(5, len(training_data))
+                    logger.debug("Primeros %d registros de training_data: %s", sample_n, training_data[:sample_n])
+            except Exception:
+                # Avoid raising here; only diagnostic
+                pass
 
             return self._run_training_pipeline(training_data)
         except Exception as e:
@@ -77,6 +87,7 @@ class ModelTrainer:
         try:
             user_id = user_data.get('user_id')
             if user_id is None:
+                logger.debug("_prepare_user_data: missing user_id in record: %s", user_data)
                 return None
 
             # Prefer explicit preference vector when present
@@ -131,6 +142,9 @@ class ModelTrainer:
                         'raw': user_data
                     }
 
+            # Nothing usable found for this user
+            logger.debug("_prepare_user_data: could not build vector for user_id=%s; purchase_history_len=%d; pref_present=%s; user_row_keys=%s",
+                         user_id, len(purchase_history), bool(pref), list(user_row.keys()) if isinstance(user_row, dict) else None)
             return None
 
         except Exception as e:
@@ -197,21 +211,21 @@ class ModelTrainer:
             # production DB contains a small but authoritative dataset (e.g. 6 users, 150 products).
             if len(training_data) < config.MIN_USERS_FOR_TRAINING:
                 if csv_only and not config.db_is_configured():
-                    logger.error(f"❌ Datos insuficientes ({len(training_data)} usuarios) y CSV_ONLY_TRAINING habilitado. Abortando entrenamiento.")
+                    logger.error(f"Datos insuficientes ({len(training_data)} usuarios) y CSV_ONLY_TRAINING habilitado. Abortando entrenamiento.")
                     return False
 
                 if config.db_is_configured():
                     # When DB is configured, respect the real dataset size and proceed with training
-                    logger.info(f"ℹ️ DB configurada y se encontraron {len(training_data)} usuarios; procediendo sin añadir sintéticos.")
+                    logger.info(f"DB configurada y se encontraron {len(training_data)} usuarios; procediendo sin añadir sintéticos.")
                 else:
-                    logger.warning(f"⚠️  Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
+                    logger.warning(f"Datos insuficientes ({len(training_data)} usuarios). Añadiendo sintéticos para llegar al mínimo.")
                     need = max(0, config.MIN_USERS_FOR_TRAINING - len(training_data))
                     synthetic_data = self._generate_synthetic_data(need + 100)
                     training_data.extend(synthetic_data)
-                    logger.info(f"➕ Añadidos {len(synthetic_data)} usuarios sintéticos")
+                    logger.info(f"Añadidos {len(synthetic_data)} usuarios sintéticos")
 
             # Prepare data
-            logger.info("🔧 Preparando datos para entrenamiento...")
+            logger.info("Preparando datos para entrenamiento...")
             model_training_data = []
             for user_data in training_data:
                 prepared_data = self._prepare_user_data(user_data)
@@ -219,16 +233,23 @@ class ModelTrainer:
                     model_training_data.append(prepared_data)
 
             if not model_training_data:
-                logger.error("❌ No se pudieron preparar datos para entrenamiento")
+                logger.error("No se pudieron preparar datos para entrenamiento")
                 return False
 
             # Train model
-            logger.info(f"🏋️‍♂️ Entrenando con {len(model_training_data)} usuarios...")
+            logger.info(f"Entrenando con {len(model_training_data)} usuarios...")
             model = ArtRecommendationEngine()
             success = model.train(model_training_data)
 
             if success:
-                model.save_model(config.MODEL_PATH)
+                # Ensure we save the model to an absolute path relative to the package root
+                model_path = config.MODEL_PATH
+                if not os.path.isabs(model_path):
+                    pkg_root = os.path.dirname(os.path.dirname(__file__))
+                    repo_root = os.path.abspath(os.path.join(pkg_root, '..'))
+                    model_path = os.path.abspath(os.path.join(repo_root, model_path))
+                logger.info(f"Guardando modelo en: {model_path}")
+                model.save_model(model_path)
                 self._save_training_stats(model, len(model_training_data))
                 return True
             else:
@@ -290,7 +311,7 @@ class ModelTrainer:
             'pca_variance_explained': model.pca_model.explained_variance_ratio_.sum() if model.pca_model else 0
         }
         
-        logger.info(f"📊 Estadísticas de entrenamiento: {self.training_stats}")
+        logger.info(f"Estadísticas de entrenamiento: {self.training_stats}")
     
     def get_training_status(self) -> Dict[str, Any]:
         """Obtiene estado actual del entrenamiento"""

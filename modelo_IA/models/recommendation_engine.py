@@ -38,16 +38,18 @@ class ArtRecommendationEngine:
         ]
         
         self.feature_names = categories_features + techniques_features + derived_features
-        logger.info(f"🔧 Espacio de características construido: {len(self.feature_names)} dimensiones")
+        logger.info(f"[INFO] Espacio de caracteristicas construido: {len(self.feature_names)} dimensiones")
         
     def train(self, training_data: List[Dict[str, Any]]) -> bool:
         """Entrena el modelo con datos de usuarios"""
         try:
-            logger.info(f"🏋️‍♂️ Iniciando entrenamiento con {len(training_data)} usuarios...")
+            logger.info(f"[INFO] Iniciando entrenamiento con {len(training_data)} usuarios...")
             
             if len(training_data) < config.MIN_USERS_FOR_TRAINING:
-                logger.warning(f"⚠️  Datos insuficientes. Mínimo requerido: {config.MIN_USERS_FOR_TRAINING}")
-                return False
+                # Warn but allow training to proceed for DB-driven workflows where the
+                # authoritative dataset may be small. This prevents silent failures when
+                # ModelTrainer passes DB records but their count < MIN_USERS_FOR_TRAINING.
+                logger.warning(f"Datos insuficientes ({len(training_data)} usuarios) menor que MIN_USERS_FOR_TRAINING={config.MIN_USERS_FOR_TRAINING}. Procediendo con entrenamiento reducido.")
             
             # Construir matriz de usuarios
             user_matrix = []
@@ -64,21 +66,22 @@ class ArtRecommendationEngine:
                     self.user_vectors[user_id] = user_vector
             
             if not user_matrix:
-                logger.error("❌ No se pudieron construir vectores de usuario")
+                logger.error("No se pudieron construir vectores de usuario")
                 return False
                 
             user_matrix = np.array(user_matrix)
-            logger.info(f"📊 Matriz de entrenamiento: {user_matrix.shape}")
+            logger.info(f"Matriz de entrenamiento: {user_matrix.shape}")
             
             # Escalar datos
             user_matrix_scaled = self.scaler.fit_transform(user_matrix)
             
             # Reducción de dimensionalidad con PCA
-            n_components = min(10, len(user_matrix) - 1, len(self.feature_names))
+            # Ensure n_components is at least 1 and not greater than available dims
+            n_components = min(10, max(1, len(user_matrix) - 1), len(self.feature_names))
             self.pca_model = PCA(n_components=n_components, random_state=42)
             user_matrix_reduced = self.pca_model.fit_transform(user_matrix_scaled)
             
-            logger.info(f"📉 Varianza explicada por PCA: {self.pca_model.explained_variance_ratio_.sum():.3f}")
+            logger.info(f"Varianza explicada por PCA: {self.pca_model.explained_variance_ratio_.sum():.3f}")
             
             # Clustering con K-means (tunable via env)
             n_clusters = min(config.NUM_CLUSTERS, len(user_matrix))
@@ -99,13 +102,13 @@ class ArtRecommendationEngine:
             for cluster in clusters:
                 cluster_counts[cluster] = cluster_counts.get(cluster, 0) + 1
             
-            logger.info(f"✅ Modelo entrenado exitosamente")
-            logger.info(f"🎯 Clusters creados: {cluster_counts}")
+            logger.info(f"Modelo entrenado exitosamente")
+            logger.info(f"Clusters creados: {cluster_counts}")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Error en entrenamiento: {e}")
+            logger.error(f"Error en entrenamiento: {e}")
             return False
     
     def _build_complete_user_vector(self, user_data: Dict[str, Any]) -> Dict[str, float]:
@@ -320,7 +323,7 @@ class ArtRecommendationEngine:
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             joblib.dump(self, filepath)
             abs_path = os.path.abspath(filepath)
-            logger.info(f"💾 Modelo guardado en: {abs_path}")
+            logger.info(f"Modelo guardado en: {abs_path}")
         except Exception as e:
             logger.error(f"Error guardando modelo: {e}")
     
@@ -338,7 +341,7 @@ class ArtRecommendationEngine:
                 if os.path.exists(p):
                     try:
                         model = joblib.load(p)
-                        logger.info(f"📂 Modelo cargado desde: {p}")
+                        logger.info(f"Modelo cargado desde: {p}")
                         # If DB is configured, ensure model only contains DB users
                         try:
                             from ..services.csv_data_processor import DataProcessor
@@ -360,7 +363,7 @@ class ArtRecommendationEngine:
                                                 # reload newly saved model
                                                 try:
                                                     model = joblib.load(p)
-                                                    logger.info(f"📂 Modelo recargado luego de reentrenar desde DB: {p}")
+                                                    logger.info(f"Modelo recargado luego de reentrenar desde DB: {p}")
                                                     return model
                                                 except Exception:
                                                     logger.warning("No se pudo recargar modelo luego de reentrenamiento, se usará la versión actual podada.")
@@ -396,7 +399,7 @@ class ArtRecommendationEngine:
                 purchases_csv = os.path.join(csv_dir, 'purchases.csv')
 
                 if os.path.exists(products_csv) and (os.path.exists(interactions_csv) or os.path.exists(purchases_csv) or os.path.exists(os.path.join(csv_dir, 'user_preferences.csv'))):
-                    logger.info("📁 CSVs detectados en data_exports, lanzando entrenamiento inicial (CSV-only).")
+                    logger.info("CSVs detectados en data_exports, lanzando entrenamiento inicial (CSV-only).")
                     trainer = ModelTrainer()
                     ok = trainer.train_from_csv()
                     if ok:
@@ -405,7 +408,7 @@ class ArtRecommendationEngine:
                             if os.path.exists(p):
                                 try:
                                     model = joblib.load(p)
-                                    logger.info(f"📂 Modelo cargado luego de entrenamiento desde: {p}")
+                                    logger.info(f"Modelo cargado luego de entrenamiento desde: {p}")
                                     return model
                                 except Exception:
                                     continue

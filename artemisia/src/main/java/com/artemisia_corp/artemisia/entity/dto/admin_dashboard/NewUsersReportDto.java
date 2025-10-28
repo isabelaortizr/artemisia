@@ -2,7 +2,6 @@ package com.artemisia_corp.artemisia.entity.dto.admin_dashboard;
 
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 @AllArgsConstructor

@@ -5,9 +5,8 @@ import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.service.ProductViewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,15 +14,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/product-views")
 @Tag(name = "Product View Tracking", description = "Track and manage product views for recommendations")
 @Slf4j
-@RequiredArgsConstructor
 public class ProductViewController {
 
     private final ProductViewService productViewService;
-
-    @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Track a product view")

@@ -10,7 +10,7 @@ import com.artemisia_corp.artemisia.repository.ProductViewRepository;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.ProductService;
 import com.artemisia_corp.artemisia.service.ProductViewService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,17 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+import com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ProductViewServiceImpl implements ProductViewService {
-
     private final ProductViewRepository productViewRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
+    private final RecommenderPythonClient recommenderClient;
 
     @Override
     @Async
@@ -90,6 +90,13 @@ public class ProductViewServiceImpl implements ProductViewService {
             log.debug("Tracked product view - User: {}, Product: {}, Views: {}",
                     userId, productId, productView.getViewCount());
 
+            try {
+                Integer pid = productId != null ? productId.intValue() : null;
+                recommenderClient.notifyView(userId.intValue(), pid, durationSeconds);
+            } catch (Exception ex) {
+                log.warn("Failed to notify recommender service about view: {}", ex.getMessage());
+            }
+
         } catch (Exception e) {
             log.error("Error in trackProductViewInternal for user {} product {}: {}",
                     userId, productId, e.getMessage());
@@ -107,7 +114,7 @@ public class ProductViewServiceImpl implements ProductViewService {
             return recentViews.stream()
                     .map(ProductView::getProduct)
                     .map(product -> productService.getProductById(product.getId()))
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
             log.error("Error getting recently viewed products for user {}: {}", userId, e.getMessage());
             return new ArrayList<>();
@@ -124,7 +131,7 @@ public class ProductViewServiceImpl implements ProductViewService {
             return topViews.stream()
                     .map(ProductView::getProduct)
                     .map(product -> productService.getProductById(product.getId()))
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
             log.error("Error getting most viewed products for user {}: {}", userId, e.getMessage());
             return new ArrayList<>();
@@ -203,9 +210,16 @@ public class ProductViewServiceImpl implements ProductViewService {
             Object[] stats = productViewRepository.getUserViewStatistics(userId);
 
             Map<String, Object> statistics = new HashMap<>();
-            statistics.put("totalViewedProducts", ((Number) stats[0]).longValue());
-            statistics.put("totalViewCount", ((Number) stats[1]).longValue());
-            statistics.put("totalViewDuration", ((Number) stats[2]).longValue());
+
+            if (stats != null && stats.length >= 3) {
+                statistics.put("totalViewedProducts", safeExtractLong(stats[0]));
+                statistics.put("totalViewCount", safeExtractLong(stats[1]));
+                statistics.put("totalViewDuration", safeExtractLong(stats[2]));
+            } else {
+                statistics.put("totalViewedProducts", 0L);
+                statistics.put("totalViewCount", 0L);
+                statistics.put("totalViewDuration", 0L);
+            }
 
             return statistics;
         } catch (Exception e) {
@@ -215,6 +229,27 @@ public class ProductViewServiceImpl implements ProductViewService {
             emptyStats.put("totalViewCount", 0L);
             emptyStats.put("totalViewDuration", 0L);
             return emptyStats;
+        }
+    }
+
+    private Long safeExtractLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        if (value instanceof Object[]) {
+            // Handle array case - take first element if available
+            Object[] array = (Object[]) value;
+            if (array.length > 0 && array[0] instanceof Number) {
+                return ((Number) array[0]).longValue();
+            }
+        }
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException e) {
+            return 0L;
         }
     }
 

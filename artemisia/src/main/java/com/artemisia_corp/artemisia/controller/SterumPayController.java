@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.entity.dto.nota_venta.NotaVentaResponseDto;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.SterumPayServiceImpl;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,10 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/stereum-pay")
 public class SterumPayController {
-
-    @Autowired
     private SterumPayService sterumPayService;
 
     @GetMapping("/token")

@@ -3,6 +3,7 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressRequestDto;
 import com.artemisia_corp.artemisia.entity.dto.address.AddressResponseDto;
+import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.service.AddressService;
 import com.artemisia_corp.artemisia.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,8 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,14 +31,11 @@ import java.util.Date;
 
 @Slf4j
 @Controller
+@AllArgsConstructor
 @RequestMapping("/api/addresses")
 @Tag(name = "Address Management", description = "Endpoints for managing addresses")
 public class AddressController {
-
-    @Autowired
     private AddressService addressService;
-    @Autowired
-    @Lazy
     private JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "Get address by ID", description = "Returns a single address by its ID")
@@ -49,8 +47,15 @@ public class AddressController {
     @GetMapping("/{id}")
     public ResponseEntity<AddressResponseDto> getAddressById(
             @PathVariable Long id, @RequestHeader("Authorization") String token) {
-        AddressResponseDto response = addressService.getAddressById(id, token);
-        return ResponseEntity.ok(response);
+
+        Long userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        AddressResponseDto address = addressService.getAddressById(id, token);
+
+        if (!address.getUserId().equals(userIdFromToken)) {
+            throw new NotDataFoundException("User does not have such address");
+        }
+
+        return ResponseEntity.ok(address);
     }
 
     @Operation(summary = "Create a new address", description = "Creates a new address")
@@ -93,6 +98,13 @@ public class AddressController {
     public ResponseEntity<Void> deleteAddress(
             @PathVariable Long id,
             @RequestHeader("Authorization") String token) {
+        Long userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
+        AddressResponseDto address = addressService.getAddressById(id, token);
+
+        if (!address.getUserId().equals(userIdFromToken)) {
+            throw new NotDataFoundException("User does not have such address");
+        }
+
         addressService.deleteAddress(id, token);
         return ResponseEntity.noContent().build();
     }

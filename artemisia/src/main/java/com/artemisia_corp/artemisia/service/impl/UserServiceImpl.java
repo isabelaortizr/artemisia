@@ -9,27 +9,22 @@ import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private LogsService logsService;
-    @Autowired
-    @Lazy
-    private JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final LogsService logsService;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.artemisia_corp.artemisia.service.impl.clients.RecommenderPythonClient recommenderPythonClient;
 
     @Override
     public List<UserResponseDto> getAllUsers() {
@@ -95,6 +90,17 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        try {
+            if (recommenderPythonClient != null) {
+                boolean ok = recommenderPythonClient.registerUser(savedUser.getId().intValue());
+                if (!ok) logsService.warning("Could not register new user in recommender: " + savedUser.getId());
+                else logsService.info("Registered new user in recommender: " + savedUser.getId());
+            }
+        } catch (Exception e) {
+            logsService.error("Error registering user in recommender: " + e.getMessage());
+        }
+
         return convertToDto(savedUser);
     }
 
@@ -136,13 +142,6 @@ public class UserServiceImpl implements UserService {
         }
         if (token == null || token.trim().isEmpty()) {
             throw new IllegalArgumentException("Authorization token is required.");
-        }
-
-        Long userIdFromToken = jwtTokenProvider.getUserIdFromToken(token);
-        UserResponseDto userCheck = this.getUserById(id);
-        if (userIdFromToken.equals(userCheck.getId().toString())) {
-            logsService.info("User deleted successfully with ID: " + id);
-            throw new IllegalArgumentException("Invalid token or unauthorized action.");
         }
 
         User user = userRepository.findUserById(id);

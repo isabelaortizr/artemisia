@@ -14,51 +14,41 @@ import com.artemisia_corp.artemisia.repository.UserRepository;
 import com.artemisia_corp.artemisia.service.ImageService;
 import com.artemisia_corp.artemisia.service.LogsService;
 import com.artemisia_corp.artemisia.service.ProductService;
-import com.artemisia_corp.artemisia.service.ProductViewService;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private LogsService logsService;
-    @Autowired
-    private ImageService imageService;
-    @Autowired
-    @Lazy
-    private ProductViewService productViewService;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final LogsService logsService;
+    private final ImageService imageService;
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable, long userId) {
         logsService.info("Fetching all products");
-        Page<Product> products = productRepository.findAllProducts(pageable);
-
+        log.info("user id: " + userId);
+        Page<Product> products = productRepository.findAllProducts(pageable, userId);
+        products.forEach(product ->
+            log.info(String.valueOf(product.getSeller().getId()))
+        );
         // Convertir a DTO y cargar imágenes
         List<ProductResponseDto> productDtos = products.getContent().stream()
                 .map(this::convertToDtoWithImage)
-                .collect(Collectors.toList());
-
-        // Trackear vistas si hay usuario autenticado
-        trackProductViewsForAuthenticatedUser(products.getContent());
+                .toList();
 
         return new PageImpl<>(productDtos, pageable, products.getTotalElements());
     }
@@ -76,9 +66,6 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             throw new NotDataFoundException("Product not found with ID: " + id);
         }
-
-        // Trackear la vista de este producto específico
-        trackProductViewForAuthenticatedUser(id);
 
         return convertToDtoWithImage(product);
     }
@@ -142,12 +129,10 @@ public class ProductServiceImpl implements ProductService {
         if (productDto.getStatus() != null)
             product.setStatus(ProductStatus.valueOf(productDto.getStatus()));
 
-        // Actualizar categorías desde enums
         if (productDto.getCategories() != null) {
             product.setCategories(new HashSet<>(productDto.getCategories()));
         }
 
-        // Actualizar técnicas desde enums
         if (productDto.getTechniques() != null) {
             product.setTechniques(new HashSet<>(productDto.getTechniques()));
         }
@@ -250,17 +235,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getAvailableProducts(Pageable pageable) {
+    public Page<ProductResponseDto> getAvailableProducts(Pageable pageable, Long userId) {
         logsService.info("Fetching all available products (stock > 0)");
         try {
-            Page<Product> products = productRepository.findAllAvailableProducts(pageable);
+            Page<Product> products = productRepository.findAllAvailableProducts(pageable, userId);
 
             List<ProductResponseDto> productDtos = products.getContent().stream()
                     .map(this::convertToDtoWithImage)
-                    .collect(Collectors.toList());
-
-            // Trackear vistas si hay usuario autenticado
-            trackProductViewsForAuthenticatedUser(products.getContent());
+                    .toList();
 
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (Exception e) {
@@ -284,10 +266,7 @@ public class ProductServiceImpl implements ProductService {
 
             List<ProductResponseDto> productDtos = products.getContent().stream()
                     .map(this::convertToDtoWithImage)
-                    .collect(Collectors.toList());
-
-            // Trackear vistas si hay usuario autenticado
-            trackProductViewsForAuthenticatedUser(products.getContent());
+                    .toList();
 
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (Exception e) {
@@ -312,18 +291,13 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductResponseDto> productDtos = products.getContent().stream()
                 .map(this::convertToDtoWithImage)
-                .collect(Collectors.toList());
-
-        // Trackear vistas si hay usuario autenticado
-        trackProductViewsForAuthenticatedUser(products.getContent());
+                .toList();
 
         return new PageImpl<>(productDtos, pageable, products.getTotalElements());
     }
 
     @Override
     public Page<ProductResponseDto> getByCategory(Long categoryId, Pageable pageable) {
-        // Convertir ID a enum (esto es un ejemplo, necesitarías un mapeo)
-        // En una implementación real, podrías tener un servicio que mapee IDs a enums
         try {
             PaintingCategory category = PaintingCategory.values()[categoryId.intValue() - 1];
             logsService.info("Fetching products by category: " + category);
@@ -331,10 +305,7 @@ public class ProductServiceImpl implements ProductService {
             Page<Product> products = productRepository.findByCategory(category, pageable);
             List<ProductResponseDto> productDtos = products.getContent().stream()
                     .map(this::convertToDtoWithImage)
-                    .collect(Collectors.toList());
-
-            // Trackear vistas si hay usuario autenticado
-            trackProductViewsForAuthenticatedUser(products.getContent());
+                    .toList();
 
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -344,7 +315,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponseDto> getByTechnique(Long techniqueId, Pageable pageable) {
-        // Convertir ID a enum (esto es un ejemplo, necesitarías un mapeo)
         try {
             PaintingTechnique technique = PaintingTechnique.values()[techniqueId.intValue() - 1];
             logsService.info("Fetching products by technique: " + technique);
@@ -352,10 +322,8 @@ public class ProductServiceImpl implements ProductService {
             Page<Product> products = productRepository.findByTechnique(technique, pageable);
             List<ProductResponseDto> productDtos = products.getContent().stream()
                     .map(this::convertToDtoWithImage)
-                    .collect(Collectors.toList());
+                    .toList();
 
-            // Trackear vistas si hay usuario autenticado
-            trackProductViewsForAuthenticatedUser(products.getContent());
 
             return new PageImpl<>(productDtos, pageable, products.getTotalElements());
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -368,9 +336,6 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponseDto> getProductsBySellerWithoutDeleted(Long sellerId, Pageable pageable) {
         Page<Product> products = productRepository.findProductsBySellerWithoutDeleted(sellerId, pageable);
 
-        // Trackear vistas si hay usuario autenticado
-        trackProductViewsForAuthenticatedUser(products.getContent());
-
         return products.map(this::convertToDto);
     }
 
@@ -378,63 +343,7 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponseDto> getProductsByStatus(Long sellerId, ProductStatus status, Pageable pageable) {
         Page<Product> products = productRepository.findBySellerIdAndStatus(sellerId, status, pageable);
 
-        // Trackear vistas si hay usuario autenticado
-        trackProductViewsForAuthenticatedUser(products.getContent());
-
         return products.map(this::convertToDto);
-    }
-
-    /**
-     * Trackea la vista de un producto específico para el usuario autenticado
-     */
-    private void trackProductViewForAuthenticatedUser(Long productId) {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated() &&
-                    !"anonymousUser".equals(authentication.getPrincipal())) {
-
-                String username = authentication.getName();
-                User user = userRepository.findByName(username)
-                        .orElseThrow(() -> new NotDataFoundException("User not found with name: " + username));
-
-                // Trackear la vista del producto
-                productViewService.trackProductView(user.getId(), productId);
-                log.debug("Tracked product view for user {} and product {}", user.getId(), productId);
-            }
-        } catch (Exception e) {
-            log.warn("Could not track product view for product {}: {}", productId, e.getMessage());
-        }
-    }
-
-    /**
-     * Trackea vistas múltiples para una lista de productos
-     */
-    private void trackProductViewsForAuthenticatedUser(List<Product> products) {
-        if (products == null || products.isEmpty()) {
-            return;
-        }
-
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated() &&
-                    !"anonymousUser".equals(authentication.getPrincipal())) {
-
-                String username = authentication.getName();
-                User user = userRepository.findByName(username)
-                        .orElseThrow(() -> new NotDataFoundException("User not found with name: " + username));
-
-                // Trackear solo los primeros 5 productos para evitar sobrecarga
-                products.stream()
-                        .limit(5)
-                        .forEach(product -> {
-                            productViewService.trackProductView(user.getId(), product.getId());
-                        });
-
-                log.debug("Tracked product views for user {} and {} products", user.getId(), Math.min(5, products.size()));
-            }
-        } catch (Exception e) {
-            log.warn("Could not track product views: {}", e.getMessage());
-        }
     }
 
     private ProductResponseDto convertToDtoWithImage(Product product) {
@@ -455,10 +364,10 @@ public class ProductServiceImpl implements ProductService {
                 .productId(product.getId())
                 .name(product.getName())
                 .techniques(product.getTechniques() != null ?
-                        product.getTechniques().stream().map(Enum::name).collect(Collectors.toList()) :
+                        product.getTechniques().stream().map(Enum::name).toList() :
                         List.of())
                 .techniqueEnums(product.getTechniques() != null ?
-                        product.getTechniques().stream().collect(Collectors.toList()) :
+                        product.getTechniques().stream().toList() :
                         List.of())
                 .materials(product.getMaterials())
                 .description(product.getDescription())
@@ -468,10 +377,10 @@ public class ProductServiceImpl implements ProductService {
                 .image(image != null && !image.isBlank() ? image :
                         product.getImageUrl() != null ? product.getImageUrl() : "")
                 .categories(product.getCategories() != null ?
-                        product.getCategories().stream().map(Enum::name).collect(Collectors.toList()) :
+                        product.getCategories().stream().map(Enum::name).toList() :
                         List.of())
                 .categoryEnums(product.getCategories() != null ?
-                        product.getCategories().stream().collect(Collectors.toList()) :
+                        product.getCategories().stream().toList() :
                         List.of())
                 .sellerId(product.getSeller().getId())
                 .sellerName(product.getSeller().getName())

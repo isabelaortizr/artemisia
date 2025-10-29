@@ -186,6 +186,25 @@ async function trackProductView(productId) {
     return res.ok;
 }
 
+async function trackFirstLoginPreferences(productIds) {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/product-views/track/first_login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(productIds)
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error tracking first login preferences (${res.status})`);
+    }
+
+    return res.ok;
+}
+
 
 export default {
     getProducts,
@@ -194,5 +213,6 @@ export default {
     updateProduct,
     getAvailableProducts,
     getRecommendedProducts,
-    trackProductView
+    trackProductView,
+    trackFirstLoginPreferences
 };

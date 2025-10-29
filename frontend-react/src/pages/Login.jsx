@@ -2,34 +2,32 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
-import { assets } from '../assets/assets';  // importar imágenes
-import Navbar from '../components/Navbar';  // navbar
+import { assets } from '../assets/assets';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import PreferencesOnboardingModal from '../components/PreferencesOnboardingModal';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [showWelcomeOverlay, setShowWelcomeOverlay] = useState(false);
+    const [showPreferencesModal, setShowPreferencesModal] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            const { token, user, userId, role } = await authService.login({ username, password });
+            const { token, user, userId, role, firstLogin } = await authService.login({ username, password });
 
             localStorage.setItem('authToken', token);
             localStorage.setItem('username', user);
             localStorage.setItem('userId', String(userId));
             localStorage.setItem('userRole', role);
 
-            if (username.toLowerCase() === 'rllayus') {
-                setShowWelcomeOverlay(true);
-                setTimeout(() => {
-                    setShowWelcomeOverlay(false);
-                    navigateBasedOnRole(role);
-                }, 2000);
+            // Si es el primer login, mostrar modal de preferencias
+            if (firstLogin) {
+                setShowPreferencesModal(true);
             } else {
                 navigateBasedOnRole(role);
             }
@@ -51,21 +49,14 @@ const Login = () => {
         }
     };
 
+    const handlePreferencesComplete = () => {
+        setShowPreferencesModal(false);
+        const role = localStorage.getItem('userRole');
+        navigateBasedOnRole(role);
+    };
+
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-black px-4">
-            {/* Overlay de bienvenida para rllayus */}
-            {showWelcomeOverlay && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-                    <div className="text-center p-8">
-                        <h1 className="text-5xl font-bold text-white mb-6 animate-bounce">¡BIENVENIDO RLLAYUS!</h1>
-                        <p className="text-3xl text-amber-400 mb-8">Tienes un 10% de descuento especial</p>
-                        <div className="text-xl text-white">
-                            <p>Redirigiendo...</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             <Navbar showSignUpButton={false} />
 
             {/* Fondo con imagen, overlay oscuro y blur */}
@@ -129,6 +120,12 @@ const Login = () => {
                     </Link>
                 </p>
             </form>
+
+            {/* Modal de preferencias para primer login */}
+            <PreferencesOnboardingModal
+                isOpen={showPreferencesModal}
+                onComplete={handlePreferencesComplete}
+            />
         </div>
     );
 };

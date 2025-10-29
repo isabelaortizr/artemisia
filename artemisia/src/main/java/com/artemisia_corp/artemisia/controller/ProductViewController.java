@@ -34,6 +34,20 @@ public class ProductViewController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Initial product interests by user")
+    @PostMapping("/track/first_login")
+    public ResponseEntity<Void> trackFirstLogin(
+            @RequestBody List<Long> productIds,
+            @RequestHeader("Authorization") String token
+    ) {
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+        productViewService.trackUserFirstLogin(userId, productIds);
+
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "Track a product view with duration")
     @PostMapping("/track/{productId}/duration")
     public ResponseEntity<Void> trackProductViewWithDuration(

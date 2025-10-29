@@ -16,4 +16,5 @@ public interface ProductViewService {
     Map<String, Object> getUserViewStatistics(Long userId);
     boolean hasUserViewedProduct(Long userId, Long productId);
     boolean hasUserViewedAnyProduct(Long userId);
+    void trackUserFirstLogin(Long userId, List<Long> productIds);
 }

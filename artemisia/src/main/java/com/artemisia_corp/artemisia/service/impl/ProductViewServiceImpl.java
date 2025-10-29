@@ -277,6 +277,18 @@ public class ProductViewServiceImpl implements ProductViewService {
         }
     }
 
+    @Override
+    public void trackUserFirstLogin(Long userId, List<Long> productIds) {
+        try {
+            for (Long productId : productIds) {
+                trackProductView(userId, productId);
+            }
+        } catch (Exception e) {
+            log.error("Error tracking product views for user {}: {}",
+                    userId, e.getMessage());
+        }
+    }
+
     private double calculateViewWeight(ProductView view, int maxViewCount, double avgViewDuration, LocalDateTime now) {
         double weight = 0.0;
 

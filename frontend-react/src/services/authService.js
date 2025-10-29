@@ -27,7 +27,8 @@ async function login({ username, password }) {
         token:   body.id_token,
         user:    body.username,
         userId:  body.user_id,
-        role:    body.user_role    // <–– extrae el role
+        role:    body.user_role,    // <–– extrae el role
+        firstLogin: body.first_login
     };
 }
 

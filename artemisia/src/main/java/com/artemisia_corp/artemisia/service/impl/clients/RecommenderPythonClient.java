@@ -1,6 +1,7 @@
 package com.artemisia_corp.artemisia.service.impl.clients;
 
 import com.artemisia_corp.artemisia.service.LogsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.ArrayList;
 
 @Component
+@Slf4j
 public class RecommenderPythonClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -154,6 +156,7 @@ public class RecommenderPythonClient {
             }
             HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(payload);
             ResponseEntity<Map> resp = restTemplate.postForEntity(url, entity, Map.class);
+            log.info(resp.getBody().toString());
             return resp.getStatusCode().is2xxSuccessful();
         } catch (Exception e) {
             if (logsService != null) logsService.error("registerUser error: " + e.getMessage());

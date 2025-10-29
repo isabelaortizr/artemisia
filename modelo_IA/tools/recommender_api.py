@@ -16,6 +16,8 @@ import joblib
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+import traceback
+import logging
 
 # Prefer package-relative imports when used as a package. When running this file
 # directly (script mode), fall back to ensuring the project root is on sys.path
@@ -37,7 +39,7 @@ except Exception:
     from modelo_IA.models.recommendation_engine import ArtRecommendationEngine
     from modelo_IA.services.model_trainer import ModelTrainer
     from modelo_IA.config.settings import config
-    from modelo_IA.services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase
+    from modelo_IA.services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase, create_user_pref
 
 APP = FastAPI(title="Artemisia Recommender API")
 # provide lowercase alias `app` so `uvicorn module:app` works (common convention)
@@ -255,11 +257,41 @@ def register_user(payload: Dict[str, Any], background: BackgroundTasks):
     if user_id is None:
         raise HTTPException(status_code=400, detail='user_id is required')
 
+    logger = logging.getLogger(__name__)
+    # Try synchronous creation first so caller gets immediate diagnostic info.
     try:
-        background.add_task(create_user_pref, int(user_id))
-        return {'status': 'accepted', 'user_id': int(user_id)}
+        pref_id = create_user_pref(int(user_id))
+        if pref_id:
+            logger.info(f"Created preference entry for user {user_id} (pref_id={pref_id})")
+            return {'status': 'ok', 'user_id': int(user_id), 'pref_id': pref_id}
+
+        # create_user_pref returned falsy (None/False) — schedule background task and return diagnostic info
+        logger.warning(f"create_user_pref returned falsy for user {user_id}; scheduling background task")
+        try:
+            background.add_task(create_user_pref, int(user_id))
+        except Exception as be:
+            logger.exception("Failed to schedule background create_user_pref task")
+            raise
+
+        diag = {
+            'message': 'create_user_pref returned falsy; background task scheduled',
+            'db_configured': getattr(config, 'DB_HOST', None) is not None and config.db_is_configured(),
+            'data_dir': DATA_DIR,
+            'prefs_csv_exists': os.path.exists(os.path.join(DATA_DIR, 'user_preferences.csv'))
+        }
+        return {'status': 'accepted', 'user_id': int(user_id), 'diagnostic': diag}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log full exception and return diagnostic details to caller for debugging
+        logger.exception(f"Exception while creating preference for user {user_id}: {e}")
+        diag = {
+            'exception': str(e),
+            'traceback': traceback.format_exc(),
+            'db_configured': getattr(config, 'DB_HOST', None) is not None and config.db_is_configured(),
+            'data_dir': DATA_DIR,
+            'prefs_csv_exists': os.path.exists(os.path.join(DATA_DIR, 'user_preferences.csv'))
+        }
+        raise HTTPException(status_code=500, detail={'message': 'Error creating user preference', 'diagnostic': diag})
 
 
 if __name__ == '__main__':

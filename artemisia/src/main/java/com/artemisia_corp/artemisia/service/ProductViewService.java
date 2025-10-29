@@ -15,4 +15,5 @@ public interface ProductViewService {
     List<Long> getSimilarProductsBasedOnViews(Long userId, Long productId, int limit);
     Map<String, Object> getUserViewStatistics(Long userId);
     boolean hasUserViewedProduct(Long userId, Long productId);
+    boolean hasUserViewedAnyProduct(Long userId);
 }

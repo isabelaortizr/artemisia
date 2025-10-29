@@ -55,6 +55,8 @@ public interface ProductViewRepository extends JpaRepository<ProductView, Long> 
     // Verificar si existe una vista para usuario-producto
     boolean existsByUserIdAndProductId(Long userId, Long productId);
 
+    boolean existsByUserId(Long userId);
+
     // Obtener estadísticas de vistas por usuario
     @Query("SELECT COUNT(pv), COALESCE(SUM(pv.viewCount), 0), COALESCE(SUM(pv.totalViewDuration), 0) " +
             "FROM ProductView pv WHERE pv.user.id = :userId")

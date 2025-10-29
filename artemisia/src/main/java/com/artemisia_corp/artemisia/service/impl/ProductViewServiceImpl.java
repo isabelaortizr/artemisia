@@ -265,6 +265,18 @@ public class ProductViewServiceImpl implements ProductViewService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasUserViewedAnyProduct(Long userId) {
+        try {
+            return productViewRepository.existsByUserId(userId);
+        } catch (Exception e) {
+            log.error("Error checking if user viewed product for user {}: {}",
+                    userId, e.getMessage());
+            return false;
+        }
+    }
+
     private double calculateViewWeight(ProductView view, int maxViewCount, double avgViewDuration, LocalDateTime now) {
         double weight = 0.0;
 

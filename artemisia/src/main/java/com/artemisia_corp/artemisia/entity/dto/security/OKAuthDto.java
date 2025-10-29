@@ -18,6 +18,6 @@ public class OKAuthDto {
     private String id;
     @JsonProperty("user_role")
     private String role;
-
-
+    @JsonProperty("first_login")
+    private Boolean firstLogin;
 }

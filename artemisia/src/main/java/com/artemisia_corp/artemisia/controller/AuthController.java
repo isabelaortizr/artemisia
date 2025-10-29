@@ -4,6 +4,7 @@ import com.artemisia_corp.artemisia.config.JwtTokenProvider;
 import com.artemisia_corp.artemisia.entity.User;
 import com.artemisia_corp.artemisia.entity.dto.security.AuthenticationDto;
 import com.artemisia_corp.artemisia.entity.dto.security.OKAuthDto;
+import com.artemisia_corp.artemisia.service.ProductViewService;
 import com.artemisia_corp.artemisia.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +36,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
+    private final ProductViewService productViewService;
 
     @Operation(summary = "Get authentication token", description = "Authenticates user and returns JWT token")
     @ApiResponses(value = {
@@ -62,6 +64,7 @@ public class AuthController {
             okAuthDto.setUsername(user.getUsername());
             okAuthDto.setId(jwtTokenProvider.getIdFromToken(token));
             okAuthDto.setRole(jwtTokenProvider.getRoleFromToken(token));
+            okAuthDto.setFirstLogin(!productViewService.hasUserViewedAnyProduct(user.getId()));
             return ok(okAuthDto);
         } catch (BadCredentialsException e) {
             log.error("Error al autentificar el usuario: {}", data.getUsername(), e);

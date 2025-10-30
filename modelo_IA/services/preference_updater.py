@@ -338,6 +338,9 @@ def update_user_preferences_from_product(user_id: int, product_id: int, beta: fl
         pref_id, existing_map = fetch_user_pref(user_id)
         if pref_id is None:
             pref_id = create_user_pref(user_id)
+            if pref_id is None:
+                logger.error(f"Failed to create preference entry for user {user_id} in DB; aborting update")
+                return False
             pref_id, existing_map = fetch_user_pref(user_id)
 
         # Convert existing_map to array
@@ -399,6 +402,9 @@ def update_user_preferences_from_purchase(user_id: int, product_ids: list, beta:
         pref_id, existing_map = fetch_user_pref(user_id)
         if pref_id is None:
             pref_id = create_user_pref(user_id)
+            if pref_id is None:
+                logger.error(f"Failed to create preference entry for user {user_id} in DB; aborting purchase update")
+                return False
             pref_id, existing_map = fetch_user_pref(user_id)
 
         old_arr = np.zeros(len(FEATURE_NAMES), dtype=float)

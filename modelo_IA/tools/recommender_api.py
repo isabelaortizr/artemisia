@@ -57,6 +57,7 @@ except Exception:
     from modelo_IA.services.model_trainer import ModelTrainer
     from modelo_IA.config.settings import config
     from modelo_IA.services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase, create_user_pref
+    from modelo_IA.services.vector_builder import VectorBuilder
 
 APP = FastAPI(title="Artemisia Recommender API")
 # provide lowercase alias `app` so `uvicorn module:app` works (common convention)

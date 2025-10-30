@@ -18,6 +18,22 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import traceback
 import logging
+import numpy as np
+
+# Ensure simple console logging is enabled at DEBUG level for diagnostics when
+# uvicorn or the environment did not already configure handlers. This makes
+# logger.debug/info/warning calls from our modules visible during development.
+try:
+    root_logger = logging.getLogger()
+    # If no handlers configured (common in some startup flows), set a basic config
+    if not root_logger.handlers:
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s: %(message)s')
+    # Always make sure our package logs at DEBUG during troubleshooting
+    logging.getLogger('modelo_IA').setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.DEBUG)
+except Exception:
+    # If logging setup fails for any reason, don't crash the app startup
+    pass
 
 # Prefer package-relative imports when used as a package. When running this file
 # directly (script mode), fall back to ensuring the project root is on sys.path
@@ -30,6 +46,7 @@ try:
     from ..services.model_trainer import ModelTrainer
     from ..config.settings import config
     from ..services.preference_updater import update_user_preferences_from_product, update_user_preferences_from_purchase, create_user_pref
+    from ..services.vector_builder import VectorBuilder
 except Exception:
     # fallback for script execution: add project root to sys.path and import by package
     PROJ_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -98,15 +115,146 @@ def recommendations(user_id: int, top_n: int = 10, limit: int = None):
     if not user_row or not user_row.get('user'):
         raise HTTPException(status_code=404, detail=f'user_id {user_id} not found in DB')
 
-    # user_vectors must only contain DB users; check model
-    user_vector = model.user_vectors.get(user_id)
-    if not user_vector:
-        raise HTTPException(status_code=404, detail=(f'user_id {user_id} not present in trained model. '
-                                                     'Re-train model from DB to include this user.'))
+    # Diagnostic: log model coverage
+    try:
+        logger = logging.getLogger(__name__)
+        model_user_count = len(getattr(model, 'user_vectors', {}) or {})
+        logger.debug("recommendations: model_user_count=%d; requesting_user=%s", model_user_count, user_id)
+    except Exception:
+        pass
 
+    # Try to get the user vector from the trained model first
+    user_vector = None
+    try:
+        user_vector = model.user_vectors.get(user_id)
+    except Exception:
+        user_vector = None
+
+    vector_used = 'model'
+    # If the user is not present in the trained model, build a vector on-the-fly
+    if not user_vector:
+        try:
+            logger = logging.getLogger(__name__)
+            logger.info(f"User {user_id} not present in trained model; building on-the-fly vector")
+            vb = VectorBuilder()
+            # Prefer explicit preference_vector from canonical source
+            pref = user_row.get('preference_vector') or user_row.get('user', {}).get('preference_vector')
+            if pref and isinstance(pref, dict) and len(pref) > 0:
+                user_vector = vb.build_vector_from_pref_map(pref)
+            else:
+                # Build from purchase history if available
+                ph = user_row.get('purchase_history') or []
+                if ph:
+                    user_vector = vb.build_user_vector_from_history(ph)
+                else:
+                    # Last resort: default vector
+                    user_vector = vb._get_default_vector()
+                    # introduce a tiny deterministic per-user perturbation so cold-start
+                    # default vectors are not identical across users (improves diversity)
+                    try:
+                        import random
+                        rnd = random.Random(int(user_id))
+                        # perturb each feature slightly and renormalize
+                        for k in list(user_vector.keys()):
+                            user_vector[k] = max(0.0, float(user_vector.get(k, 0.0)) + rnd.uniform(-1e-3, 1e-3))
+                        # renormalize to sum 1
+                        s = sum(user_vector.values())
+                        if s > 0:
+                            for k in user_vector:
+                                user_vector[k] = float(user_vector[k]) / s
+                    except Exception:
+                        pass
+            vector_used = 'on_the_fly'
+        except Exception as e:
+            logging.getLogger(__name__).exception(f"Failed to build on-the-fly vector for user {user_id}: {e}")
+            raise HTTPException(status_code=500, detail='Could not construct user vector')
+
+    else:
+        # If we did retrieve a vector from the saved model, detect whether it's a
+        # near-uniform / cold vector (this happens when many users had only a
+        # default vector at training time). In that case, rebuild an on-the-fly
+        # vector from canonical data (preferences or purchase history) so each
+        # user gets a slightly different starting vector and recommendations
+        # diversify.
+        try:
+            vals = np.array([float(user_vector.get(f, 0.0)) for f in model.feature_names])
+            max_val = float(np.max(vals)) if vals.size else 0.0
+            ptp = float(np.ptp(vals)) if vals.size else 0.0
+            if max_val < 0.05 or ptp < 1e-3:
+                logger = logging.getLogger(__name__)
+                logger.info(f"Model vector for user {user_id} appears cold (max={max_val:.6f} ptp={ptp:.6f}); rebuilding on-the-fly vector to improve diversity")
+                vb = VectorBuilder()
+                # Prefer explicit stored preference_vector
+                pref = user_row.get('preference_vector') or user_row.get('user', {}).get('preference_vector')
+                new_vec = None
+                if pref and isinstance(pref, dict) and len(pref) > 0:
+                    new_vec = vb.build_vector_from_pref_map(pref)
+                else:
+                    ph = user_row.get('purchase_history') or []
+                    if ph:
+                        new_vec = vb.build_user_vector_from_history(ph)
+                    else:
+                        new_vec = vb._get_default_vector()
+                        # deterministic per-user perturbation so defaults differ
+                        try:
+                            import random
+                            rnd = random.Random(int(user_id))
+                            for k in list(new_vec.keys()):
+                                new_vec[k] = max(0.0, float(new_vec.get(k, 0.0)) + rnd.uniform(-1e-3, 1e-3))
+                            s = sum(new_vec.values())
+                            if s > 0:
+                                for k in new_vec:
+                                    new_vec[k] = float(new_vec[k]) / s
+                        except Exception:
+                            pass
+
+                # Replace the model vector with the rebuilt one for this request only
+                if new_vec:
+                    user_vector = new_vec
+                    vector_used = 'on_the_fly_from_model'
+        except Exception:
+            # if anything goes wrong here, fall back to the original model vector
+            pass
+
+    # Load candidate products and filter / compute recommendations
     products = load_products(1000)
+    # Remove products the user already bought to improve novelty
+    try:
+        purchased_ids = {p.get('product_id') for p in (user_row.get('purchase_history') or []) if p.get('product_id')}
+        candidates = [p for p in products if p.get('id') not in purchased_ids]
+    except Exception:
+        candidates = products
+
+    # Detailed per-candidate diagnostics to understand ranking behavior
+    try:
+        ua = np.array([user_vector.get(f, 0.0) for f in model.feature_names]).reshape(1, -1)
+        cand_details = []
+        for p in candidates[:500]:
+            try:
+                pv = model._build_product_vector(p)
+                sim = model._calculate_similarity(ua, pv)
+                nov = model._calculate_novelty_score(p, user_vector)
+                score = 0.7 * sim + 0.3 * nov
+                top_feats = sorted(list(pv.items()), key=lambda x: -abs(float(x[1])))[:6]
+                cand_details.append({'id': p.get('id'), 'name': p.get('name'), 'similarity': float(sim), 'novelty': float(nov), 'score': float(score), 'top_product_features': top_feats})
+            except Exception as e:
+                logging.getLogger(__name__).debug(f"Error computing score for product {p.get('id')}: {e}")
+        # log top candidates by computed score for debugging
+        try:
+            sorted_c = sorted(cand_details, key=lambda x: -x['score'])
+            logging.getLogger(__name__).debug("recommendations: detailed_candidates_top20=%s", sorted_c[:20])
+        except Exception:
+            logging.getLogger(__name__).debug("recommendations: cand_details_count=%d", len(cand_details))
+    except Exception as e:
+        logging.getLogger(__name__).exception(f"Error while preparing candidate diagnostics: {e}")
+
     n = limit if (limit is not None) else top_n
-    recs = model.get_recommendations(user_vector, products, top_n=n)
+    recs = model.get_recommendations(user_vector, candidates, top_n=n)
+    # Log vector source for diagnostics but keep response the original list format
+    try:
+        logging.getLogger(__name__).debug("recommendations: vector_source=%s; returned=%d items", vector_used, len(recs or []))
+    except Exception:
+        pass
     return recs
 
 

@@ -188,18 +188,83 @@ class ArtRecommendationEngine:
                 return self._get_fallback_recommendations(products, top_n)
             
             user_array = np.array([user_vector.get(feature, 0.0) for feature in self.feature_names]).reshape(1, -1)
+
+            # Diagnostic logging: show user_vector basic stats and a few top features
+            try:
+                logger.debug("get_recommendations: num_candidates=%d", len(products))
+                vals = np.array([float(user_vector.get(f, 0.0)) for f in self.feature_names])
+                logger.debug("get_recommendations: user_vector sum=%.6f min=%.6f max=%.6f ptp=%.6f", vals.sum(), vals.min(), vals.max(), np.ptp(vals))
+                # show top 8 features for the user_vector
+                try:
+                    top_feats = sorted(user_vector.items(), key=lambda x: -abs(float(x[1])))[:8]
+                    logger.debug("get_recommendations: user_vector top_features=%s", top_feats)
+                except Exception:
+                    pass
+            except Exception:
+                pass
+
+            # Detect cold-start: if the user_vector is near-uniform or essentially empty
+            vals = np.array([float(user_vector.get(f, 0.0)) for f in self.feature_names])
+            # Treat as cold if the user's feature weights are very small or almost uniform
+            # (i.e. no strong preferences). Use both peak and range checks.
+            max_val = float(np.max(vals)) if vals.size else 0.0
+            ptp = float(np.ptp(vals)) if vals.size else 0.0
+            if max_val < 0.05 or ptp < 1e-3:
+                # Cold user: use a diversified/popularity-based selection instead of
+                # relying on tiny equal-weight vectors which produce identical scores
+                logger.debug("get_recommendations: detected cold user vector (max=%.6f ptp=%.6f); using cold-start strategy", max_val, ptp)
+                # Build fallback scores and then deterministically sample top candidates
+                fallback = self._get_fallback_recommendations(products, max(50, top_n))
+                try:
+                    import random
+                    rnd = random.Random()
+                    # seed with a hash of user_vector to provide deterministic but differing results per user
+                    seed_val = int(sum([hash(str(x)) for x in vals]) & 0xffffffff)
+                    rnd.seed(seed_val)
+                    # If there are more candidates than needed, sample to increase variety
+                    if len(fallback) <= top_n:
+                        return fallback[:top_n]
+                    sampled = rnd.sample(fallback, k=min(top_n, len(fallback)))
+                    return sampled
+                except Exception:
+                    return fallback[:top_n]
             
             # Calcular similitud con cada producto
             scored_products = []
-            for product in products:
+            detailed_scores = []
+            for idx, product in enumerate(products):
                 product_vector = self._build_product_vector(product)
                 similarity = self._calculate_similarity(user_array, product_vector)
-                
+
                 # Añadir score de novedad para nuevos usuarios
                 novelty_score = self._calculate_novelty_score(product, user_vector)
                 final_score = 0.7 * similarity + 0.3 * novelty_score
-                
+
                 scored_products.append((product, final_score))
+                # collect detail for debug (limit memory by sampling)
+                if idx < 200:
+                    try:
+                        # extract top 5 product features for readability
+                        pv_items = list(product_vector.items())
+                        top_p_feats = sorted(pv_items, key=lambda x: -abs(float(x[1])))[:5]
+                    except Exception:
+                        top_p_feats = []
+                    detailed_scores.append({
+                        'id': product.get('id'),
+                        'name': product.get('name'),
+                        'similarity': float(similarity),
+                        'novelty': float(novelty_score),
+                        'score': float(final_score),
+                        'top_product_features': top_p_feats
+                    })
+
+            # Log a summary of scoring for diagnostics (top 20 by score)
+            try:
+                scored_copy = list(detailed_scores)
+                scored_copy.sort(key=lambda x: -x['score'])
+                logger.debug("get_recommendations: scored_samples_top20=%s", scored_copy[:20])
+            except Exception:
+                pass
             
             # Ordenar y devolver top N
             scored_products.sort(key=lambda x: x[1], reverse=True)
@@ -220,17 +285,24 @@ class ArtRecommendationEngine:
     
     def _calculate_novelty_score(self, product: Dict, user_vector: Dict[str, float]) -> float:
         """Calcula score de novedad para evitar recomendar siempre lo mismo"""
-        # Productos con categorías poco exploradas por el usuario tienen mayor novedad
-        explored_categories = {cat.replace('cat_', '') for cat, weight in user_vector.items() 
-                              if cat.startswith('cat_') and weight > 0.1}
-        
-        product_categories = set(product.get('categories', []))
-        new_categories = product_categories - explored_categories
-        
-        if explored_categories:
-            return len(new_categories) / len(product_categories) if product_categories else 0.5
-        else:
-            return 0.5  # Neutral para nuevos usuarios
+        # Mejor: basar la novedad en las top-K categorías del usuario (más robusto
+        # cuando los pesos son pequeños y no hay umbrales absolutos fiables).
+        try:
+            # extract category weights and sort
+            cat_weights = [(cat.replace('cat_', ''), float(w)) for cat, w in user_vector.items() if cat.startswith('cat_')]
+            if not cat_weights:
+                return 0.5
+            cat_weights.sort(key=lambda x: -x[1])
+            top_k = [c for c, _ in cat_weights[:3] if c]
+
+            product_categories = set(product.get('categories', []))
+            if not product_categories:
+                return 0.5
+
+            new_categories = product_categories - set(top_k)
+            return len(new_categories) / len(product_categories)
+        except Exception:
+            return 0.5
     
     def _build_product_vector(self, product: Dict) -> Dict[str, float]:
         """Construye vector de características para producto"""

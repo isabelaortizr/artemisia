@@ -134,9 +134,23 @@ public class RecommenderPythonClient {
      */
     public Integer[] getRecommendationIds(int userId, int topN) {
         try {
-            String url = String.format("%s/recommendations/%d?limit=%d", recommenderUrl, userId, topN);
-            ResponseEntity<Integer[]> resp = restTemplate.getForEntity(url, Integer[].class);
-            if (resp.getStatusCode() == HttpStatus.OK) return resp.getBody();
+            // The Python service returns full product objects. Reuse getRecommendations
+            // and extract the `id` field to produce a stable Integer[] of ids.
+            Map[] respMap = getRecommendations(userId, topN);
+            if (respMap == null || respMap.length == 0) return new Integer[0];
+            List<Integer> ids = new ArrayList<>();
+            for (Map m : respMap) {
+                if (m == null) continue;
+                Object idObj = m.get("id");
+                if (idObj == null) continue;
+                try {
+                    if (idObj instanceof Number) ids.add(((Number) idObj).intValue());
+                    else ids.add(Integer.parseInt(idObj.toString()));
+                } catch (Exception e) {
+                    if (logsService != null) logsService.error("Failed to parse recommendation id: " + e.getMessage());
+                }
+            }
+            return ids.toArray(new Integer[0]);
         } catch (Exception e) {
             if (logsService != null) logsService.error("getRecommendationIds error: " + e.getMessage());
         }

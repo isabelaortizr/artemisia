@@ -446,7 +446,27 @@ class DBDataProcessor:
         FROM users
         LIMIT %s
         """
-        rows = self._rows_to_list(q, (limit,))
+        # Diagnostic: log the query and examine returned rows to detect DB-side filtering
+        try:
+            rows = self._rows_to_list(q, (limit,))
+            try:
+                # Rows may be list of dicts or tuples; extract ids where possible
+                ids = []
+                for r in rows[:200]:
+                    try:
+                        if isinstance(r, dict):
+                            ids.append(r.get('id'))
+                        else:
+                            # tuple-like
+                            ids.append(r[0])
+                    except Exception:
+                        ids.append(None)
+                logger.debug("DBDataProcessor.get_all_users_data: query returned %d rows; sample ids=%s", len(rows), ids[:50])
+            except Exception:
+                logger.debug("DBDataProcessor.get_all_users_data: query returned %d rows (could not extract ids sample)", len(rows))
+        except Exception as e:
+            logger.warning("DBDataProcessor.get_all_users_data: error executing query: %s", e)
+            rows = []
         out = []
         for u in rows:
             out.append({

@@ -56,15 +56,74 @@ class ModelTrainer:
             # 1. Obtener datos de entrenamiento usando the DataProcessor factory (DB preferred)
             logger.info("Obteniendo datos de entrenamiento (fuente preferida: DB)...")
             training_data = []
+
+            # When the DB is configured we must train on absolutely ALL canonical users.
+            # Some existing implementations build training_data by grouping interactions
+            # which only returns users that had purchases/interactions. That causes the
+            # model to miss many users. Here we explicitly iterate every user returned
+            # by `get_all_users_data()` and call `get_user_data()` to build a record for
+            # each one so every user is included in training (whether they have
+            # interactions or not). This path reads from the DB-backed processor only
+            # and does not mutate CSV files.
             try:
-                training_data = (self.data_processor.get_training_data_from_db() or [])
+                if config.db_is_configured():
+                    all_users = self.data_processor.get_all_users_data(100000) or []
+                    logger.info(f"DB configurada: usuarios canonicos encontrados: {len(all_users)}")
+                    for u in all_users:
+                        try:
+                            uid = int(u.get('id')) if u.get('id') is not None else None
+                            if not uid:
+                                continue
+                            user_rec = self.data_processor.get_user_data(uid)
+                            # Normalize into same shape as interaction-based records
+                            rec = {
+                                'user_id': int(uid),
+                                'purchase_history': user_rec.get('purchase_history', []),
+                                'total_purchases': len(user_rec.get('purchase_history', [])),
+                                'avg_purchase_value': 0.0,
+                                'user': user_rec.get('user', {}),
+                            }
+                            # include preference vector if the data source returned it
+                            if 'preference_vector' in user_rec and user_rec.get('preference_vector'):
+                                rec['preference_vector'] = user_rec.get('preference_vector')
+                            else:
+                                # For users with no history and no explicit prefs, attach a
+                                # sensible default vector so they are represented in the model
+                                try:
+                                    rec['preference_vector'] = self.vector_builder._get_default_vector()
+                                except Exception:
+                                    # fallback to empty dict; _prepare_user_data will attempt other routes
+                                    rec['preference_vector'] = {}
+                            training_data.append(rec)
+                        except Exception:
+                            logger.debug(f"No se pudo obtener get_user_data para uid={u}")
+                else:
+                    # DB not configured: fall back to the existing CSV grouping behavior
+                    try:
+                        training_data = (self.data_processor.get_training_data_from_db() or [])
+                    except Exception as e:
+                        logger.warning(f"Error obteniendo datos reales desde CSV fallback: {e}. Usando dataset vacío.")
+                        training_data = []
             except Exception as e:
-                logger.warning(f"Error obteniendo datos reales: {e}. Usando datos sintéticos o CSV fallback.")
-                training_data = []
+                # Non-fatal overall; keep whatever training_data we could obtain
+                logger.warning(f"Error al construir training_data desde la fuente: {e}")
 
             # Diagnostic logging: report how many records were returned and sample a few
             try:
                 logger.info(f"Registros retornados por DataProcessor: {len(training_data)}")
+                # Extra diagnostics: total users available and which user_ids were included
+                try:
+                    all_users = self.data_processor.get_all_users_data(100000) or []
+                    all_user_ids = {int(u.get('id')) for u in all_users if u.get('id')}
+                    training_user_ids = {int(td.get('user_id')) for td in training_data if td.get('user_id')}
+                    logger.info(f"Total usuarios en fuente canónica: {len(all_user_ids)}")
+                    logger.debug(f"User IDs en training_data (muestra): {list(training_user_ids)[:20]}")
+                    missing = sorted(list(all_user_ids - training_user_ids))[:50]
+                    if missing:
+                        logger.warning(f"Usuarios presentes en la fuente canónica pero ausentes del dataset de entrenamiento (hasta 50): {missing}")
+                except Exception as _:
+                    # non-fatal
+                    pass
                 if len(training_data) > 0:
                     sample_n = min(5, len(training_data))
                     logger.debug("Primeros %d registros de training_data: %s", sample_n, training_data[:sample_n])

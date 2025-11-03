@@ -209,6 +209,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
         if (!Boolean.TRUE.equals(notaVenta.getPreciosConvertidos())) {
             verificarYActualizarPreciosNotaVenta(notaVentaId, listOrderDetail);
+        } else {
+            log.info("Precios ya convertidos para NotaVenta ID: {}, omitiendo verificación", notaVentaId);
         }
 
         return listOrderDetail;
@@ -241,6 +243,14 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                     logsService.error("NotaVenta not found with ID: " + notaVentaId);
                     return new NotDataFoundException("NotaVenta not found with ID: " + notaVentaId);
                 });
+
+        log.info("Verificando precios para NotaVenta ID: {}, preciosConvertidos: {}",
+                notaVentaId, notaVenta.getPreciosConvertidos());
+
+        if (Boolean.TRUE.equals(notaVenta.getPreciosConvertidos())) {
+            log.info("Omitiendo verificación de precios - ya convertidos para NotaVenta ID: {}", notaVentaId);
+            return;
+        }
 
         boolean necesitaActualizacion = false;
         Double nuevoTotalGlobal = 0.0;

@@ -10,6 +10,7 @@ import com.artemisia_corp.artemisia.entity.dto.product.ProductResponseDto;
 import com.artemisia_corp.artemisia.entity.enums.*;
 import com.artemisia_corp.artemisia.exception.NotDataFoundException;
 import com.artemisia_corp.artemisia.exception.NotaVentaException;
+import com.artemisia_corp.artemisia.exception.OperationException;
 import com.artemisia_corp.artemisia.integracion.SterumPayService;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.EstadoResponseDto;
 import com.artemisia_corp.artemisia.integracion.impl.dtos.StereumPagaDto;
@@ -456,6 +457,9 @@ public class NotaVentaServiceImpl implements NotaVentaService {
 
             if (notaVenta.getMonedaCarrito() == null) {
                 notaVenta.setMonedaCarrito("BOB");
+                if (notaVenta.getPreciosConvertidos() == null) {
+                    notaVenta.setPreciosConvertidos(false);
+                }
                 notaVentaRepository.save(notaVenta);
             }
 
@@ -580,7 +584,8 @@ public class NotaVentaServiceImpl implements NotaVentaService {
                     notaVenta.getBuyer().getId() + " in class NotaVentaServiceImpl.getPaymentInfo() method.");
             logsService.error("Address not found for user ID: " +
                     notaVenta.getBuyer().getId() + " in class NotaVentaServiceImpl.getPaymentInfo() method.");
-            throw new NotDataFoundException("Address not found");
+
+            throw new OperationException("Debes seleccionar una dirección de envío antes de proceder al pago");
         }
 
         return sterumPayService.crearCargoCobro(StereumPagaDto.builder()

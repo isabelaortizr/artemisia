@@ -160,14 +160,19 @@ public class SterumPayServiceImpl implements SterumPayService {
 
     @Override
     public NotaVentaResponseDto conversionBob(ConversionDto conversionDto) {
-        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L))
+        log.info("Starting currency conversion for user: {}, target currency: {}",
+                conversionDto.getUserId(), conversionDto.getTargetCurrency());
+
+        if (jwtToken == null || JWTUtils.isTokenExpired(jwtToken, null, 1L)) {
+            log.info("Token is null or expired, obtaining new authentication token");
             obtenerTokenAutenticacion();
+        }
 
         boolean isBob = false;
         NotaVentaResponseDto cartDto = notaVentaService.getActiveCartByUserId(conversionDto.getUserId());
         NotaVenta cart = notaVentaRepository.findById(cartDto.getId())
                 .orElseThrow(() -> {
-                    log.error("Error al obtener la carta de nota venta");
+                    log.error("Cart not found with ID: {}", cartDto.getId());
                     logsService.error("Error al obtener la carta de nota venta");
                     return new NotDataFoundException("Cart not found");
                 });
@@ -176,6 +181,7 @@ public class SterumPayServiceImpl implements SterumPayService {
         CurrencyConversionResponseDto conversion;
         if (conversionDto.getTargetCurrency().contains("BOB")) {
             isBob = true;
+            log.info("Converting to BOB. Setting up conversion from BOB to {}", conversionDto.getOriginCurrency());
             conversion = convertAmount(
                     new CurrencyConversionDto(
                             "BOB",
@@ -183,6 +189,8 @@ public class SterumPayServiceImpl implements SterumPayService {
                             1.0
                     ));
         } else {
+            log.info("Converting from {} to {} with amount: {}",
+                    conversionDto.getOriginCurrency(), conversionDto.getTargetCurrency(), cart.getTotalGlobal());
             conversion = convertAmount(
                     new CurrencyConversionDto(
                             conversionDto.getOriginCurrency(),
@@ -191,51 +199,93 @@ public class SterumPayServiceImpl implements SterumPayService {
                     ));
         }
 
+        log.info("Currency conversion completed. Exchange rate: {}", conversion.getExchangeRate());
+
+        cart.setMonedaCarrito(conversionDto.getTargetCurrency());
+        cart.setTasaCambio(conversion.getExchangeRate());
+        cart.setPreciosConvertidos(true);
+
+        log.debug("Starting order detail conversion for {} items", orderDetails.size());
+        int processedItems = 0;
         for (OrderDetailResponseDto detailDto : orderDetails) {
+            log.debug("Processing order detail ID: {}", detailDto.getId());
             OrderDetail detail = orderDetailRepository.findById(detailDto.getId())
                     .orElseThrow(() -> {
-                        log.error("Error al obtener la carta de nota venta");
+                        log.error("Order detail not found with ID: {}", detailDto.getId());
                         logsService.error("Error al obtener la carta de nota venta");
                         return new NotDataFoundException("Order detail not found");
                     });
 
-            double convertedTotal = detail.getTotal();
-            if (isBob)
+            double originalTotal = detail.getTotal();
+            double convertedTotal;
+
+            if (isBob) {
                 convertedTotal = detailDto.getTotal() * conversion.getExchangeRate();
-            else
+                log.debug("Converted order detail {} from {} to {} (BOB conversion)",
+                        detailDto.getId(), originalTotal, convertedTotal);
+            } else {
                 convertedTotal = detailDto.getTotal() / conversion.getExchangeRate();
+                log.debug("Converted order detail {} from {} to {} (other currency conversion)",
+                        detailDto.getId(), originalTotal, convertedTotal);
+            }
 
             detail.setTotal(convertedTotal);
             orderDetailRepository.save(detail);
+            processedItems++;
+            log.debug("Successfully updated order detail ID: {}", detailDto.getId());
+        }
+        log.info("Completed conversion for {} order details", processedItems);
+
+        double originalCartTotal = cart.getTotalGlobal();
+        if (isBob) {
+            cart.setTotalGlobal(originalCartTotal * conversion.getExchangeRate());
+            log.info("Updated cart total from {} to {} (BOB conversion)", originalCartTotal, cart.getTotalGlobal());
+        } else {
+            cart.setTotalGlobal(originalCartTotal / conversion.getExchangeRate());
+            log.info("Updated cart total from {} to {} (other currency conversion)", originalCartTotal, cart.getTotalGlobal());
         }
 
-        if (isBob)
-            cart.setTotalGlobal(cart.getTotalGlobal() * conversion.getExchangeRate());
-        else
-            cart.setTotalGlobal(cart.getTotalGlobal() / conversion.getExchangeRate());
+        log.debug("Saving updated cart with ID: {}", cart.getId());
         notaVentaRepository.save(cart);
+        log.info("Cart saved successfully");
 
-        return notaVentaService.getNotaVentaById(cart.getId());
+        log.debug("Fetching final nota venta response for cart ID: {}", cart.getId());
+        NotaVentaResponseDto response = notaVentaService.getNotaVentaById(cart.getId());
+        log.info("Currency conversion completed successfully for user: {}", conversionDto.getUserId());
+
+        return response;
     }
 
     private CurrencyConversionResponseDto convertAmount(CurrencyConversionDto conversionEntity) {
+        log.debug("Starting currency conversion: {} to {}, amount: {}",
+                conversionEntity.getSourceCurrency(), conversionEntity.getTargetCurrency(), conversionEntity.getAmount());
+
         RestClient restClient = create();
         ResponseEntity<CurrencyConversionResponseDto> response;
 
         try {
+            String url = urlBase + String.format("/api/v1/currency/convert?country=%s&from=%s&to=%s&amount=%s",
+                    conversionEntity.getCountry(), conversionEntity.getSourceCurrency(),
+                    conversionEntity.getTargetCurrency(), conversionEntity.getAmount());
+
+            log.debug("Making currency conversion API call to: {}", url);
+
             response = restClient.get()
-                    .uri(urlBase + String.format("/api/v1/currency/convert?country=%s&from=%s&to=%s&amount=%s",
-                            conversionEntity.getCountry(), conversionEntity.getSourceCurrency(),
-                            conversionEntity.getTargetCurrency(), conversionEntity.getAmount()))
+                    .uri(url)
                     .header("Authorization", "Bearer " + jwtToken)
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header("Accept", MediaType.APPLICATION_JSON_VALUE)
                     .retrieve()
                     .toEntity(CurrencyConversionResponseDto.class);
 
+            log.info("Currency conversion API call successful. Response status: {}",
+                    response.getStatusCode());
+            log.debug("Conversion response body: {}", response.getBody());
+
             return response.getBody();
         } catch (Exception e) {
-            log.error("Error converting amount", e);
+            log.error("Error converting amount from {} to {}: {}",
+                    conversionEntity.getSourceCurrency(), conversionEntity.getTargetCurrency(), e.getMessage(), e);
             throw new OperationException("Failed to convert currency");
         }
     }

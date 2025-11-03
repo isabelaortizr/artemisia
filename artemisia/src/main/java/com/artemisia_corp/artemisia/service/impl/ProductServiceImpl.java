@@ -174,6 +174,11 @@ public class ProductServiceImpl implements ProductService {
             logsService.error("Product price must be greater than 0.");
             throw new IllegalArgumentException("Product price must be greater than 0.");
         }
+        if (productDto.getImage() == null || !productDto.getImage().isEmpty()) {
+            log.error("Product image necessary.");
+            logsService.error("Product image necessary.");
+            throw new IllegalArgumentException("Product image necessary.");
+        }
 
         return userRepository.findById(productDto.getSellerId())
                 .orElseThrow(() -> {

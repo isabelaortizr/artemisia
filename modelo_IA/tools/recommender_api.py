@@ -132,6 +132,23 @@ def recommendations(user_id: int, top_n: int = 10, limit: int = None):
         user_vector = None
 
     vector_used = 'model'
+    # If there is an explicit stored preference vector in the canonical data
+    # source (DB or CSV), prefer it because it reflects the latest events even
+    # when the in-memory trained model has an older cached vector.
+    try:
+        pref_map = user_row.get('preference_vector') or user_row.get('user', {}).get('preference_vector')
+        if pref_map and isinstance(pref_map, dict) and len(pref_map) > 0:
+            vb = VectorBuilder()
+            try:
+                pv = vb.build_vector_from_pref_map(pref_map)
+                # override the model vector for this request
+                user_vector = pv
+                vector_used = 'preference_map'
+            except Exception:
+                # if conversion fails, fall back to model/user-built vector
+                pass
+    except Exception:
+        pass
     # If the user is not present in the trained model, build a vector on-the-fly
     if not user_vector:
         try:
@@ -363,10 +380,33 @@ def update_view(payload: Dict[str, Any], background: BackgroundTasks):
     if user_id is None or product_id is None:
         raise HTTPException(status_code=400, detail='user_id and product_id are required')
 
+    # Optional synchronous mode for debugging/testing: if payload contains
+    # {'sync': True} we will perform the update synchronously and return
+    # updated recommendations for the user. Default behaviour remains
+    # background update to avoid latency in production.
+    sync = bool(payload.get('sync', False))
+    top_n = int(payload.get('top_n', 10))
+
     try:
-        # Schedule background update to avoid blocking the caller
-        background.add_task(update_user_preferences_from_product, int(user_id), int(product_id), 0.05, event_weight)
-        return {'status': 'accepted', 'user_id': int(user_id), 'product_id': int(product_id)}
+        if sync:
+            # perform update immediately and then return recommendations
+            ok = update_user_preferences_from_product(int(user_id), int(product_id), 0.05, event_weight)
+            if not ok:
+                # fall back to scheduling background task but report failure
+                background.add_task(update_user_preferences_from_product, int(user_id), int(product_id), 0.05, event_weight)
+                return {'status': 'accepted_with_warning', 'user_id': int(user_id), 'product_id': int(product_id), 'message': 'sync update failed, scheduled background task'}
+
+            # Reuse the recommendations endpoint logic to return updated list
+            try:
+                recs = recommendations(int(user_id), top_n=top_n)
+                return {'status': 'ok', 'user_id': int(user_id), 'product_id': int(product_id), 'recommendations': recs}
+            except Exception as e:
+                # If something goes wrong building recs, still return success for update
+                return {'status': 'ok', 'user_id': int(user_id), 'product_id': int(product_id), 'message': 'update applied but failed to compute recommendations', 'error': str(e)}
+        else:
+            # Schedule background update to avoid blocking the caller
+            background.add_task(update_user_preferences_from_product, int(user_id), int(product_id), 0.05, event_weight)
+            return {'status': 'accepted', 'user_id': int(user_id), 'product_id': int(product_id)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

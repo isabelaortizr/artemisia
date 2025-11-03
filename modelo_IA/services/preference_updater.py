@@ -97,13 +97,31 @@ def fetch_user_pref(user_id: int):
     # If DB is configured use DB tables instead of CSV
     if config.db_is_configured():
         try:
+            # We need the preference *row id* (user_preferences.id) so writes to
+            # user_preference_vectors use the correct foreign key. DBDataProcessor
+            # returns the vector but not the preference id, so query explicitly.
             from ..config.database import db
             from .csv_data_processor import DBDataProcessor
             conn = db.get_connection()
             dp = DBDataProcessor(conn)
             urec = dp.get_user_data(user_id)
             pref_map = urec.get('preference_vector') or {}
-            return (int(user_id) if urec else None), pref_map
+
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM user_preferences WHERE user_id = %s", (int(user_id),))
+            row = cur.fetchone()
+            # psycopg2 RealDictCursor may return a dict (e.g. {'id': 123}) or a tuple.
+            if row:
+                try:
+                    pref_id = int(row[0])
+                except Exception:
+                    try:
+                        pref_id = int(row.get('id'))
+                    except Exception:
+                        pref_id = None
+            else:
+                pref_id = None
+            return pref_id, pref_map
         except Exception as e:
             logger.error(f"Error fetching preferences for user {user_id} from DB: {e}")
             return None, {}
@@ -172,7 +190,18 @@ def create_user_pref(user_id: int):
             cur = conn.cursor()
             # insert a new preference row for the user
             cur.execute("INSERT INTO user_preferences (user_id, last_updated) VALUES (%s, now()) RETURNING id", (int(user_id),))
-            pref_id = cur.fetchone()[0]
+            row = cur.fetchone()
+            # handle RealDictCursor (dict) or tuple
+            if row is None:
+                pref_id = None
+            else:
+                try:
+                    pref_id = int(row[0])
+                except Exception:
+                    try:
+                        pref_id = int(row.get('id'))
+                    except Exception:
+                        pref_id = None
             conn.commit()
             return pref_id
         except Exception as e:
@@ -253,14 +282,87 @@ def write_user_pref_map(pref_id: int, pref_map: dict):
             # update last_updated
             cur.execute("UPDATE user_preferences SET last_updated = now() WHERE id = %s", (int(pref_id),))
             conn.commit()
-            return
+            logger.info(f"Wrote {len(inserts)} preference vector entries for preference id {pref_id} (DB)")
+            return True
         except Exception as e:
+            msg = str(e or '')
             logger.error(f"Error writing preferences for user {pref_id} to DB: {e}")
             try:
                 conn.rollback()
             except Exception:
                 pass
-            return
+
+            # Try to recover from foreign-key failures by creating the missing parent row.
+            # Handle two common cases:
+            #  - pref_id was actually a user_id (caller passed user_id instead of pref PK)
+            #  - the user_preferences row was missing for another reason
+            try:
+                low = msg.lower()
+            except Exception:
+                low = ''
+
+            if 'foreign key' in low or 'violates foreign key' in low or 'fkc' in low:
+                try:
+                    cur2 = conn.cursor()
+                    # Check if a user_preferences row exists with id == pref_id
+                    cur2.execute("SELECT id, user_id FROM user_preferences WHERE id = %s", (int(pref_id),))
+                    existing = cur2.fetchone()
+                    if existing:
+                        # If the parent by PK exists, we can't do much here
+                        logger.error(f"FK error but parent user_preferences.id={pref_id} exists; aborting recovery")
+                        return False
+
+                    # Otherwise assume pref_id may be a user_id; create a user_preferences row for that user_id
+                    candidate_user_id = int(pref_id)
+                    logger.info(f"Attempting to create parent preference row for user_id={candidate_user_id}")
+                    cur2.execute("INSERT INTO user_preferences (user_id, last_updated) VALUES (%s, now()) RETURNING id", (candidate_user_id,))
+                    newrow = cur2.fetchone()
+                    if newrow is None:
+                        logger.error("Failed to create parent user_preferences row during FK recovery")
+                        try:
+                            conn.rollback()
+                        except Exception:
+                            pass
+                        return False
+                    try:
+                        new_pref_id = int(newrow[0])
+                    except Exception:
+                        try:
+                            new_pref_id = int(newrow.get('id'))
+                        except Exception:
+                            new_pref_id = None
+
+                    conn.commit()
+                    if new_pref_id is None:
+                        logger.error("Could not determine new preference id after creating parent; aborting")
+                        return False
+
+                    # Retry write using the new_pref_id
+                    try:
+                        cur3 = conn.cursor()
+                        cur3.execute("DELETE FROM user_preference_vectors WHERE user_preference_id = %s", (int(new_pref_id),))
+                        if inserts:
+                            cur3.executemany("INSERT INTO user_preference_vectors (user_preference_id, feature, weight) VALUES (%s, %s, %s)", [(int(new_pref_id), str(k), float(v)) for k, v in (pref_map or {}).items()])
+                        cur3.execute("UPDATE user_preferences SET last_updated = now() WHERE id = %s", (int(new_pref_id),))
+                        conn.commit()
+                        logger.info(f"Recovered and wrote preferences using new preference id {new_pref_id}")
+                        return True
+                    except Exception as e2:
+                        logger.error(f"Retry after FK recovery failed: {e2}")
+                        try:
+                            conn.rollback()
+                        except Exception:
+                            pass
+                        return False
+                except Exception as rec_e:
+                    logger.error(f"Error during FK-recovery attempt for pref_id={pref_id}: {rec_e}")
+                    try:
+                        conn.rollback()
+                    except Exception:
+                        pass
+                    return False
+            # Not a FK error we can recover from
+            return False
 
     # CSV fallback when DB not configured
     try:
@@ -306,9 +408,13 @@ def write_user_pref_map(pref_id: int, pref_map: dict):
                     df.to_csv(prefs_path, index=False)
                 except Exception as e2:
                     logger.error(f"Fallback write failed for user_preferences.csv: {e2}")
+            logger.info(f"Wrote preference vector for user {pref_id} to CSV at {prefs_path}")
+            return True
     except Exception as e:
         logger.error(f"Error writing preferences for user {pref_id} to CSV: {e}")
-        return
+        return False
+    # default return if nothing matched
+    return False
 
 
 def update_user_preferences_from_product(user_id: int, product_id: int, beta: float = 0.05, event_weight: float = None):
@@ -363,7 +469,11 @@ def update_user_preferences_from_product(user_id: int, product_id: int, beta: fl
         pref_json = {FEATURE_NAMES[i]: float(new_norm[i]) for i in range(len(FEATURE_NAMES))}
 
         # write back (DB or CSV depending on config)
-        write_user_pref_map(pref_id or user_id, pref_json)
+        ok = write_user_pref_map(pref_id or user_id, pref_json)
+        if not ok:
+            logger.error(f"Failed to persist updated preference map for user {user_id} (pref_id={pref_id})")
+            return False
+        logger.info(f"Updated preference vector persisted for user {user_id} (pref_id={pref_id})")
         return True
     except Exception as e:
         logger.error(f"Error updating user preference for user {user_id}: {e}")
@@ -424,7 +534,11 @@ def update_user_preferences_from_purchase(user_id: int, product_ids: list, beta:
         new_norm = l2_normalize(raw)
         pref_json = {FEATURE_NAMES[i]: float(new_norm[i]) for i in range(len(FEATURE_NAMES))}
 
-        write_user_pref_map(pref_id or user_id, pref_json)
+        ok = write_user_pref_map(pref_id or user_id, pref_json)
+        if not ok:
+            logger.error(f"Failed to persist updated purchase preference map for user {user_id} (pref_id={pref_id})")
+            return False
+        logger.info(f"Updated purchase preference vector persisted for user {user_id} (pref_id={pref_id})")
         return True
     except Exception as e:
         logger.error(f"Error updating preferences from purchase for user {user_id}: {e}")

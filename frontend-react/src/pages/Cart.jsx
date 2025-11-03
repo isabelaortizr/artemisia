@@ -1,9 +1,7 @@
-// src/pages/Cart.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import notaVentaService from "../services/notaVentaService";
 import addressService from "../services/addressService";
-// import backIcon from "../assets/back-icon.png";
 import Navbar from "../components/Navbar";
 import { assets } from "../assets/assets";
 
@@ -17,20 +15,19 @@ export default function Cart() {
   const [addresses, setAddresses] = useState([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState("");
-  const [currency, setCurrency] = useState("BOB"); // Valor por defecto
+  const [currency, setCurrency] = useState("BOB");
   const [checkoutData, setCheckoutData] = useState(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyResult, setVerifyResult] = useState(null);
   const [verifyError, setVerifyError] = useState(null);
 
-  //Temporizador
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutos en segundos
+  const [timeLeft, setTimeLeft] = useState(600);
   const [isExpired, setIsExpired] = useState(false);
 
   const [conversionError, setConversionError] = useState(null);
 
   const [initialLoading, setInitialLoading] = useState(true);
-  const [actionLoading, setActionLoading]   = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [newAddr, setNewAddr] = useState({
@@ -43,7 +40,6 @@ export default function Cart() {
     extra: "",
   });
 
-  // Agrega este useEffect para el temporizador
   useEffect(() => {
     if (!checkoutData || timeLeft <= 0) return;
 
@@ -60,14 +56,12 @@ export default function Cart() {
     return () => clearInterval(timer);
   }, [checkoutData, timeLeft]);
 
-  // Función para formatear el tiempo
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Resetear el temporizador cuando se cierra el modal
   const handleCloseCheckout = () => {
     setCheckoutData(null);
     setVerifyResult(null);
@@ -83,11 +77,9 @@ export default function Cart() {
       const data = await notaVentaService.getCart(userId);
       setCart(data);
       
-      // ✅ ESTA ES LA PARTE IMPORTANTE: Obtener la moneda del carrito
       if (data.monedaCarrito) {
         setCurrency(data.monedaCarrito);
       } else {
-        // Si no viene moneda, usar "BOB" como default
         setCurrency("BOB");
       }
     } catch (err) {
@@ -135,7 +127,13 @@ export default function Cart() {
       notaVentaService
         .assignAddressToNotaVenta({ userId, addressId: selectedAddress })
         .then(fetchCart)
-        .catch((e) => setError(e.message || "Error al sincronizar dirección"));
+        .catch((e) => {
+          if (e.message.includes("dirección") || e.message.includes("address")) {
+            setError("Error al asignar la dirección. Por favor selecciona otra.");
+          } else {
+            setError(e.message || "Error al sincronizar dirección");
+          }
+        });
     }
   }, [loading, addrLoading, cart, addresses, selectedAddress, userId]);
 
@@ -162,7 +160,6 @@ export default function Cart() {
       });
       setCart(updated);
       
-      // ✅ Actualizar también la moneda si viene en la respuesta
       if (updated.monedaCarrito) {
         setCurrency(updated.monedaCarrito);
       }
@@ -178,6 +175,10 @@ export default function Cart() {
       setError("Selecciona una dirección de envío");
       return;
     }
+    
+    setActionLoading(true);
+    setError(null);
+    
     try {
       console.log("🔄 Creando transacción...");
       const tx = await notaVentaService.createTransaction({
@@ -188,14 +189,25 @@ export default function Cart() {
       });
 
       console.log("✅ Respuesta de transacción:", tx);
-      console.log("📊 QR Base64 disponible:", !!tx.qr_base64); // Cambiado a qr_base64
-      console.log("📊 QR Base64 longitud:", tx.qr_base64?.length); // Cambiado a qr_base64
+      console.log("📊 QR Base64 disponible:", !!tx.qr_base64);
+      console.log("📊 QR Base64 longitud:", tx.qr_base64?.length);
       console.log("📊 Todos los campos de la respuesta:", Object.keys(tx));
 
       setCheckoutData({ transaction: tx, addressId: selectedAddress });
     } catch (err) {
       console.error("❌ Error al iniciar pago:", err);
-      setError(err.message || "Error al iniciar pago");
+      
+      const errorMessage = err.message || "Error al iniciar pago";
+      if (errorMessage.includes("dirección") || 
+          errorMessage.includes("address") || 
+          errorMessage.includes("Debes seleccionar") || 
+          errorMessage.includes("Address not found")) {
+        setError("Debes seleccionar una dirección de envío válida antes de proceder al pago");
+      } else {
+        setError(errorMessage);
+      }
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -203,9 +215,7 @@ export default function Cart() {
     setVerifyLoading(true);
     setVerifyError(null);
     try {
-      console.log("hola:", userId)
       const res = await notaVentaService.verifyTransaction(userId);
-      console.log("hola:", userId)
       if (res.estado === "PAGADO") {
         navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
         return;
@@ -236,6 +246,8 @@ export default function Cart() {
       });
       setCart(updated);
       setCurrency(newCurrency);
+      
+      await fetchCart();
     } catch (err) {
       setConversionError("No se pudo convertir la moneda. Por favor vuelve a intentarlo.");
     } finally {
@@ -257,9 +269,10 @@ export default function Cart() {
         house_number: "",
         extra: "",
       });
+      setError(null);
       fetchAddresses();
     } catch (err) {
-      alert("Error al guardar dirección: " + err.message);
+      setError("Error al guardar dirección: " + err.message);
     }
   };
 
@@ -270,7 +283,7 @@ export default function Cart() {
   };
 
   if (initialLoading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
-  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+  if (error && !error.includes("dirección")) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
     <div className="min-h-screen bg-cover bg-center relative" style={{ backgroundImage: `url(${assets.register_img})` }}>
@@ -295,35 +308,44 @@ export default function Cart() {
               {addrLoading ? (
                 <p className="text-white">Cargando direcciones…</p>
               ) : addresses.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {addresses.map((addr) => {
-                    const id = addr.address_id ?? addr.addressId;
-                    return (
-                      <button
-                        key={id}
-                        onClick={() => handleAddressChange(id)}
-                        className={`px-4 py-2 rounded-xl border text-sm transition ${
-                          Number(selectedAddress) === Number(id)
-                            ? "bg-white text-black border-white"
-                            : "bg-black bg-opacity-40 border-white/20 text-white hover:bg-white/10"
-                        }`}
-                      >
-                        {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
-                      </button>
-                    );
-                  })}
+                <div>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {addresses.map((addr) => {
+                      const id = addr.address_id ?? addr.addressId;
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => handleAddressChange(id)}
+                          className={`px-4 py-2 rounded-xl border text-sm transition ${
+                            Number(selectedAddress) === Number(id)
+                              ? "bg-white text-black border-white"
+                              : "bg-black bg-opacity-40 border-white/20 text-white hover:bg-white/10"
+                          }`}
+                        >
+                          {addr.street}, {addr.house_number} — {addr.city}, {addr.country}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {error && error.includes("dirección") && (
+                    <p className="text-red-400 text-sm mt-2">
+                      {error}
+                    </p>
+                  )}
                 </div>
               ) : (
-                <button
-                  onClick={() => setShowAddressModal(true)}
-                  className="bg-black text-white px-4 py-2 rounded-full hover:bg-white hover:text-black transition"
-                >
-                  Agregar Dirección
-                </button>
+                <div className="text-center">
+                  <p className="text-yellow-400 mb-3">No tienes direcciones registradas</p>
+                  <button
+                    onClick={() => setShowAddressModal(true)}
+                    className="bg-white text-black px-4 py-2 rounded-full hover:bg-gray-200 transition"
+                  >
+                    Agregar Primera Dirección
+                  </button>
+                </div>
               )}
             </div>
 
-            {/* Moneda */}
             <div className="mb-6">
               <label className="block text-white mb-2">Moneda</label>
               <div className="flex gap-2">
@@ -344,13 +366,11 @@ export default function Cart() {
               {conversionError && (
                 <p className="mt-2 text-red-400">{conversionError}</p>
               )}
-              {/* ✅ Mostrar la moneda actual del carrito */}
               <p className="mt-2 text-sm text-gray-300">
                 Moneda actual del carrito: <strong>{currency}</strong>
               </p>
             </div>
 
-            {/* Productos */}
             <ul className="space-y-6">
               {cart.detalles.map((item) => (
                 <li
@@ -379,15 +399,26 @@ export default function Cart() {
               <p className="text-2xl font-bold">
                 Total: {currencySymbols[currency]} {cart.totalGlobal.toFixed(2)}
               </p>
-              <button
-                onClick={handleCheckout}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full transition"
-              >
-                Finalizar compra
-              </button>
+              <div className="flex flex-col items-end">
+                {error && !error.includes("dirección") && (
+                  <p className="text-red-400 text-sm mb-2 max-w-xs text-right">
+                    {error}
+                  </p>
+                )}
+                <button
+                  onClick={handleCheckout}
+                  disabled={actionLoading || addresses.length === 0 || !selectedAddress}
+                  className={`font-semibold px-8 py-3 rounded-full transition ${
+                    (actionLoading || addresses.length === 0 || !selectedAddress) 
+                      ? "bg-gray-600 text-gray-300 cursor-not-allowed" 
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  }`}
+                >
+                  {actionLoading ? 'Procesando...' : 'Finalizar compra'}
+                </button>
+              </div>
             </div>
 
-            {/* Checkout Modal */}
             {checkoutData && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                   <div className="bg-white text-black max-w-md w-full mx-auto rounded-2xl p-6 relative shadow-xl max-h-[90vh] overflow-y-auto">
@@ -400,7 +431,6 @@ export default function Cart() {
 
                     <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
 
-                    {/* QR Code */}
                     <div className="text-center mb-4">
                       <p className="text-gray-600 mb-3">Escanea este código QR para pagar</p>
                       {checkoutData.transaction.qr_base64 ? (
@@ -409,24 +439,15 @@ export default function Cart() {
                                 src={`data:image/png;base64,${checkoutData.transaction.qr_base64}`}
                                 alt="QR Code para pago"
                                 className="w-48 h-48 mx-auto"
-                                onError={(e) => {
-                                  console.error("❌ Error cargando imagen QR");
-                                  console.log("QR Base64 sample:", checkoutData.transaction.qr_base64?.substring(0, 100));
-                                }}
-                                onLoad={() => console.log("✅ QR cargado exitosamente")}
                             />
                           </div>
                       ) : (
                           <div>
                             <p className="text-red-500">QR no disponible</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Campos disponibles: {Object.keys(checkoutData.transaction).join(', ')}
-                            </p>
                           </div>
                       )}
                     </div>
 
-                    {/* Información del pago */}
                     <div className="text-center mb-4">
                       <p className="text-gray-600 mb-1">Monto a pagar</p>
                       <p className="text-3xl font-bold text-gray-900">
@@ -434,7 +455,6 @@ export default function Cart() {
                       </p>
                     </div>
 
-                    {/* Temporizador */}
                     <div className="text-center mb-4">
                       <div className={`inline-flex items-center px-4 py-2 rounded-full ${
                           timeLeft < 60 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
@@ -451,9 +471,6 @@ export default function Cart() {
                       )}
                     </div>
 
-
-
-                    {/* Botón de verificación */}
                     <div className="text-center">
                       <button
                           onClick={handleVerify}
@@ -468,7 +485,6 @@ export default function Cart() {
                       </p>
                     </div>
 
-                    {/* Resultados de verificación */}
                     {verifyResult && (
                         <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
                           <p className="text-center">
@@ -486,17 +502,24 @@ export default function Cart() {
                 </div>
             )}
 
-            {/* Modal agregar dirección */}
             {showAddressModal && (
               <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-center px-4 py-10">
                 <div className="bg-white text-black rounded-2xl p-6 max-w-lg w-full relative">
                   <button
                     className="absolute top-4 right-4 text-xl text-red-600"
-                    onClick={() => setShowAddressModal(false)}
+                    onClick={() => {
+                      setShowAddressModal(false);
+                      setError(null);
+                    }}
                   >
                     ×
                   </button>
                   <h3 className="text-xl font-bold mb-4">Agregar Dirección</h3>
+                  
+                  {error && error.includes("guardar dirección") && (
+                    <p className="text-red-500 mb-4 text-center">{error}</p>
+                  )}
+                  
                   <form onSubmit={submitNewAddress} className="space-y-3">
                     {[
                       { name: 'recipient_name', label: 'Nombre' },

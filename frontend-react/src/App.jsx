@@ -16,6 +16,9 @@ import MyWorks       from "./pages/MyWorks";
 import OrderReceipt  from "./pages/OrderReceipt";
 import OrderHistory  from "./pages/OrderHistory";
 import ProductsLanding from "./components/ProductsLanding";
+import Auctions       from "./pages/Auctions";
+import AuctionDetail  from "./pages/AuctionDetail";
+import MyAuctions     from "./pages/MyAuctions";
 
 const App = () => {
   return (
@@ -33,6 +36,9 @@ const App = () => {
         <Route path="/myworks"       element={<MyWorks />} />
         <Route path="/orderReceipt"  element={<OrderReceipt />} />
         <Route path="/orderHistory"  element={<OrderHistory />} />
+        <Route path="/auctions"       element={<Auctions />} />
+        <Route path="/auctions/:id"   element={<AuctionDetail />} />
+        <Route path="/my-auctions"    element={<MyAuctions />} />
       </Routes>
     </BrowserRouter>
   );

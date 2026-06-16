@@ -41,7 +41,7 @@ const ProductCard = ({ product, isExpanded, onToggleExpand, onAddToCart }) => {
     };
 
     const imageSrc = product.image
-        ? `data:image/jpeg;base64,${product.image}`
+        ? (product.image.startsWith('http') ? product.image : `data:image/jpeg;base64,${product.image}`)
         : 'https://via.placeholder.com/400x400';
 
     return (

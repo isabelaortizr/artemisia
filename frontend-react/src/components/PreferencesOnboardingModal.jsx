@@ -139,7 +139,7 @@ const PreferencesOnboardingModal = ({ isOpen, onComplete }) => {
                                 {sampleArtworks.map(artwork => {
                                     const isSelected = selectedArtworks.find(a => a.productId === artwork.productId);
                                     const imageSrc = artwork.image
-                                        ? `data:image/jpeg;base64,${artwork.image}`
+                                        ? (artwork.image.startsWith('http') ? artwork.image : `data:image/jpeg;base64,${artwork.image}`)
                                         : 'https://via.placeholder.com/300x300';
 
                                     return (
@@ -232,7 +232,7 @@ const PreferencesOnboardingModal = ({ isOpen, onComplete }) => {
             {/* Modal para imagen en grande */}
             {selectedImage && (
                 <ImageModal
-                    imageSrc={selectedImage.image ? `data:image/jpeg;base64,${selectedImage.image}` : 'https://via.placeholder.com/600x600'}
+                    imageSrc={selectedImage.image ? (selectedImage.image.startsWith('http') ? selectedImage.image : `data:image/jpeg;base64,${selectedImage.image}`) : 'https://via.placeholder.com/600x600'}
                     alt={selectedImage.name}
                     onClose={() => setSelectedImage(null)}
                 />

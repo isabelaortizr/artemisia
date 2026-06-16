@@ -5,6 +5,7 @@ import productService from '../services/productService';
 import WorkCard from '../components/WorkCard';
 import EditModal from '../components/EditModal';
 import AddArt from './AddArt';
+import CreateAuctionModal from '../components/CreateAuctionModal';
 
 const MyWorks = () => {
     const [works, setWorks] = useState([]);
@@ -14,7 +15,8 @@ const MyWorks = () => {
     const [totalPages, setTotal] = useState(0);
     const [editing, setEditing] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [expandedWorkId, setExpandedWorkId] = useState(null); // Nueva state para controlar qué tarjeta está expandida
+    const [auctionTarget, setAuctionTarget] = useState(null);
+    const [expandedWorkId, setExpandedWorkId] = useState(null);
     const navigate = useNavigate();
     const sellerId = localStorage.getItem('userId');
 
@@ -84,9 +86,10 @@ const MyWorks = () => {
                         <WorkCard
                             key={w.id}
                             work={w}
-                            isExpanded={expandedWorkId === w.id} // Pasamos si está expandida
-                            onToggleExpand={() => handleToggleExpand(w.id)} // Pasamos la función para toggle
+                            isExpanded={expandedWorkId === w.id}
+                            onToggleExpand={() => handleToggleExpand(w.id)}
                             onEdit={() => setEditing(w)}
+                            onAuction={() => setAuctionTarget(w)}
                         />
                     ))}
                 </div>
@@ -136,6 +139,18 @@ const MyWorks = () => {
                     onSave={async updated => {
                         setEditing(null);
                         await loadWorks();
+                    }}
+                />
+            )}
+
+            {/* Modal para subastar obra */}
+            {auctionTarget && (
+                <CreateAuctionModal
+                    work={auctionTarget}
+                    onClose={() => setAuctionTarget(null)}
+                    onSuccess={() => {
+                        setAuctionTarget(null);
+                        loadWorks();
                     }}
                 />
             )}

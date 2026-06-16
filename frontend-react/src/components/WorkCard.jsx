@@ -12,11 +12,11 @@ const formatText = (text) => {
         .join(' ');
 };
 
-export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit }) {
+export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit, onAuction }) {
     const [showImageModal, setShowImageModal] = useState(false);
 
     const imageSrc = work.image
-        ? `data:image/jpeg;base64,${work.image}`
+        ? (work.image.startsWith('http') ? work.image : `data:image/jpeg;base64,${work.image}`)
         : 'https://via.placeholder.com/300x200';
 
     const handleImageClick = (e) => {
@@ -76,23 +76,44 @@ export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit }) {
                         <p><strong>Materials:</strong> {work.materials || 'N/A'}</p>
                         <p><strong>Description:</strong> {work.description || 'N/A'}</p>
                         <p><strong>Stock:</strong> {work.stock}</p>
-                        <p><strong>Status:</strong> {work.status === 'AVAILABLE' ? 'Available' : 'Unavailable'}</p>
+                        <p><strong>Status:</strong> {
+                            work.status === 'AVAILABLE' ? 'Available'
+                            : work.status === 'ON_AUCTION' ? 'On Auction'
+                            : 'Unavailable'
+                        }</p>
                     </div>
                 </div>
 
-                <div className="mt-auto flex justify-between items-center pt-4">
-                    <button
-                        onClick={handleToggle}
-                        className="text-black hover:underline text-sm focus:outline-none transition-colors"
-                    >
-                        {isExpanded ? 'See less ▲' : 'See details ▼'}
-                    </button>
-                    <button
-                        onClick={handleEdit}
-                        className="bg-black text-white py-2 px-4 rounded-full hover:bg-gray-800 text-sm focus:outline-none transition-colors"
-                    >
-                        Edit
-                    </button>
+                <div className="mt-auto pt-4 space-y-2">
+                    <div className="flex justify-between items-center">
+                        <button
+                            onClick={handleToggle}
+                            className="text-black hover:underline text-sm focus:outline-none transition-colors"
+                        >
+                            {isExpanded ? 'See less ▲' : 'See details ▼'}
+                        </button>
+                        <div className="flex gap-2">
+                            {work.status === 'AVAILABLE' && onAuction && (
+                                <button
+                                    onClick={e => { e.stopPropagation(); onAuction(); }}
+                                    className="bg-yellow-400 text-black py-2 px-3 rounded-full hover:bg-yellow-300 text-xs font-semibold focus:outline-none transition-colors"
+                                >
+                                    Auction
+                                </button>
+                            )}
+                            {work.status === 'ON_AUCTION' && (
+                                <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-orange-100 text-orange-600">
+                                    On Auction
+                                </span>
+                            )}
+                            <button
+                                onClick={handleEdit}
+                                className="bg-black text-white py-2 px-4 rounded-full hover:bg-gray-800 text-sm focus:outline-none transition-colors"
+                            >
+                                Edit
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

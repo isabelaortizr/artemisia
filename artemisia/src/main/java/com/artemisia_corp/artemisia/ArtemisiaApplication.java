@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 @EnableJpaRepositories(basePackages = "com.artemisia_corp.artemisia.repository")
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @SpringBootApplication(scanBasePackages = "com.artemisia_corp.artemisia")
 @EnableMethodSecurity(prePostEnabled = true, jsr250Enabled = true)
 @EnableAsync
+@EnableScheduling
 @EnableJpaAuditing
 public class ArtemisiaApplication {
 

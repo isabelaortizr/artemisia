@@ -8,10 +8,16 @@ import com.artemisia_corp.artemisia.repository.ImageRepository;
 import com.artemisia_corp.artemisia.repository.ProductRepository;
 import com.artemisia_corp.artemisia.service.ImageService;
 import com.artemisia_corp.artemisia.service.LogsService;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.Base64;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,55 +27,69 @@ public class ImageServiceImpl implements ImageService {
     private final ImageRepository imageRepository;
     private final ProductRepository productRepository;
     private final LogsService logsService;
+    private final Cloudinary cloudinary;
 
     @Override
+    @Transactional
     public void uploadImage(ImageUploadDto dto) {
         if (dto.getProductId() == null) {
-            log.error("Product ID is required.");
-            logsService.error("Product ID is required.");
             throw new IllegalArgumentException("Product ID is required.");
         }
         if (dto.getFileName() == null || dto.getFileName().trim().isEmpty()) {
-            log.error("File name is required.");
-            logsService.error("File name is required.");
             throw new IllegalArgumentException("File name is required.");
         }
         if (dto.getBase64Image() == null || dto.getBase64Image().trim().isEmpty()) {
-            log.error("Base64 image data is required.");
-            logsService.error("Base64 image data is required.");
             throw new IllegalArgumentException("Base64 image data is required.");
         }
 
         Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> {
-                    log.error("Product not found with ID: " + dto.getProductId());
-                    logsService.error("Product not found with ID: " + dto.getProductId());
-                    return new NotDataFoundException("Product not found with ID: " + dto.getProductId());
-                });
+                .orElseThrow(() -> new NotDataFoundException("Product not found with ID: " + dto.getProductId()));
 
-        Image image = Image.builder()
-                .fileName(dto.getFileName())
-                .base64Data(dto.getBase64Image())
-                .product(product)
-                .build();
+        try {
+            byte[] imageBytes = Base64.getDecoder().decode(dto.getBase64Image());
 
-        Image savedImage = imageRepository.save(image);
-        image.setFileName(image.getFileName() + savedImage.getId());
-        logsService.info("Image uploaded to DB for product ID: " + product.getId());
+            Map uploadResult = cloudinary.uploader().upload(imageBytes, ObjectUtils.asMap(
+                    "folder", "artemisia/products",
+                    "public_id", "product_" + dto.getProductId() + "_" + System.currentTimeMillis(),
+                    "resource_type", "auto"
+            ));
+
+            String cloudinaryUrl = (String) uploadResult.get("secure_url");
+            String publicId = (String) uploadResult.get("public_id");
+
+            Image image = Image.builder()
+                    .fileName(dto.getFileName())
+                    .cloudinaryUrl(cloudinaryUrl)
+                    .publicId(publicId)
+                    .product(product)
+                    .build();
+
+            imageRepository.save(image);
+            logsService.info("Image uploaded to Cloudinary for product ID: " + product.getId());
+
+        } catch (IOException e) {
+            log.error("Failed to upload image to Cloudinary for product {}: {}", dto.getProductId(), e.getMessage());
+            logsService.error("Cloudinary upload failed for product ID: " + dto.getProductId());
+            throw new RuntimeException("Error uploading image to Cloudinary.", e);
+        }
     }
 
     @Override
+    @Transactional
     public void deleteImage(Long id) {
         if (id == null) {
-            log.error("Image ID is required.");
-            logsService.error("Image ID is required.");
             throw new IllegalArgumentException("Image ID is required.");
         }
-        if (!imageRepository.existsById(id)) {
-            log.error("Image not found with ID: " + id);
-            logsService.error("Image not found with ID: " + id);
-            throw new NotDataFoundException("Image not found with ID: " + id);
+
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new NotDataFoundException("Image not found with ID: " + id));
+
+        try {
+            cloudinary.uploader().destroy(image.getPublicId(), ObjectUtils.emptyMap());
+        } catch (IOException e) {
+            log.warn("Could not delete image from Cloudinary (publicId: {}): {}", image.getPublicId(), e.getMessage());
         }
+
         imageRepository.deleteById(id);
         logsService.info("Image deleted with ID: " + id);
     }
@@ -78,21 +98,9 @@ public class ImageServiceImpl implements ImageService {
     @Transactional(readOnly = true)
     public String getLatestImage(Long productId) {
         if (productId == null) {
-            log.error("Product ID is required.");
-            logsService.error("Product ID is required.");
             throw new IllegalArgumentException("Product ID is required.");
         }
 
-        logsService.info("Fetching latest image for product ID: " + productId);
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> {
-                    log.error("Product not found with ID: " + productId);
-                    logsService.error("Product not found with ID: " + productId);
-                    return new NotDataFoundException("Product not found with ID: " + productId);
-                });
-
-        return imageRepository.findLastBase64DataByProductId(product.getId());
+        return imageRepository.findLatestCloudinaryUrlByProductId(productId);
     }
 }
-

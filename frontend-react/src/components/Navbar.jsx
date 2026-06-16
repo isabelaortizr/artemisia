@@ -25,6 +25,15 @@ function Navbar({ showSignUpButton = true }) {
 
   const closeMenu = () => setShowMobileMenu(false);
 
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    setIsLoggedIn(false);
+    setUserRole(null);
+    navigate('/login');
+  };
+
   const handleProductsClick = () => {
     const userId = localStorage.getItem('userId');
     if (!isLanding) {
@@ -68,6 +77,18 @@ function Navbar({ showSignUpButton = true }) {
             </li>
           )}
 
+          {isLoggedIn && !isLanding && (
+            <li>
+              <Link to="/auctions" className="hover:text-gray-400">Auctions</Link>
+            </li>
+          )}
+
+          {isLoggedIn && !isLanding && (
+            <li>
+              <Link to="/my-auctions" className="hover:text-gray-400">My Auctions</Link>
+            </li>
+          )}
+
           {!isLanding && userRole === 'SELLER' && (
             <li>
               <Link to="/menu" className="hover:text-gray-400">Seller Menu</Link>
@@ -75,7 +96,14 @@ function Navbar({ showSignUpButton = true }) {
           )}
         </ul>
 
-        {showSignUpButton && (
+        {isLoggedIn ? (
+          <button
+            onClick={handleLogout}
+            className="hidden md:block bg-white text-black px-8 py-2 rounded-full hover:bg-red-600 hover:text-white transition"
+          >
+            Log Out
+          </button>
+        ) : showSignUpButton && (
           <Link to="/register">
             <button className="hidden md:block bg-white text-black px-8 py-2 rounded-full hover:bg-black hover:text-white transition">
               Sign Up
@@ -135,10 +163,31 @@ function Navbar({ showSignUpButton = true }) {
             </Link>
           )}
 
+          {isLoggedIn && !isLanding && (
+            <Link to="/auctions" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              Auctions
+            </Link>
+          )}
+
+          {isLoggedIn && !isLanding && (
+            <Link to="/my-auctions" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
+              My Auctions
+            </Link>
+          )}
+
           {!isLanding && userRole === 'SELLER' && (
             <Link to="/menu" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
               Seller Menu
             </Link>
+          )}
+
+          {isLoggedIn && (
+            <button
+              onClick={() => { closeMenu(); handleLogout(); }}
+              className="mt-2 px-6 py-2 bg-black text-white rounded-full hover:bg-red-600 transition font-medium"
+            >
+              Log Out
+            </button>
           )}
         </ul>
       </div>

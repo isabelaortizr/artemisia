@@ -17,16 +17,19 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Comment("Nombre del archivo")
+    @Comment("Nombre del archivo original")
     @Column(nullable = false)
     private String fileName;
 
-    @Comment("Contenido de la imagen codificado en Base64")
-    @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String base64Data;
+    @Comment("URL segura de Cloudinary")
+    @Column(nullable = false, length = 500)
+    private String cloudinaryUrl;
 
-    @Comment("Vendedor que subió la imagen")
+    @Comment("Public ID en Cloudinary para poder eliminar la imagen")
+    @Column(nullable = false, length = 300)
+    private String publicId;
+
+    @Comment("Producto al que pertenece la imagen")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product", nullable = false)
     private Product product;

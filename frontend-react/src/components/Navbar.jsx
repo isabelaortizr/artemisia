@@ -4,8 +4,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 function Navbar({ showSignUpButton = true }) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('userId'));
+  const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole'));
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -134,7 +134,7 @@ function Navbar({ showSignUpButton = true }) {
           />
         </div>
 
-        <ul className="flex flex-col items-center gap-4 mt-5 px-5 text-lg font-medium">
+        <ul className="flex flex-col items-center gap-4 mt-5 px-5 text-lg font-medium text-gray-900">
           {isLanding && (
             <>
               <a href="#Header" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">Home</a>
@@ -151,43 +151,47 @@ function Navbar({ showSignUpButton = true }) {
             Products
           </button>
 
-          {isLoggedIn && !isLanding && (
+          {isLoggedIn && (
             <Link to="/profile" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
               My Profile
             </Link>
           )}
 
-          {isLoggedIn && !isLanding && (
+          {isLoggedIn && (
             <Link to="/orderHistory" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
               Order History
             </Link>
           )}
 
-          {isLoggedIn && !isLanding && (
+          {isLoggedIn && (
             <Link to="/auctions" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
               Auctions
             </Link>
           )}
 
-          {isLoggedIn && !isLanding && (
+          {isLoggedIn && (
             <Link to="/my-auctions" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
               My Auctions
             </Link>
           )}
 
-          {!isLanding && userRole === 'SELLER' && (
+          {userRole === 'SELLER' && (
             <Link to="/menu" onClick={closeMenu} className="px-4 py-2 rounded-full inline-block">
               Seller Menu
             </Link>
           )}
 
-          {isLoggedIn && (
+          {isLoggedIn ? (
             <button
               onClick={() => { closeMenu(); handleLogout(); }}
               className="mt-2 px-6 py-2 bg-black text-white rounded-full hover:bg-red-600 transition font-medium"
             >
               Log Out
             </button>
+          ) : (
+            <Link to="/register" onClick={closeMenu} className="mt-2 px-6 py-2 bg-black text-white rounded-full font-medium inline-block text-center">
+              Sign Up
+            </Link>
           )}
         </ul>
       </div>

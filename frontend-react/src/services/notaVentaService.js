@@ -183,5 +183,19 @@ async function getHistory(userId, page = 0, size = 10) {
     return res.json(); // devuelve { content: NotaVentaResponseDto[], totalPages… }
 }
 
+async function simulatePayment() {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_URL}/notas-venta/simulate-payment`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Error ${res.status} al confirmar pago`);
+    }
+    return res.json(); // { estado: "PAYED", notaVentaId: ... }
+}
+
 export default { addToCart, getCart, createTransaction, updateOrderDetailStock,
-    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, convertCurrency, getHistory };
+    assignAddressToNotaVenta, verifyTransaction, getNotaVentaById, convertCurrency, getHistory,
+    simulatePayment };

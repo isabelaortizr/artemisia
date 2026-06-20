@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AddArt from './AddArt';
 import MyWorks from './MyWorks';
 import { assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
 
 const SellerMenu = () => {
-    const [activeSection, setActiveSection] = useState('myworks'); // Cambiamos a 'myworks' por defecto
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,35 +35,9 @@ const SellerMenu = () => {
                 <h1 className="text-4xl font-bold text-center mb-10">Seller Menu</h1>
 
                 {/* Botones de navegación - Quitamos "Add your piece" */}
-                <div className="flex flex-col sm:flex-row justify-center gap-4 mb-10">
-                    <button
-                        onClick={() => setActiveSection('myworks')}
-                        className={`flex-1 py-3 rounded-xl text-lg font-medium transition ${
-                            activeSection === 'myworks'
-                                ? 'bg-white text-black'
-                                : 'bg-black hover:bg-white hover:text-black border border-white/20'
-                        }`}
-                    >
-                        Check my pieces
-                    </button>
-                    <button
-                        onClick={() => setActiveSection('catalog')}
-                        className={`flex-1 py-3 rounded-xl text-lg font-medium transition ${
-                            activeSection === 'catalog'
-                                ? 'bg-white text-black'
-                                : 'bg-black hover:bg-white hover:text-black border border-white/20'
-                        }`}
-                    >
-                        See catalogue
-                    </button>
-                </div>
-
                 {/* Contenedor estilo glass */}
                 <div className="bg-zinc-900 bg-opacity-90 p-8 rounded-2xl shadow-xl border border-white/10">
-                    {activeSection === 'myworks' && <MyWorks embedded dark />}
-                    {activeSection === 'catalog' && (
-                        navigate('/products')
-                    )}
+                    <MyWorks embedded dark />
                 </div>
             </div>
         </div>

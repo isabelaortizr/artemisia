@@ -4,13 +4,14 @@ import auctionService from '../services/auctionService';
 
 export default function CreateAuctionModal({ work, onClose, onSuccess }) {
     const [startingPrice, setStartingPrice] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [endDatePart, setEndDatePart] = useState('');
+    const [endTimePart, setEndTimePart] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const minEndDate = new Date(Date.now() + 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 16);
+    const minDateTime = new Date(Date.now() + 5 * 60 * 1000);
+    const minDate = minDateTime.toISOString().slice(0, 10);
+    const minTime = minDateTime.toTimeString().slice(0, 5);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,16 +20,22 @@ export default function CreateAuctionModal({ work, onClose, onSuccess }) {
             setError('El precio inicial debe ser mayor a 0.');
             return;
         }
-        if (!endDate) {
-            setError('La fecha de fin es obligatoria.');
+        if (!endDatePart || !endTimePart) {
+            setError('La fecha y hora de cierre son obligatorias.');
             return;
         }
+        const combined = new Date(`${endDatePart}T${endTimePart}`);
+        if (combined <= minDateTime) {
+            setError('La hora de cierre debe ser al menos 5 minutos en el futuro.');
+            return;
+        }
+        const endDate = `${endDatePart}T${endTimePart}:00`;
         setLoading(true);
         try {
             await auctionService.createAuction({
                 productId: work.productId ?? work.id,
                 startingPrice: Number(startingPrice),
-                endDate: endDate + ':00',
+                endDate,
             });
             onSuccess();
         } catch (err) {
@@ -70,14 +77,24 @@ export default function CreateAuctionModal({ work, onClose, onSuccess }) {
                         <label className="block text-sm font-medium mb-1">
                             Fecha y hora de cierre
                         </label>
-                        <input
-                            type="datetime-local"
-                            value={endDate}
-                            min={minEndDate}
-                            onChange={e => setEndDate(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                            required
-                        />
+                        <div className="flex gap-2">
+                            <input
+                                type="date"
+                                value={endDatePart}
+                                min={minDate}
+                                onChange={e => setEndDatePart(e.target.value)}
+                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                required
+                            />
+                            <input
+                                type="time"
+                                value={endTimePart}
+                                min={endDatePart === minDate ? minTime : undefined}
+                                onChange={e => setEndTimePart(e.target.value)}
+                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                required
+                            />
+                        </div>
                     </div>
 
                     {error && (

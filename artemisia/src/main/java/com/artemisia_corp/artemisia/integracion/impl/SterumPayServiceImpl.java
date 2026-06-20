@@ -168,6 +168,8 @@ public class SterumPayServiceImpl implements SterumPayService {
             obtenerTokenAutenticacion();
         }
 
+        final double BOB_PER_USD = 6.86;
+
         boolean isBob = false;
         NotaVentaResponseDto cartDto = notaVentaService.getActiveCartByUserId(conversionDto.getUserId());
         NotaVenta cart = notaVentaRepository.findById(cartDto.getId())
@@ -178,25 +180,29 @@ public class SterumPayServiceImpl implements SterumPayService {
                 });
         List<OrderDetailResponseDto> orderDetails = orderDetailService.getOrderDetailsByNotaVenta(cart.getId());
 
+        String origin = conversionDto.getOriginCurrency();
+        String target = conversionDto.getTargetCurrency();
+        boolean involvesBobAndUsd = (origin.equals("BOB") && target.equals("USD"))
+                || (origin.equals("USD") && target.equals("BOB"));
+
         CurrencyConversionResponseDto conversion;
-        if (conversionDto.getTargetCurrency().contains("BOB")) {
+        if (target.contains("BOB")) {
             isBob = true;
-            log.info("Converting to BOB. Setting up conversion from BOB to {}", conversionDto.getOriginCurrency());
-            conversion = convertAmount(
-                    new CurrencyConversionDto(
-                            "BOB",
-                            conversionDto.getOriginCurrency(),
-                            1.0
-                    ));
+            if (involvesBobAndUsd) {
+                log.info("Local conversion USD -> BOB at rate {}", BOB_PER_USD);
+                conversion = new CurrencyConversionResponseDto("BO", origin, target, 1.0, BOB_PER_USD, BOB_PER_USD);
+            } else {
+                log.info("Converting to BOB. Setting up conversion from BOB to {}", origin);
+                conversion = convertAmount(new CurrencyConversionDto("BOB", origin, 1.0));
+            }
         } else {
-            log.info("Converting from {} to {} with amount: {}",
-                    conversionDto.getOriginCurrency(), conversionDto.getTargetCurrency(), cart.getTotalGlobal());
-            conversion = convertAmount(
-                    new CurrencyConversionDto(
-                            conversionDto.getOriginCurrency(),
-                            conversionDto.getTargetCurrency(),
-                            cart.getTotalGlobal()
-                    ));
+            if (involvesBobAndUsd) {
+                log.info("Local conversion BOB -> USD at rate {}", BOB_PER_USD);
+                conversion = new CurrencyConversionResponseDto("BO", origin, target, cart.getTotalGlobal(), cart.getTotalGlobal() / BOB_PER_USD, BOB_PER_USD);
+            } else {
+                log.info("Converting from {} to {} with amount: {}", origin, target, cart.getTotalGlobal());
+                conversion = convertAmount(new CurrencyConversionDto(origin, target, cart.getTotalGlobal()));
+            }
         }
 
         log.info("Currency conversion completed. Exchange rate: {}", conversion.getExchangeRate());

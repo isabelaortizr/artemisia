@@ -687,6 +687,14 @@ public class NotaVentaServiceImpl implements NotaVentaService {
         return dto;
     }
 
+    @Override
+    public EstdoNotaVentaResponseDto simulatePayment(Long userId) {
+        NotaVenta notaVenta = notaVentaRepository.findByBuyer_IdAndEstadoVenta(userId)
+                .orElseThrow(() -> new NotDataFoundException("No active cart found for user: " + userId));
+        completeNotaVenta(userId);
+        return new EstdoNotaVentaResponseDto("PAYED", notaVenta.getId());
+    }
+
     private Product convertToProduct(Long productId, ProductResponseDto preProduct) {
         User seller = userRepository.findById(preProduct.getSellerId())
                 .orElseThrow(() -> new NotDataFoundException("Seller not found with ID: " + preProduct.getSellerId()));

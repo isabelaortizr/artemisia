@@ -31,15 +31,19 @@ export default function OrderHistory() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-white">Cargando órdenes…</p>
+            <div className="min-h-screen bg-cover bg-center relative flex items-center justify-center"
+                 style={{ backgroundImage: `url(${assets.register_img})` }}>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
+                <p className="relative z-10 text-white">Cargando órdenes…</p>
             </div>
         );
     }
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-red-500">{error}</p>
+            <div className="min-h-screen bg-cover bg-center relative flex items-center justify-center"
+                 style={{ backgroundImage: `url(${assets.register_img})` }}>
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
+                <p className="relative z-10 text-red-500">{error}</p>
             </div>
         );
     }

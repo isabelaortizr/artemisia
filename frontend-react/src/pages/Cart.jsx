@@ -70,13 +70,12 @@ export default function Cart() {
     setIsExpired(false);
   };
 
-  const fetchCart = async () => {
-    setInitialLoading(true);
+  const fetchCart = async (isInitial = false) => {
+    if (isInitial) setInitialLoading(true);
     setLoading(true);
     try {
       const data = await notaVentaService.getCart(userId);
       setCart(data);
-      
       if (data.monedaCarrito) {
         setCurrency(data.monedaCarrito);
       } else {
@@ -112,7 +111,7 @@ export default function Cart() {
       navigate("/login", { replace: true });
       return;
     }
-    fetchCart();
+    fetchCart(true);
     fetchAddresses();
   }, [navigate]);
 
@@ -170,59 +169,24 @@ export default function Cart() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!selectedAddress) {
       setError("Selecciona una dirección de envío");
       return;
     }
-    
-    setActionLoading(true);
-    setError(null);
-    
-    try {
-      console.log("🔄 Creando transacción...");
-      const tx = await notaVentaService.createTransaction({
-        userId,
-        currency,
-        chargeReason: "Compra en Artemisia",
-        country: "BO",
-      });
-
-      console.log("✅ Respuesta de transacción:", tx);
-      console.log("📊 QR Base64 disponible:", !!tx.qr_base64);
-      console.log("📊 QR Base64 longitud:", tx.qr_base64?.length);
-      console.log("📊 Todos los campos de la respuesta:", Object.keys(tx));
-
-      setCheckoutData({ transaction: tx, addressId: selectedAddress });
-    } catch (err) {
-      console.error("❌ Error al iniciar pago:", err);
-      
-      const errorMessage = err.message || "Error al iniciar pago";
-      if (errorMessage.includes("dirección") || 
-          errorMessage.includes("address") || 
-          errorMessage.includes("Debes seleccionar") || 
-          errorMessage.includes("Address not found")) {
-        setError("Debes seleccionar una dirección de envío válida antes de proceder al pago");
-      } else {
-        setError(errorMessage);
-      }
-    } finally {
-      setActionLoading(false);
-    }
+    setCheckoutData({ total: cart.totalGlobal, currency, addressId: selectedAddress });
+    setTimeLeft(600);
+    setIsExpired(false);
   };
 
-  const handleVerify = async () => {
+  const handleSimulatePayment = async () => {
     setVerifyLoading(true);
     setVerifyError(null);
     try {
-      const res = await notaVentaService.verifyTransaction(userId);
-      if (res.estado === "PAGADO") {
-        navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
-        return;
-      }
-      setVerifyResult(res);
+      const res = await notaVentaService.simulatePayment();
+      navigate("/orderReceipt", { state: { notaVentaId: res.notaVentaId } });
     } catch (err) {
-      setVerifyError(err.message || "Error al verificar");
+      setVerifyError(err.message || "Error al confirmar pago");
     } finally {
       setVerifyLoading(false);
     }
@@ -246,8 +210,6 @@ export default function Cart() {
       });
       setCart(updated);
       setCurrency(newCurrency);
-      
-      await fetchCart();
     } catch (err) {
       setConversionError("No se pudo convertir la moneda. Por favor vuelve a intentarlo.");
     } finally {
@@ -278,8 +240,7 @@ export default function Cart() {
 
   const currencySymbols = {
     BOB: 'Bs.',
-    USDT: 'USDT',
-    USDC: 'USDC',
+    USD: '$',
   };
 
   if (initialLoading) return <p className="text-center mt-10 text-white">Cargando carrito…</p>;
@@ -349,7 +310,7 @@ export default function Cart() {
             <div className="mb-6">
               <label className="block text-white mb-2">Moneda</label>
               <div className="flex gap-2">
-                {["BOB", "USDT", "USDC"].map((c) => (
+                {["BOB", "USD"].map((c) => (
                   <button
                     key={c}
                     onClick={() => handleCurrencyChange(c)}
@@ -433,25 +394,20 @@ export default function Cart() {
 
                     <div className="text-center mb-4">
                       <p className="text-gray-600 mb-3">Escanea este código QR para pagar</p>
-                      {checkoutData.transaction.qr_base64 ? (
-                          <div className="border-2 border-gray-200 rounded-lg p-4 inline-block">
-                            <img
-                                src={`data:image/png;base64,${checkoutData.transaction.qr_base64}`}
-                                alt="QR Code para pago"
-                                className="w-48 h-48 mx-auto"
-                            />
-                          </div>
-                      ) : (
-                          <div>
-                            <p className="text-red-500">QR no disponible</p>
-                          </div>
-                      )}
+                      <div className="border-2 border-gray-200 rounded-lg p-4 inline-block bg-white">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=ARTEMISIA-PAYMENT|${checkoutData.total.toFixed(2)}|${checkoutData.currency}`}
+                          alt="QR de pago"
+                          width={160}
+                          height={160}
+                        />
+                      </div>
                     </div>
 
                     <div className="text-center mb-4">
                       <p className="text-gray-600 mb-1">Monto a pagar</p>
                       <p className="text-3xl font-bold text-gray-900">
-                        {checkoutData.transaction.amount} {checkoutData.transaction.currency}
+                        {currencySymbols[checkoutData.currency]} {checkoutData.total.toFixed(2)}
                       </p>
                     </div>
 
@@ -473,25 +429,17 @@ export default function Cart() {
 
                     <div className="text-center">
                       <button
-                          onClick={handleVerify}
+                          onClick={handleSimulatePayment}
                           disabled={verifyLoading || isExpired}
                           className="w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition duration-200 mb-2"
                       >
-                        {verifyLoading ? 'Verificando...' : isExpired ? 'Tiempo Expirado' : 'Verificar Pago'}
+                        {verifyLoading ? 'Procesando...' : isExpired ? 'Tiempo Expirado' : 'Ya pagué'}
                       </button>
 
                       <p className="text-xs text-gray-500">
-                        Una vez completado el pago, haz clic en "Verificar Pago"
+                        Escanea el QR con tu aplicación de pagos y luego haz clic en "Ya pagué"
                       </p>
                     </div>
-
-                    {verifyResult && (
-                        <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                          <p className="text-center">
-                            Estado: <strong>{verifyResult.estado}</strong>
-                          </p>
-                        </div>
-                    )}
 
                     {verifyError && (
                         <p className="mt-4 text-red-500 text-center text-sm">

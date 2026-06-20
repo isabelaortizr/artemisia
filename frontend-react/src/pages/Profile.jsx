@@ -81,8 +81,16 @@ const Profile = () => {
     }
   };
 
-  if (uLoading) return <p className="text-center mt-10 text-white">Loading profile</p>;
-  if (uError) return <p className="text-center mt-10 text-red-500">Error: {uError}</p>;
+  if (uLoading) return (
+    <div className="relative min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex items-center justify-center">
+      <p className="text-white">Loading profile…</p>
+    </div>
+  );
+  if (uError) return (
+    <div className="relative min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white flex items-center justify-center">
+      <p className="text-red-500">Error: {uError}</p>
+    </div>
+  );
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
@@ -109,7 +117,6 @@ const Profile = () => {
               <p className="text-gray-300 text-sm">Role</p>
               <p className="text-lg font-semibold">{user.role}</p>
             </div>
-
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-6 mb-12">

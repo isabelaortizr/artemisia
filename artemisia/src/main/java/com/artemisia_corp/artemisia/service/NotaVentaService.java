@@ -29,4 +29,5 @@ public interface NotaVentaService {
     Page<NotaVentaResponseDto> getNotasVentaBySellerAndEstado(Long sellerId, VentaEstado estado, Pageable pageable);
     NotaVentaResponseDto markNotaVentaAsShipped(Long notaVentaId, Long sellerId);
     NotaVentaResponseDto convertToDtoWithDetails(NotaVenta notaVenta);
+    EstdoNotaVentaResponseDto simulatePayment(Long userId);
 }

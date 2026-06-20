@@ -247,6 +247,13 @@ public class NotaVentaController {
         return ResponseEntity.ok(estado);
     }
 
+    @PostMapping("/simulate-payment")
+    public ResponseEntity<EstdoNotaVentaResponseDto> simulatePayment(
+            @RequestHeader("Authorization") String token) {
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        return ResponseEntity.ok(notaVentaService.simulatePayment(userId));
+    }
+
     @Operation(summary = "Update stock for OrderDetail", description = "Updates the stock quantity for a specific product in a user's active cart")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order detail stock updated successfully"),

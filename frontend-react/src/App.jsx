@@ -1,6 +1,6 @@
 // src/App.jsx
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Home          from "./pages/Home"; // Ahora sí lo importas como componente separado
@@ -20,11 +20,15 @@ import Auctions       from "./pages/Auctions";
 import AuctionDetail  from "./pages/AuctionDetail";
 import MyAuctions     from "./pages/MyAuctions";
 
+const GuestRoute = ({ children }) => {
+  return localStorage.getItem('userId') ? <Navigate to="/products" replace /> : children;
+};
+
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/"              element={<Home />} />
+        <Route path="/"              element={<GuestRoute><Home /></GuestRoute>} />
         <Route path="/login"         element={<Login />} />
         <Route path="/register"      element={<Register />} />
         <Route path="/products"      element={<Products />} />

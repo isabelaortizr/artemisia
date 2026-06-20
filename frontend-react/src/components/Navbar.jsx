@@ -49,7 +49,7 @@ function Navbar({ showSignUpButton = true }) {
   return (
     <div className="absolute top-0 left-0 w-full z-20">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <Link to="/">
+        <Link to={isLoggedIn ? '/products' : '/'}>
           <img src={assets.logo} alt="Logo" className="h-10 cursor-pointer" />
         </Link>
 

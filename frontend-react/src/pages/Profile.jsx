@@ -10,13 +10,6 @@ const Profile = () => {
   const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
 
-  const handleLogout = () => {
-    localStorage.removeItem('userId');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
-    navigate('/login');
-  };
-
   const [user, setUser] = useState(null);
   const [uLoading, setULoad] = useState(true);
   const [uError, setUError] = useState(null);
@@ -117,14 +110,6 @@ const Profile = () => {
               <p className="text-lg font-semibold">{user.role}</p>
             </div>
 
-            <div className="pt-2 border-t border-white/10">
-              <button
-                onClick={handleLogout}
-                className="w-full py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-semibold"
-              >
-                Log Out
-              </button>
-            </div>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 space-y-6 mb-12">

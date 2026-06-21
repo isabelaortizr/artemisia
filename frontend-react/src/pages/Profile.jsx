@@ -150,7 +150,7 @@ const Profile = () => {
                 { name: 'country', label: 'Country' },
                 { name: 'city', label: 'City' },
                 { name: 'street', label: 'Street' },
-                { name: 'house_number', label: 'House Numbber' },
+                { name: 'house_number', label: 'House Number' },
                 { name: 'extra', label: 'Extra indications (opt.)' }
               ].map(fld => (
                 <div key={fld.name}>

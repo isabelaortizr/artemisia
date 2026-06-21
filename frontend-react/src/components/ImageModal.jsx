@@ -1,5 +1,6 @@
 // src/components/ImageModal.jsx
 import React from 'react';
+import ReactDOM from 'react-dom';
 
 const ImageModal = ({ imageSrc, alt, onClose }) => {
     const handleBackdropClick = (e) => {
@@ -24,7 +25,7 @@ const ImageModal = ({ imageSrc, alt, onClose }) => {
         };
     }, []);
 
-    return (
+    return ReactDOM.createPortal(
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm p-4"
             onClick={handleBackdropClick}
@@ -52,7 +53,8 @@ const ImageModal = ({ imageSrc, alt, onClose }) => {
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white/70 text-sm">
                 Click outside or press ESC to close
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

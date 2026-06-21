@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ImageModal from '../components/ImageModal';
 import auctionService from '../services/auctionService';
 import addressService from '../services/addressService';
 import notaVentaService from '../services/notaVentaService';
@@ -47,6 +48,9 @@ export default function AuctionDetail() {
     // Close auction
     const [closeLoading, setCloseLoading] = useState(false);
     const [closeError, setCloseError] = useState('');
+
+    // Image modal
+    const [showImageModal, setShowImageModal] = useState(false);
 
     // Confirm purchase
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -181,8 +185,11 @@ export default function AuctionDetail() {
 
                 <div className="grid md:grid-cols-2 gap-10">
                     {/* Imagen */}
-                    <div className="rounded-2xl overflow-hidden shadow-xl">
-                        <img src={imageSrc} alt={auction.productName} className="w-full h-80 object-cover" />
+                    <div
+                        className="rounded-2xl overflow-hidden shadow-xl cursor-zoom-in"
+                        onClick={() => setShowImageModal(true)}
+                    >
+                        <img src={imageSrc} alt={auction.productName} className="w-full h-80 object-cover hover:opacity-90 transition-opacity" />
                     </div>
 
                     {/* Info principal */}
@@ -328,6 +335,15 @@ export default function AuctionDetail() {
             </main>
 
             <Footer />
+
+            {/* Modal imagen */}
+            {showImageModal && (
+                <ImageModal
+                    imageSrc={imageSrc}
+                    alt={auction.productName}
+                    onClose={() => setShowImageModal(false)}
+                />
+            )}
 
             {/* Modal confirmar compra */}
             {showConfirmModal && (

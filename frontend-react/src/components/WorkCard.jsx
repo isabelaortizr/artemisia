@@ -67,22 +67,20 @@ export default function WorkCard({ work, isExpanded, onToggleExpand, onEdit, onA
                 </p>
 
                 {/* Contenido expandible */}
-                <div className={`overflow-hidden transition-all duration-300 ${
-                    isExpanded ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
-                }`}>
-                    <div className="space-y-2 text-gray-700 text-sm">
+                {isExpanded && (
+                    <div className="mt-3 bg-gray-100 rounded-lg p-3 text-sm text-black border border-gray-200">
                         <p><strong>Techniques:</strong> {work.techniques ? work.techniques.map(formatText).join(', ') : 'N/A'}</p>
                         <p><strong>Categories:</strong> {work.categories ? work.categories.map(formatText).join(', ') : 'N/A'}</p>
                         <p><strong>Materials:</strong> {work.materials || 'N/A'}</p>
-                        <p><strong>Description:</strong> {work.description || 'N/A'}</p>
                         <p><strong>Stock:</strong> {work.stock}</p>
                         <p><strong>Status:</strong> {
                             work.status === 'AVAILABLE' ? 'Available'
                             : work.status === 'ON_AUCTION' ? 'On Auction'
                             : 'Unavailable'
                         }</p>
+                        <p className="mt-2 text-gray-700 italic">{work.description || 'No description.'}</p>
                     </div>
-                </div>
+                )}
 
                 <div className="mt-auto pt-4 space-y-2">
                     <div className="flex justify-between items-center">

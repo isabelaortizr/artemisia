@@ -19,7 +19,7 @@ import java.util.List;
 public class CorsFilter implements Filter {
 
     private static final List<String> ALLOWED_ORIGINS = List.of(
-            "https://artemisia-pkyyfhg07-sebas-fp-s-projects.vercel.app",
+            "https://artemisia-wheat.vercel.app",
             "http://localhost:5173"
     );
 

@@ -67,7 +67,7 @@ public class WebSecurityConfiguration implements WebMvcConfigurer, Serializable 
     private CorsConfigurationSource apiConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
-                "https://artemisia-pkyyfhg07-sebas-fp-s-projects.vercel.app",
+                "https://artemisia-wheat.vercel.app",
                 "http://localhost:5173"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

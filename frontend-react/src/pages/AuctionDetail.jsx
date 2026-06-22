@@ -59,6 +59,30 @@ export default function AuctionDetail() {
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [confirmError, setConfirmError] = useState('');
 
+    // Payment simulation
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(600);
+    const [isExpired, setIsExpired] = useState(false);
+    const [payLoading, setPayLoading] = useState(false);
+    const [payError, setPayError] = useState('');
+
+    useEffect(() => {
+        if (!showPaymentModal || timeLeft <= 0) return;
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) { setIsExpired(true); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [showPaymentModal, timeLeft]);
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
     const load = useCallback(() => {
         return Promise.all([
             auctionService.getAuctionById(id),
@@ -134,19 +158,28 @@ export default function AuctionDetail() {
         setConfirmError('');
         try {
             await auctionService.confirmPurchase(id, Number(selectedAddress));
-            // Generar transacción Stereum con la nota de venta activa (la de la subasta)
-            const tx = await notaVentaService.createTransaction({
-                userId,
-                currency: 'BOB',
-                chargeReason: 'Compra por subasta en Artemisia',
-                country: 'BO',
-            });
             setShowConfirmModal(false);
-            navigate('/checkout', { state: { transaction: tx, addressId: Number(selectedAddress) } });
+            setTimeLeft(600);
+            setIsExpired(false);
+            setPayError('');
+            setShowPaymentModal(true);
         } catch (err) {
             setConfirmError(err.message);
         } finally {
             setConfirmLoading(false);
+        }
+    };
+
+    const handleSimulatePayment = async () => {
+        setPayLoading(true);
+        setPayError('');
+        try {
+            const res = await notaVentaService.simulatePayment();
+            navigate('/orderReceipt', { state: { notaVentaId: res.notaVentaId } });
+        } catch (err) {
+            setPayError(err.message || 'Error al confirmar pago');
+        } finally {
+            setPayLoading(false);
         }
     };
 
@@ -345,6 +378,51 @@ export default function AuctionDetail() {
                 />
             )}
 
+            {/* Modal pago simulado */}
+            {showPaymentModal && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white text-black max-w-md w-full rounded-2xl p-6 relative shadow-xl">
+                        <h2 className="text-2xl font-bold mb-4 text-center">Finaliza tu compra</h2>
+
+                        <div className="text-center mb-4">
+                            <p className="text-gray-600 mb-3">Escanea este código QR para pagar</p>
+                            <div className="border-2 border-gray-200 rounded-lg p-4 inline-block bg-white">
+                                <img
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=ARTEMISIA-AUCTION|${auction.currentPrice.toFixed(2)}|BOB`}
+                                    alt="QR de pago"
+                                    width={160}
+                                    height={160}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="text-center mb-4">
+                            <p className="text-gray-600 mb-1">Monto a pagar</p>
+                            <p className="text-3xl font-bold text-gray-900">{formatPrice(auction.currentPrice)}</p>
+                        </div>
+
+                        <div className="text-center mb-4">
+                            <div className={`inline-flex items-center px-4 py-2 rounded-full ${timeLeft < 60 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                                <span className="font-bold text-lg">{formatTime(timeLeft)}</span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">Tiempo restante para completar el pago</p>
+                            {isExpired && <p className="text-red-500 text-sm mt-1">El tiempo ha expirado. Por favor, inicia una nueva transacción.</p>}
+                        </div>
+
+                        <button
+                            onClick={handleSimulatePayment}
+                            disabled={payLoading || isExpired}
+                            className="w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition mb-2"
+                        >
+                            {payLoading ? 'Procesando...' : isExpired ? 'Tiempo Expirado' : 'Ya pagué'}
+                        </button>
+                        <p className="text-xs text-gray-500 text-center">Escanea el QR con tu aplicación de pagos y luego haz clic en "Ya pagué"</p>
+
+                        {payError && <p className="mt-4 text-red-500 text-center text-sm">Error: {payError}</p>}
+                    </div>
+                </div>
+            )}
+
             {/* Modal confirmar compra */}
             {showConfirmModal && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -381,7 +459,7 @@ export default function AuctionDetail() {
                                 >
                                     <option value="">Seleccioná una dirección…</option>
                                     {addresses.map(addr => (
-                                        <option key={addr.id} value={addr.id}>
+                                        <option key={addr.address_id} value={addr.address_id}>
                                             {addr.street} {addr.house_number}, {addr.city}, {addr.country}
                                         </option>
                                     ))}

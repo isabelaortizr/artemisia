@@ -351,7 +351,7 @@ public class AuctionServiceImpl implements AuctionService {
                     .date(LocalDateTime.now())
                     .totalGlobal(winnerBid.getBidAmount())
                     .monedaCarrito("BOB")
-                    .preciosConvertidos(false)
+                    .preciosConvertidos(true)
                     .build();
             NotaVenta savedNotaVenta = notaVentaRepository.save(notaVenta);
 

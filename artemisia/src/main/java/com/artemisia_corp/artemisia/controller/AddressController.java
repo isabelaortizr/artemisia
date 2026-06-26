@@ -41,7 +41,7 @@ public class AddressController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Address found",
                     content = @Content(schema = @Schema(implementation = AddressResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Address not found")
+            @ApiResponse(responseCode = "404", description = "Address not found", content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<AddressResponseDto> getAddressById(
@@ -61,7 +61,7 @@ public class AddressController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Address created successfully",
                     content = @Content(schema = @Schema(implementation = AddressResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping
     public ResponseEntity<AddressResponseDto> createAddress(
@@ -75,8 +75,8 @@ public class AddressController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Address updated successfully",
                     content = @Content(schema = @Schema(implementation = AddressResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Address not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "Address not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<AddressResponseDto> updateAddress(
@@ -90,8 +90,8 @@ public class AddressController {
 
     @Operation(summary = "Delete an address", description = "Deletes an address by its ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Address deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Address not found")
+            @ApiResponse(responseCode = "204", description = "Address deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Address not found", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAddress(
@@ -112,8 +112,8 @@ public class AddressController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Addresses retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "400", description = "Invalid parameters")
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content)
     })
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<AddressResponseDto>> getAddressesByUser(

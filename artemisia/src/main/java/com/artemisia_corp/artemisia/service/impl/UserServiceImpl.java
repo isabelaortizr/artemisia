@@ -65,6 +65,7 @@ public class UserServiceImpl implements UserService {
             logsService.error("User password is required.");
             throw new IllegalArgumentException("Password is required.");
         }
+        validatePasswordStrength(userDto.getPassword());
         if (userDto.getRole() == null) {
             logsService.error("User role is required.");
             throw new IllegalArgumentException("Role is required.");
@@ -75,13 +76,14 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email is already in use.");
         }
 
-        if (userRepository.existsByName(userDto.getName())) {
-            logsService.error("Username is already in use: " + userDto.getName());
+        String normalizedName = userDto.getName().trim().toLowerCase();
+        if (userRepository.existsByName(normalizedName)) {
+            logsService.error("Username is already in use: " + normalizedName);
             throw new IllegalArgumentException("Username is already in use.");
         }
 
         User user = User.builder()
-                .name(userDto.getName())
+                .name(normalizedName)
                 .mail(userDto.getMail())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .role(UserRole.valueOf(userDto.getRole().trim().toUpperCase()))
@@ -228,6 +230,17 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
         User updatedUser = userRepository.save(user);
         return convertToDto(updatedUser);
+    }
+
+    private void validatePasswordStrength(String password) {
+        if (password.length() < 8)
+            throw new IllegalArgumentException("Password must be at least 8 characters.");
+        if (!password.matches(".*[A-Z].*"))
+            throw new IllegalArgumentException("Password must contain at least one uppercase letter.");
+        if (!password.matches(".*[a-z].*"))
+            throw new IllegalArgumentException("Password must contain at least one lowercase letter.");
+        if (!password.matches(".*[0-9].*"))
+            throw new IllegalArgumentException("Password must contain at least one number.");
     }
 
     private UserResponseDto convertToDto(User user) {

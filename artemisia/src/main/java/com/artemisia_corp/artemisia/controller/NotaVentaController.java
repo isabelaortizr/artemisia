@@ -64,7 +64,7 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Sales note found",
                     content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Sales note not found")
+            @ApiResponse(responseCode = "404", description = "Sales note not found", content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<NotaVentaResponseDto> getNotaVentaById(@PathVariable Long id) {
@@ -75,7 +75,7 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Sales note created successfully",
                     content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping
     public ResponseEntity<NotaVentaResponseDto> createNotaVenta(
@@ -89,8 +89,8 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Sales note updated successfully",
                     content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Sales note not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "Sales note not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<NotaVentaResponseDto> updateNotaVenta(
@@ -103,8 +103,8 @@ public class NotaVentaController {
 
     @Operation(summary = "Delete a sales note", description = "Deletes a sales note by its ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Sales note deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Sales note not found")
+            @ApiResponse(responseCode = "204", description = "Sales note deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sales note not found", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotaVenta(
@@ -116,8 +116,8 @@ public class NotaVentaController {
 
     @Operation(summary = "Complete a sales note", description = "Marks a sales note as completed")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Sales note completed successfully"),
-            @ApiResponse(responseCode = "404", description = "Sales note not found")
+            @ApiResponse(responseCode = "200", description = "Sales note completed successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sales note not found", content = @Content)
     })
     @PutMapping("/{id}/complete")
     public ResponseEntity<Void> completeNotaVenta(
@@ -129,8 +129,8 @@ public class NotaVentaController {
 
     @Operation(summary = "Cancel a sales note", description = "Marks a sales note as cancelled")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Sales note cancelled successfully"),
-            @ApiResponse(responseCode = "404", description = "Sales note not found")
+            @ApiResponse(responseCode = "200", description = "Sales note cancelled successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sales note not found", content = @Content)
     })
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelNotaVenta(
@@ -160,7 +160,7 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Sales history retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     @GetMapping("/historial-usuario/{id}")
     public ResponseEntity<Page<NotaVentaResponseDto>> getHistory(
@@ -178,8 +178,8 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product added to cart successfully",
                     content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "404", description = "Product or user not found")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product or user not found", content = @Content)
     })
     @PostMapping("/add")
     public ResponseEntity<NotaVentaResponseDto> addToCart(
@@ -193,7 +193,7 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cart retrieved successfully",
                     content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found or no active cart")
+            @ApiResponse(responseCode = "404", description = "User not found or no active cart", content = @Content)
     })
     @GetMapping("/user/{userId}")
     public ResponseEntity<NotaVentaResponseDto> getCart(
@@ -206,8 +206,8 @@ public class NotaVentaController {
 
     @Operation(summary = "Assign an address to a sale", description = "Assigns an address to an existing sales note")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Address assigned to sales note successfully"),
-            @ApiResponse(responseCode = "404", description = "Sales note or address not found")
+            @ApiResponse(responseCode = "200", description = "Address assigned to sales note successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Sales note or address not found", content = @Content)
     })
     @PutMapping("/set_address")
     public ResponseEntity<Void> assignAddressToNotaVenta(
@@ -222,8 +222,8 @@ public class NotaVentaController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Transaction created successfully",
                     content = @Content(schema = @Schema(implementation = StereumPagaResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     @PostMapping("/create_transaction")
     public ResponseEntity<StereumPagaResponseDto> conseguirTransaccion(
@@ -235,9 +235,10 @@ public class NotaVentaController {
 
     @Operation(summary = "Verify payment transaction", description = "Verifies the status of a payment transaction")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Transaction verified successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Transaction verified successfully",
+                    content = @Content(schema = @Schema(implementation = EstdoNotaVentaResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     @GetMapping("/verify_transaction/{userId}")
     public ResponseEntity<EstdoNotaVentaResponseDto> verificarTransaccion(
@@ -247,6 +248,12 @@ public class NotaVentaController {
         return ResponseEntity.ok(estado);
     }
 
+    @Operation(summary = "Simulate payment", description = "Simulates a payment for the user's active cart (QR simulation flow)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Payment simulated successfully",
+                    content = @Content(schema = @Schema(implementation = EstdoNotaVentaResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "No active cart found for user", content = @Content)
+    })
     @PostMapping("/simulate-payment")
     public ResponseEntity<EstdoNotaVentaResponseDto> simulatePayment(
             @RequestHeader("Authorization") String token) {
@@ -256,9 +263,10 @@ public class NotaVentaController {
 
     @Operation(summary = "Update stock for OrderDetail", description = "Updates the stock quantity for a specific product in a user's active cart")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order detail stock updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input or validation error"),
-            @ApiResponse(responseCode = "404", description = "Resource not found")
+            @ApiResponse(responseCode = "200", description = "Order detail stock updated successfully",
+                    content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input or validation error", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     @PutMapping("/order_detail/update_stock")
     public ResponseEntity<NotaVentaResponseDto> updateOrderDetailStock(

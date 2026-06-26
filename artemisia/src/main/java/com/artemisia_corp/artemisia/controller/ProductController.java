@@ -64,13 +64,12 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product found",
                     content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Product not found")
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(
             @PathVariable Long id,
             @RequestHeader(value = "Authorization", required = false) String token) {
-        // El tracking se hace automáticamente en el ProductServiceImpl
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
@@ -95,7 +94,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Product created successfully",
                     content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(
@@ -110,8 +109,8 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated successfully",
                     content = @Content(schema = @Schema(implementation = ProductResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Product not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
@@ -124,8 +123,8 @@ public class ProductController {
 
     @Operation(summary = "Delete a product", description = "Deletes a product by its ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Product not found")
+            @ApiResponse(responseCode = "204", description = "Product deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(
@@ -155,7 +154,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "Seller not found")
+            @ApiResponse(responseCode = "404", description = "Seller not found", content = @Content)
     })
     @GetMapping("/seller/{sellerId}")
     public ResponseEntity<Page<ProductResponseDto>> getProductsBySeller(
@@ -170,9 +169,9 @@ public class ProductController {
 
     @Operation(summary = "Reduce product stock", description = "Reduces the stock quantity of a product")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Stock reduced successfully"),
-            @ApiResponse(responseCode = "404", description = "Product not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid quantity")
+            @ApiResponse(responseCode = "200", description = "Stock reduced successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid quantity", content = @Content)
     })
     @PutMapping("/reduce-stock")
     public ResponseEntity<Void> reduceStock(
@@ -185,8 +184,8 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "400", description = "Invalid parameters")
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters", content = @Content)
     })
     @PostMapping("/search")
     public ResponseEntity<Page<ProductResponseDto>> searchProducts(
@@ -248,14 +247,14 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
-        @Operation(summary = "Get recommended products for user", description = "Returns up to 10 recommended products for the authenticated user")
-        @GetMapping("/recommendations")
-        public ResponseEntity<List<ProductResponseDto>> getRecommendations(
-                        @RequestHeader("Authorization") String token,
-                        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+    @Operation(summary = "Get recommended products for user", description = "Returns up to 10 recommended products for the authenticated user")
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<ProductResponseDto>> getRecommendations(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
 
-                Long userId = jwtTokenProvider.getUserIdFromToken(token);
-                List<ProductResponseDto> recommendations = recommendationService.getUserRecommendations(userId, limit);
-                return ResponseEntity.ok(recommendations);
-        }
+        Long userId = jwtTokenProvider.getUserIdFromToken(token);
+        List<ProductResponseDto> recommendations = recommendationService.getUserRecommendations(userId, limit);
+        return ResponseEntity.ok(recommendations);
+    }
 }

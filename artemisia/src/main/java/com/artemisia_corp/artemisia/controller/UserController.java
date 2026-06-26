@@ -29,7 +29,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(
@@ -41,7 +41,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created successfully",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto userDto) {
@@ -53,8 +53,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
@@ -66,9 +66,9 @@ public class UserController {
 
     @Operation(summary = "Delete a user", description = "Deletes a user by its ID (requires authentication token)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "204", description = "User deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
@@ -95,7 +95,7 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
     @GetMapping("/email/{email}")
     public ResponseEntity<UserResponseDto> getUserByEmail(@PathVariable String email) {
@@ -106,8 +106,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Email updated successfully",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/email")
     public ResponseEntity<UserResponseDto> updateEmail(
@@ -121,8 +121,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Password updated successfully",
                     content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/password")
     public ResponseEntity<UserResponseDto> updatePassword(

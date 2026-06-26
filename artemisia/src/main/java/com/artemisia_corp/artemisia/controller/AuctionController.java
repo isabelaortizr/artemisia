@@ -84,7 +84,7 @@ public class AuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Auction found",
                     content = @Content(schema = @Schema(implementation = AuctionResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Auction not found")
+            @ApiResponse(responseCode = "404", description = "Auction not found", content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<AuctionResponseDto> getAuctionById(@PathVariable Long id) {
@@ -143,7 +143,7 @@ public class AuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Auction created successfully",
                     content = @Content(schema = @Schema(implementation = AuctionResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping
     public ResponseEntity<AuctionResponseDto> createAuction(
@@ -158,7 +158,7 @@ public class AuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Auction closed successfully",
                     content = @Content(schema = @Schema(implementation = AuctionResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Auction not found")
+            @ApiResponse(responseCode = "404", description = "Auction not found", content = @Content)
     })
     @PutMapping("/{id}/close")
     public ResponseEntity<AuctionResponseDto> closeAuction(
@@ -171,8 +171,8 @@ public class AuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Bid placed successfully",
                     content = @Content(schema = @Schema(implementation = AuctionParticipantResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid bid"),
-            @ApiResponse(responseCode = "404", description = "Auction not found")
+            @ApiResponse(responseCode = "400", description = "Invalid bid", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Auction not found", content = @Content)
     })
     @PostMapping("/{id}/bids")
     public ResponseEntity<AuctionParticipantResponseDto> placeBid(
@@ -188,7 +188,7 @@ public class AuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Bids retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "Auction not found")
+            @ApiResponse(responseCode = "404", description = "Auction not found", content = @Content)
     })
     @GetMapping("/{id}/bids")
     public ResponseEntity<Page<AuctionParticipantResponseDto>> getBids(
@@ -203,8 +203,8 @@ public class AuctionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Purchase confirmed successfully",
                     content = @Content(schema = @Schema(implementation = NotaVentaResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Auction not ready for confirmation"),
-            @ApiResponse(responseCode = "404", description = "Auction, sale note or address not found")
+            @ApiResponse(responseCode = "400", description = "Auction not ready for confirmation", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Auction, sale note or address not found", content = @Content)
     })
     @PutMapping("/{id}/confirm")
     public ResponseEntity<NotaVentaResponseDto> confirmPurchase(

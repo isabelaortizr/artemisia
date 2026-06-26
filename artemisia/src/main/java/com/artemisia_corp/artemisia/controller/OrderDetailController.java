@@ -35,7 +35,7 @@ public class OrderDetailController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order details retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters", content = @Content)
     })
     @GetMapping
     public ResponseEntity<Page<OrderDetailResponseDto>> getAllOrderDetails(
@@ -52,7 +52,7 @@ public class OrderDetailController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order detail found",
                     content = @Content(schema = @Schema(implementation = OrderDetailResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Order detail not found")
+            @ApiResponse(responseCode = "404", description = "Order detail not found", content = @Content)
     })
     @GetMapping("/{id}")
     public ResponseEntity<OrderDetailResponseDto> getOrderDetailById(@PathVariable Long id) {
@@ -64,7 +64,7 @@ public class OrderDetailController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Order detail created successfully",
                     content = @Content(schema = @Schema(implementation = OrderDetailResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping
     public ResponseEntity<OrderDetailResponseDto> createOrderDetail(@RequestBody OrderDetailRequestDto orderDetailDto) {
@@ -76,8 +76,8 @@ public class OrderDetailController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order detail updated successfully",
                     content = @Content(schema = @Schema(implementation = OrderDetailResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Order detail not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "404", description = "Order detail not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("/{id}")
     public ResponseEntity<OrderDetailResponseDto> updateOrderDetail(
@@ -89,9 +89,9 @@ public class OrderDetailController {
 
     @Operation(summary = "Update order detail stock", description = "Updates the quantity of an order detail")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Stock updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Order detail not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "200", description = "Stock updated successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Order detail not found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PutMapping("update-stock/{id}")
     public ResponseEntity<Void> updateStockDetail(
@@ -102,8 +102,8 @@ public class OrderDetailController {
 
     @Operation(summary = "Delete an order detail", description = "Deletes an order detail by its ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Order detail deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Order detail not found")
+            @ApiResponse(responseCode = "204", description = "Order detail deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Order detail not found", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrderDetail(@PathVariable Long id) {
@@ -115,7 +115,7 @@ public class OrderDetailController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order details retrieved successfully",
                     content = @Content(schema = @Schema(implementation = Page.class))),
-            @ApiResponse(responseCode = "404", description = "Sales note not found")
+            @ApiResponse(responseCode = "404", description = "Sales note not found", content = @Content)
     })
     @GetMapping("/nota-venta/{notaVentaId}")
     public ResponseEntity<Page<OrderDetailResponseDto>> getOrderDetailsByNotaVenta(

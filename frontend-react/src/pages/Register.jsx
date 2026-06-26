@@ -5,6 +5,13 @@ import userService from '../services/userService';
 import { assets } from '../assets/assets';
 import Navbar from '../components/Navbar';
 
+const passwordRules = [
+  { id: 'length',    label: 'At least 8 characters',      test: p => p.length >= 8 },
+  { id: 'upper',     label: 'At least 1 uppercase letter', test: p => /[A-Z]/.test(p) },
+  { id: 'lower',     label: 'At least 1 lowercase letter', test: p => /[a-z]/.test(p) },
+  { id: 'number',    label: 'At least 1 number',           test: p => /[0-9]/.test(p) },
+];
+
 const Register = () => {
   const [name, setName] = useState('');
   const [mail, setMail] = useState('');
@@ -15,29 +22,29 @@ const Register = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const navigate = useNavigate();
 
+  const passwordValid = passwordRules.every(r => r.test(password));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (!passwordValid) {
+      setError('Please meet all password requirements before continuing.');
+      return;
+    }
+
     setIsRegistering(true);
 
     try {
       console.log('Starting registration process...');
 
-      // Crear el usuario sin preferencias
-      const userData = {
-        name,
-        mail,
-        password,
-        role
-      };
-
+      const userData = { name, mail, password, role };
       await userService.createUser(userData);
       console.log('User created successfully');
 
       setSuccess('Account created successfully! Please login to continue.');
 
-      // Redirigir al login después de un tiempo
       setTimeout(() => {
         navigate('/login', {
           state: {
@@ -64,7 +71,6 @@ const Register = () => {
       <div className="relative min-h-screen bg-black">
         <Navbar showSignUpButton={false} />
 
-        {/* Contenedor principal con más margen superior */}
         <div className="pt-24 pb-8 px-4">
           <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -137,8 +143,17 @@ const Register = () => {
                   className="w-full px-4 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/50"
                   required
                   disabled={isRegistering}
-                  minLength="6"
               />
+              {password.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {passwordRules.map(rule => (
+                        <li key={rule.id} className={`flex items-center gap-2 text-xs ${rule.test(password) ? 'text-green-400' : 'text-red-400'}`}>
+                          <span>{rule.test(password) ? '✓' : '✗'}</span>
+                          {rule.label}
+                        </li>
+                    ))}
+                  </ul>
+              )}
             </div>
 
             {/* Role */}
@@ -163,9 +178,9 @@ const Register = () => {
             {/* Submit Button */}
             <button
                 type="submit"
-                disabled={isRegistering}
+                disabled={isRegistering || !passwordValid}
                 className={`w-full py-3 font-medium rounded-full transition duration-300 ${
-                    isRegistering
+                    isRegistering || !passwordValid
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-white text-black hover:scale-105'
                 }`}

@@ -3,6 +3,7 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.image.ImageUploadDto;
 import com.artemisia_corp.artemisia.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,8 +22,8 @@ public class ImageController {
 
     @Operation(summary = "Upload an image", description = "Uploads a new image")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Image uploaded successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "200", description = "Image uploaded successfully", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @PostMapping("/upload")
     public ResponseEntity<Void> uploadImage(@RequestBody ImageUploadDto dto) {
@@ -32,8 +33,8 @@ public class ImageController {
 
     @Operation(summary = "Delete an image", description = "Deletes an image by ID (Admin only)")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Image deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Image not found"),
+            @ApiResponse(responseCode = "204", description = "Image deleted successfully", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Image not found", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long id) {

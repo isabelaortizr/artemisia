@@ -42,20 +42,21 @@ public class AuthController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication successful",
                     content = @Content(schema = @Schema(implementation = OKAuthDto.class))),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
     })
     @PostMapping("/token")
     public ResponseEntity<OKAuthDto> token(@RequestBody AuthenticationDto data) {
         User user;
         try {
-            Optional<User> userOptional = userService.getUserByName(data.getUsername());
+            String username = data.getUsername().trim().toLowerCase();
+            Optional<User> userOptional = userService.getUserByName(username);
             if (userOptional.isEmpty()) {
                 throw new BadCredentialsException("Email o contraseña son incorrectos");
             }
             user = userOptional.get();
 
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(data.getUsername(), data.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities()));
 
             String token = jwtTokenProvider.createToken(user);

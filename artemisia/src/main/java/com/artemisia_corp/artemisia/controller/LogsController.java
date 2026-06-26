@@ -3,6 +3,9 @@ package com.artemisia_corp.artemisia.controller;
 import com.artemisia_corp.artemisia.entity.dto.logs.LogsResponseDto;
 import com.artemisia_corp.artemisia.service.LogsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,8 +25,9 @@ public class LogsController {
 
     @Operation(summary = "Get all logs", description = "Get all system logs")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "logs gotten successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input")
+            @ApiResponse(responseCode = "200", description = "Logs retrieved successfully",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = LogsResponseDto.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
     })
     @GetMapping
     public ResponseEntity<List<LogsResponseDto>> getAllLogs() {
